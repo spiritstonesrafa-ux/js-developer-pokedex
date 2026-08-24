@@ -1,6 +1,12 @@
 /**
- * Aplicação Pokédex - Lógica Principal e UI
+ * ====================================================================
+ * CONTROLE DE INTERFACE & EVENTOS (main.js)
+ * ====================================================================
+ * Gerencia os elementos do DOM (HTML), estados da aplicação,
+ * filtros, busca, paginação, tema (Dark/Light) e LocalStorage.
  */
+
+// 1. MAPEAMENTO DOS ELEMENTOS DO DOM
 const pokemonListElement = document.getElementById('pokemonList');
 const loadMoreButton = document.getElementById('loadMoreButton');
 const searchInput = document.getElementById('searchInput');
@@ -13,48 +19,37 @@ const favoritesToggleBtn = document.getElementById('favoritesToggleBtn');
 const favCounterBadge = document.getElementById('favCounter');
 const resultCountEl = document.getElementById('resultCount');
 
-// Modal Elements
+// Elementos do Modal de Detalhes
 const pokemonModal = document.getElementById('pokemonModal');
 const modalOverlay = document.getElementById('modalOverlay');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const modalContent = document.getElementById('modalDynamicContent');
 
-// Estado da Aplicação
-const limit = 20;
-let offset = 0;
-let maxLimit = 151; // Padrão Gen 1
-let currentPokemons = [];
-let allLoadedPokemons = [];
-let selectedType = 'all';
-let selectedGeneration = '1';
-let currentSearchTerm = '';
-let currentSort = 'id-asc';
-let showingFavoritesOnly = false;
+// 2. ESTADOS DA APLICAÇÃO (Variáveis de controle)
+const limit = 20;               // Quantidade de cards por página
+let offset = 0;                 // Ponto de partida na paginação
+let maxLimit = 151;             // Limite máximo da geração selecionada
+let currentPokemons = [];       // Lista filtrada e exibida na tela
+let allLoadedPokemons = [];     // Memória cache dos pokémons já carregados
+let selectedType = 'all';       // Tipo selecionado no filtro
+let selectedGeneration = '1';   // Geração selecionada
+let currentSearchTerm = '';     // Termo de busca digitado pelo usuário
+let currentSort = 'id-asc';     // Tipo de ordenação ativa
+let showingFavoritesOnly = false; // Flag para alternar visualização de favoritos
+
+// Carrega os IDs favoritos salvos no navegador (LocalStorage)
 let favoritePokemonIds = JSON.parse(localStorage.getItem('pokedex_favorites') || '[]');
 
-// Mapa de cores por tipo
+// Dicionário de cores CSS mapeado por tipo Pokémon
 const typeColors = {
-  normal: '#A8A77A',
-  fire: '#EE8130',
-  water: '#6390F0',
-  electric: '#F7D02C',
-  grass: '#7AC74C',
-  ice: '#96D9D6',
-  fighting: '#C22E28',
-  poison: '#A33EA1',
-  ground: '#E2BF65',
-  flying: '#A98FF3',
-  psychic: '#F95587',
-  bug: '#A6B91A',
-  rock: '#B6A136',
-  ghost: '#735797',
-  dragon: '#6F35FC',
-  dark: '#705746',
-  steel: '#B7B7CE',
-  fairy: '#D685AD'
+  normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
+  grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
+  ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A',
+  rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746',
+  steel: '#B7B7CE', fairy: '#D685AD'
 };
 
-// Gerações (Offset e Total de Pokémons)
+// Intervalos de IDs por Geração Pokémon
 const generationRanges = {
   '1': { offset: 0, max: 151 },
   '2': { offset: 151, max: 251 },
@@ -68,7 +63,7 @@ const generationRanges = {
   'all': { offset: 0, max: 1025 }
 };
 
-// Ícone SVG da Pokeball
+// SVG decorativo da Pokébola para o fundo dos cards
 const pokeballSvg = `
   <svg viewBox="0 0 100 100" fill="currentColor" class="pokemon-card-watermark">
     <path d="M50 0 C22.4 0 0 22.4 0 50 C0 77.6 22.4 100 50 100 C77.6 100 100 77.6 100 50 C100 22.4 77.6 0 50 0 Z M50 8 C70.5 8 87.5 22.7 91.3 42.5 L69.5 42.5 C66.8 33.4 59.2 26.8 50 26.8 C40.8 26.8 33.2 33.4 30.5 42.5 L8.7 42.5 C12.5 22.7 29.5 8 50 8 Z M50 92 C29.5 92 12.5 77.3 8.7 57.5 L30.5 57.5 C33.2 66.6 40.8 73.2 50 73.2 C59.2 73.2 66.8 66.6 69.5 57.5 L91.3 57.5 C87.5 77.3 70.5 92 50 92 Z M50 35 C58.3 35 65 41.7 65 50 C65 58.3 58.3 65 50 65 C41.7 65 35 58.3 35 50 C35 41.7 41.7 35 50 35 Z M50 42.5 C45.9 42.5 42.5 45.9 42.5 50 C42.5 54.1 45.9 57.5 50 57.5 C54.1 57.5 57.5 54.1 57.5 50 C57.5 45.9 54.1 42.5 50 42.5 Z"/>
@@ -76,7 +71,8 @@ const pokeballSvg = `
 `;
 
 /**
- * Converte Pokémon para Card HTML
+ * 3. CRIAÇÃO DINÂMICA DO CARD (HTML)
+ * Usa Template Literals para interpolar dados no HTML.
  */
 function createPokemonCard(pokemon) {
   const isFav = favoritePokemonIds.includes(pokemon.number);
@@ -123,7 +119,7 @@ function createPokemonCard(pokemon) {
 }
 
 /**
- * Atualiza o contador de favoritos na UI
+ * Atualiza o indicador numérico de favoritos no topo da página.
  */
 function updateFavoriteCounter() {
   favCounterBadge.textContent = favoritePokemonIds.length;
@@ -131,23 +127,22 @@ function updateFavoriteCounter() {
 }
 
 /**
- * Toggle Favorito
+ * Adiciona ou remove um Pokémon da lista de favoritos com persistência no LocalStorage.
  */
 window.toggleFavorite = function(pokemonId) {
   const index = favoritePokemonIds.indexOf(pokemonId);
   if (index > -1) {
-    favoritePokemonIds.splice(index, 1);
+    favoritePokemonIds.splice(index, 1); // Remove se já existir
   } else {
-    favoritePokemonIds.push(pokemonId);
+    favoritePokemonIds.push(pokemonId);   // Adiciona se não existir
   }
+  
   localStorage.setItem('pokedex_favorites', JSON.stringify(favoritePokemonIds));
   updateFavoriteCounter();
 
-  // Re-renderizar se estiver no filtro de favoritos
   if (showingFavoritesOnly) {
     applyFiltersAndSort();
   } else {
-    // Atualiza botão do card
     const card = document.querySelector(`.pokemon-card[data-id="${pokemonId}"]`);
     if (card) {
       const btn = card.querySelector('.fav-btn');
@@ -159,7 +154,8 @@ window.toggleFavorite = function(pokemonId) {
 };
 
 /**
- * Carrega lote de Pokémons
+ * 4. CARREGAMENTO E PAGINAÇÃO
+ * Carrega lotes de Pokémon conforme o usuário clica em "Carregar Mais".
  */
 function loadPokemonItems(initial = false) {
   if (initial) {
@@ -167,7 +163,7 @@ function loadPokemonItems(initial = false) {
     maxLimit = generationRanges[selectedGeneration].max;
     allLoadedPokemons = [];
     currentPokemons = [];
-    pokemonListElement.innerHTML = createSkeletonsHtml(8);
+    pokemonListElement.innerHTML = createSkeletonsHtml(8); // Exibe efeito de carregamento visual
   }
 
   loadMoreButton.disabled = true;
@@ -213,7 +209,7 @@ function loadPokemonItems(initial = false) {
 }
 
 /**
- * Carrega Pokémon por tipo quando selecionado
+ * Carrega a lista quando o usuário seleciona um tipo específico nas pílulas.
  */
 async function loadPokemonsByType(type) {
   pokemonListElement.innerHTML = createSkeletonsHtml(8);
@@ -229,7 +225,8 @@ async function loadPokemonsByType(type) {
 }
 
 /**
- * Aplica Filtros (Busca, Tipo, Favoritos) e Ordenação
+ * 5. FILTROS, BUSCA E ORDENAÇÃO
+ * Aplica as regras de filtragem sobre o array de dados em memória.
  */
 function applyFiltersAndSort() {
   let filtered = [...allLoadedPokemons];
@@ -239,12 +236,12 @@ function applyFiltersAndSort() {
     filtered = filtered.filter(p => favoritePokemonIds.includes(p.number));
   }
 
-  // Filtro de Tipo (se não for via API direta)
+  // Filtro de Tipo
   if (selectedType !== 'all' && !filtered.every(p => p.types.includes(selectedType))) {
     filtered = filtered.filter(p => p.types.includes(selectedType));
   }
 
-  // Filtro de Busca (Nome ou ID)
+  // Filtro de Busca (por Nome ou Número)
   if (currentSearchTerm.trim() !== '') {
     const term = currentSearchTerm.toLowerCase().trim();
     filtered = filtered.filter(p => 
@@ -254,7 +251,7 @@ function applyFiltersAndSort() {
     );
   }
 
-  // Ordenação
+  // Algoritmos de Ordenação (Array.prototype.sort)
   switch (currentSort) {
     case 'id-asc':
       filtered.sort((a, b) => a.number - b.number);
@@ -278,7 +275,7 @@ function applyFiltersAndSort() {
 }
 
 /**
- * Renderiza a lista na DOM
+ * Renderiza a lista de cartões no DOM.
  */
 function renderPokemons(pokemons) {
   resultCountEl.textContent = `Mostrando ${pokemons.length} Pokémon`;
@@ -298,7 +295,7 @@ function renderPokemons(pokemons) {
 }
 
 /**
- * Gera skeletons para carregamento suave
+ * Gera skeletons (cards vazios animados) enquanto a requisição HTTP está em andamento.
  */
 function createSkeletonsHtml(count) {
   return Array.from({ length: count }).map(() => `
@@ -317,12 +314,13 @@ function createSkeletonsHtml(count) {
 }
 
 /**
- * Modal de Detalhes Completo
+ * 6. MODAL DE DETALHES COMPLETO
+ * Exibe detalhes aprofundados do Pokémon clicado (Stats, Som, Linha Evolutiva).
  */
 window.openPokemonDetails = async function(pokemonId) {
   let pokemon = allLoadedPokemons.find(p => p.number === pokemonId);
 
-  // Se não estiver em memória, busca individualmente
+  // Busca individual caso o Pokémon ainda não esteja em cache local
   if (!pokemon) {
     try {
       pokemon = await pokeApi.getPokemonDetail(pokemonId);
@@ -338,7 +336,7 @@ window.openPokemonDetails = async function(pokemonId) {
     .map(t => `<span class="type-badge" style="background-color: ${typeColors[t] || '#777'}">${t}</span>`)
     .join('');
 
-  // Helper para cor de stat
+  // Classifica a cor da barra de status conforme o valor do atributo
   const getStatClass = (val) => val >= 100 ? 'stat-high' : val >= 50 ? 'stat-med' : 'stat-low';
 
   modalContent.innerHTML = `
@@ -373,7 +371,7 @@ window.openPokemonDetails = async function(pokemonId) {
         <button class="modal-tab-btn" onclick="switchModalTab('evolution', event)">Evoluções</button>
       </div>
 
-      <!-- Tab Sobre -->
+      <!-- Tab 1: Sobre (Medidas e Habilidades) -->
       <div id="tab-about" class="tab-content active">
         <div class="info-grid">
           <div class="info-item">
@@ -394,7 +392,7 @@ window.openPokemonDetails = async function(pokemonId) {
         </div>
       </div>
 
-      <!-- Tab Status -->
+      <!-- Tab 2: Status Base -->
       <div id="tab-stats" class="tab-content">
         <div class="stats-list">
           <div class="stat-row">
@@ -446,7 +444,7 @@ window.openPokemonDetails = async function(pokemonId) {
         </div>
       </div>
 
-      <!-- Tab Evoluções -->
+      <!-- Tab 3: Linha Evolutiva -->
       <div id="tab-evolution" class="tab-content">
         <div id="evolutionContainer" class="evolution-chain-container">
           <div style="color: var(--text-muted); font-size: 0.9rem;">
@@ -460,17 +458,22 @@ window.openPokemonDetails = async function(pokemonId) {
   modalOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 
-  // Buscar evolução em background
   loadEvolutionChain(pokemon.speciesUrl);
 };
 
+/**
+ * Toca o som característico (cry) do Pokémon usando a API de Áudio HTML5.
+ */
 window.playPokemonCry = function(audioUrl) {
   if (!audioUrl) return;
   const audio = new Audio(audioUrl);
   audio.volume = 0.5;
-  audio.play().catch(e => console.log('Audio playback prevented:', e));
+  audio.play().catch(e => console.log('Reprodução de áudio prevenida pelo navegador:', e));
 };
 
+/**
+ * Renderiza a cadeia de evolução no modal.
+ */
 async function loadEvolutionChain(speciesUrl) {
   const container = document.getElementById('evolutionContainer');
   if (!container) return;
@@ -498,6 +501,9 @@ async function loadEvolutionChain(speciesUrl) {
   `).join('');
 }
 
+/**
+ * Alternância entre as abas do Modal (Sobre / Status / Evoluções).
+ */
 window.switchModalTab = function(tabName, event) {
   document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -507,30 +513,33 @@ window.switchModalTab = function(tabName, event) {
   if (target) target.classList.add('active');
 };
 
+/**
+ * Fecha o Modal.
+ */
 window.closeModal = function() {
   modalOverlay.classList.remove('active');
   document.body.style.overflow = 'auto';
 };
 
-// Fechar modal ao clicar fora
+// 7. LISTENERS DE EVENTOS DO USUÁRIO
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) closeModal();
 });
 
-// Tecla ESC fecha o modal
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
     closeModal();
   }
 });
 
-// Eventos de Filtro e Busca
+// Evento de Digitação na Busca
 searchInput.addEventListener('input', (e) => {
   currentSearchTerm = e.target.value;
   clearSearchBtn.style.display = currentSearchTerm ? 'block' : 'none';
   applyFiltersAndSort();
 });
 
+// Botão de Limpar Busca
 clearSearchBtn.addEventListener('click', () => {
   searchInput.value = '';
   currentSearchTerm = '';
@@ -539,11 +548,13 @@ clearSearchBtn.addEventListener('click', () => {
   searchInput.focus();
 });
 
+// Seletor de Ordenação
 sortSelect.addEventListener('change', (e) => {
   currentSort = e.target.value;
   applyFiltersAndSort();
 });
 
+// Seletor de Geração
 generationSelect.addEventListener('change', (e) => {
   selectedGeneration = e.target.value;
   selectedType = 'all';
@@ -551,6 +562,7 @@ generationSelect.addEventListener('change', (e) => {
   loadPokemonItems(true);
 });
 
+// Pílulas de Tipos
 typePills.forEach(pill => {
   pill.addEventListener('click', () => {
     typePills.forEach(p => p.classList.remove('active'));
@@ -565,13 +577,14 @@ typePills.forEach(pill => {
   });
 });
 
+// Alternar Filtro de Favoritos
 favoritesToggleBtn.addEventListener('click', () => {
   showingFavoritesOnly = !showingFavoritesOnly;
   favoritesToggleBtn.classList.toggle('active', showingFavoritesOnly);
   applyFiltersAndSort();
 });
 
-// Dark / Light Mode Toggle
+// 8. TEMA DARK / LIGHT (Persistência com LocalStorage)
 themeToggleBtn.addEventListener('click', () => {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -585,9 +598,9 @@ const savedTheme = localStorage.getItem('pokedex_theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 themeToggleBtn.innerHTML = savedTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
 
-// Load More Click
+// Botão Carregar Mais
 loadMoreButton.addEventListener('click', () => loadPokemonItems(false));
 
-// Inicializar lista e favoritos
+// 9. INICIALIZAÇÃO DA PÁGINA
 updateFavoriteCounter();
 loadPokemonItems(true);

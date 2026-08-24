@@ -1,41 +1,49 @@
 /**
- * PokéAPI Service Layer
+ * ====================================================================
+ * CAMADA DE SERVIÇO: POKÉAPI (poke-api.js)
+ * ====================================================================
+ * Responsável por fazer as requisições HTTP (Fetch API) para a PokéAPI REST
+ * e transformar os dados brutos (JSON) em instâncias da classe Pokemon.
  */
+
 const pokeApi = {};
 
 /**
- * Converte resposta da PokeAPI para o modelo local Pokemon
+ * Converte o JSON bruto da PokéAPI em um objeto padronizado da nossa classe Pokemon.
+ * @param {Object} pokeDetail - Objeto retornado pela API contendo dados do Pokémon.
+ * @returns {Pokemon} Instância formatada com apenas as propriedades que usamos.
  */
 function convertPokeApiDetailToPokemon(pokeDetail) {
   const pokemon = new Pokemon();
   pokemon.number = pokeDetail.id;
   pokemon.name = pokeDetail.name;
 
+  // Mapeia o array de tipos da PokéAPI para um array simples de strings (ex: ['fire', 'flying'])
   const types = pokeDetail.types.map((typeSlot) => typeSlot.type.name);
-  const [type] = types;
+  const [type] = types; // Destructuring do JavaScript para pegar o primeiro tipo (tipo primário)
 
   pokemon.types = types;
   pokemon.type = type;
 
-  // Imagem de alta resolução (Official Artwork) ou fallback para showndown/pixel sprite
+  // Seleciona a melhor imagem disponível (Artwork Oficial ou imagem padrão)
   pokemon.photo =
     pokeDetail.sprites.other['official-artwork'].front_default ||
     pokeDetail.sprites.other['dream_world'].front_default ||
     pokeDetail.sprites.front_default;
 
-  // Sprite animada
+  // Imagem animada (Showdown sprite)
   pokemon.animatedPhoto =
     pokeDetail.sprites.other?.showdown?.front_default ||
     pokeDetail.sprites.front_default;
 
-  // Medidas (PokeAPI retorna decímetros e hectogramas)
+  // A PokéAPI retorna a altura em decímetros e o peso em hectogramas, dividimos por 10 para converter para m e kg
   pokemon.height = pokeDetail.height / 10;
   pokemon.weight = pokeDetail.weight / 10;
 
-  // Habilidades
+  // Extrai apenas os nomes das habilidades
   pokemon.abilities = pokeDetail.abilities.map((abilitySlot) => abilitySlot.ability.name);
 
-  // Status Base
+  // Mapeia os atributos de status (HP, Ataque, etc.) e calcula o somatório total
   const statsMap = {};
   let totalStats = 0;
   pokeDetail.stats.forEach((statObj) => {
@@ -60,7 +68,9 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
 }
 
 /**
- * Busca detalhes de um Pokémon por URL ou ID/Nome
+ * Busca os detalhes completos de um Pokémon individual via URL ou ID/Nome.
+ * @param {string|Object} pokemonOrUrl - URL de detalhes ou objeto simples com a URL.
+ * @returns {Promise<Pokemon>} Promise com o Pokémon formatado.
  */
 pokeApi.getPokemonDetail = (pokemonOrUrl) => {
   const url = typeof pokemonOrUrl === 'string' 
@@ -69,23 +79,26 @@ pokeApi.getPokemonDetail = (pokemonOrUrl) => {
 
   return fetch(url)
     .then((response) => {
-      if (!response.ok) throw new Error('Pokémon não encontrado');
-      return response.json();
+      if (!response.ok) throw new Error('Pokémon não encontrado na PokéAPI');
+      return response.json(); // Converte a resposta bruta em objeto JavaScript
     })
     .then(convertPokeApiDetailToPokemon);
 };
 
 /**
- * Lista Pokémon com paginação (limit e offset)
+ * Busca uma lista paginada de Pokémon usando Promises em paralelo (Promise.all).
+ * @param {number} offset - Ponto de início (índice do primeiro Pokémon da página).
+ * @param {number} limit - Quantidade de registros a serem retornados.
+ * @returns {Promise<Pokemon[]>} Array com a lista de Pokémons formatados.
  */
 pokeApi.getPokemons = (offset = 0, limit = 20) => {
   const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`;
 
   return fetch(url)
     .then((response) => response.json())
-    .then((jsonBody) => jsonBody.results)
-    .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail))
-    .then((detailRequests) => Promise.all(detailRequests))
+    .then((jsonBody) => jsonBody.results) // Obtém a lista inicial de nomes e URLs
+    .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail)) // Dispara uma requisição de detalhe para cada um
+    .then((detailRequests) => Promise.all(detailRequests)) // Aguarda todas as requisições paralelas finalizarem
     .catch((error) => {
       console.error('Erro ao buscar lista de pokemons:', error);
       throw error;
@@ -93,22 +106,27 @@ pokeApi.getPokemons = (offset = 0, limit = 20) => {
 };
 
 /**
- * Busca cadeia de evolução de um Pokémon
+ * Busca a linha evolutiva de um Pokémon (Evolution Chain).
+ * @param {string} speciesUrl - URL da espécie do Pokémon na PokéAPI.
+ * @returns {Promise<Array>} Lista ordenada de estágios evolutivos.
  */
 pokeApi.getPokemonEvolutionChain = async (speciesUrl) => {
   if (!speciesUrl) return [];
   try {
+    // 1º Passo: Obter os dados da espécie para descobrir a URL da cadeia de evolução
     const speciesRes = await fetch(speciesUrl);
     const speciesData = await speciesRes.json();
     
     if (!speciesData.evolution_chain?.url) return [];
 
+    // 2º Passo: Obter a árvore de evolução
     const evoRes = await fetch(speciesData.evolution_chain.url);
     const evoData = await evoRes.json();
 
     const chain = [];
     let current = evoData.chain;
 
+    // 3º Passo: Percorrer a estrutura encadeada (Linked List) da árvore de evolução
     while (current) {
       const pokeIdMatch = current.species.url.match(/\/pokemon-species\/(\d+)\//);
       const pokeId = pokeIdMatch ? pokeIdMatch[1] : null;
@@ -134,7 +152,10 @@ pokeApi.getPokemonEvolutionChain = async (speciesUrl) => {
 };
 
 /**
- * Busca lista de Pokémon por Tipo
+ * Busca Pokémons filtrados diretamente pelo seu Tipo.
+ * @param {string} type - Nome do tipo (ex: 'fire', 'water').
+ * @param {number} limit - Quantidade máxima a carregar.
+ * @returns {Promise<Pokemon[]>}
  */
 pokeApi.getPokemonsByType = async (type, limit = 40) => {
   const url = `https://pokeapi.co/api/v2/type/${type}`;
