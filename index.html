@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex Sensacional | Desafio DIO</title>
+  <meta name="description" content="Pokédex interativa, rápida e visualmente incrível criada com JavaScript Vanilla consumindo a PokéAPI REST. Desafio DIO.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Estilos da Pokédex -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/pokedex.css">
+  <link rel="stylesheet" href="assets/css/modal.css">
+
+  <!-- Favicon SVG Pokéball -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23EE1515'/><path d='M2 50 A48 48 0 0 0 98 50 Z' fill='%23FFFFFF'/><path d='M2 50 L98 50' stroke='%23222224' stroke-width='8'/><circle cx='50' cy='50' r='16' fill='%23222224'/><circle cx='50' cy='50' r='10' fill='%23FFFFFF'/></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="logo-container">
+          <svg class="pokeball-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" fill="#EE1515" stroke="#222224" stroke-width="6"/>
+            <path d="M4 50 A46 46 0 0 0 96 50 Z" fill="#FFFFFF"/>
+            <path d="M4 50 L96 50" stroke="#222224" stroke-width="6"/>
+            <circle cx="50" cy="50" r="16" fill="#222224"/>
+            <circle cx="50" cy="50" r="10" fill="#FFFFFF"/>
+          </svg>
+          <h1 class="app-title">Pokédex <span>DIO Pro</span></h1>
+        </div>
+
+        <div class="header-actions">
+          <button id="favoritesToggleBtn" class="icon-btn" title="Meus Favoritos" aria-label="Favoritos">
+            <i class="fa-solid fa-heart"></i>
+            <span id="favCounter" class="badge-counter" style="display: none;">0</span>
+          </button>
+          <button id="themeToggleBtn" class="icon-btn" title="Alternar Tema" aria-label="Alternar Tema">
+            <i class="fa-solid fa-sun"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls Panel (Search, Filters, Sort) -->
+      <section class="controls-panel" aria-label="Filtros e Busca">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nome ou número (ex: Pikachu, 25)..." autocomplete="off">
+          <i class="fa-solid fa-xmark clear-search-btn" id="clearSearchBtn"></i>
+        </div>
+
+        <div class="filters-row">
+          <!-- Geração -->
+          <div class="custom-select-wrapper">
+            <select id="generationSelect" class="custom-select" aria-label="Selecionar Geração">
+              <option value="1">1ª Geração (Kanto: 1-151)</option>
+              <option value="2">2ª Geração (Johto: 152-251)</option>
+              <option value="3">3ª Geração (Hoenn: 252-386)</option>
+              <option value="4">4ª Geração (Sinnoh: 387-493)</option>
+              <option value="5">5ª Geração (Unova: 494-649)</option>
+              <option value="6">6ª Geração (Kalos: 650-721)</option>
+              <option value="7">7ª Geração (Alola: 722-809)</option>
+              <option value="8">8ª Geração (Galar: 810-905)</option>
+              <option value="9">9ª Geração (Paldea: 906-1025)</option>
+              <option value="all">Todas as Gerações</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+
+          <!-- Ordenação -->
+          <div class="custom-select-wrapper">
+            <select id="sortSelect" class="custom-select" aria-label="Ordenar por">
+              <option value="id-asc">Número (Menor ao Maior)</option>
+              <option value="id-desc">Número (Maior ao Menor)</option>
+              <option value="name-asc">Nome (A - Z)</option>
+              <option value="name-desc">Nome (Z - A)</option>
+              <option value="stat-desc">Mais Forte (Total Stats)</option>
+            </select>
+            <i class="fa-solid fa-arrow-down-short-wide select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Type Pills Filter -->
+        <nav class="type-pills-container" aria-label="Filtrar por tipo">
+          <button class="type-pill active" data-type="all">Todos</button>
+          <button class="type-pill" data-type="grass" style="--pill-color: var(--type-grass);">🌱 Grass</button>
+          <button class="type-pill" data-type="fire" style="--pill-color: var(--type-fire);">🔥 Fire</button>
+          <button class="type-pill" data-type="water" style="--pill-color: var(--type-water);">💧 Water</button>
+          <button class="type-pill" data-type="electric" style="--pill-color: var(--type-electric);">⚡ Electric</button>
+          <button class="type-pill" data-type="bug" style="--pill-color: var(--type-bug);">🐛 Bug</button>
+          <button class="type-pill" data-type="poison" style="--pill-color: var(--type-poison);">☠️ Poison</button>
+          <button class="type-pill" data-type="flying" style="--pill-color: var(--type-flying);">🕊️ Flying</button>
+          <button class="type-pill" data-type="normal" style="--pill-color: var(--type-normal);">⚪ Normal</button>
+          <button class="type-pill" data-type="ground" style="--pill-color: var(--type-ground);">🏜️ Ground</button>
+          <button class="type-pill" data-type="fairy" style="--pill-color: var(--type-fairy);">✨ Fairy</button>
+          <button class="type-pill" data-type="fighting" style="--pill-color: var(--type-fighting);">🥊 Fighting</button>
+          <button class="type-pill" data-type="psychic" style="--pill-color: var(--type-psychic);">🔮 Psychic</button>
+          <button class="type-pill" data-type="rock" style="--pill-color: var(--type-rock);">🪨 Rock</button>
+          <button class="type-pill" data-type="ghost" style="--pill-color: var(--type-ghost);">👻 Ghost</button>
+          <button class="type-pill" data-type="ice" style="--pill-color: var(--type-ice);">❄️ Ice</button>
+          <button class="type-pill" data-type="dragon" style="--pill-color: var(--type-dragon);">🐉 Dragon</button>
+          <button class="type-pill" data-type="steel" style="--pill-color: var(--type-steel);">⚙️ Steel</button>
+          <button class="type-pill" data-type="dark" style="--pill-color: var(--type-dark);">🌑 Dark</button>
+        </nav>
+      </section>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <div class="stats-summary">
+        <span id="resultCount">Carregando Pokémon...</span>
+      </div>
+
+      <!-- Pokémon Grid -->
+      <ol id="pokemonList" class="pokemons-grid">
+        <!-- Cards renderizados via JS -->
+      </ol>
+
+      <!-- Paginação / Load More -->
+      <div class="pagination-container">
+        <button id="loadMoreButton" type="button" class="load-more-btn">
+          <span>Carregar Mais</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+      </div>
+    </main>
+
+    <!-- Modal de Detalhes do Pokémon -->
+    <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
+      <div class="modal-container" id="pokemonModal" role="dialog" aria-modal="true">
+        <div id="modalDynamicContent">
+          <!-- Conteúdo gerado dinamicamente via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Desenvolvido para o Desafio de Projeto da <strong>DIO (Digital Innovation One)</strong></p>
+      <p>Dados fornecidos por <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a></p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/js/pokemon-model.js"></script>
+  <script src="assets/js/poke-api.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
