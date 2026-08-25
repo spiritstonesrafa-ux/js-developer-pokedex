@@ -3,6 +3,7 @@
 Uma aplicação Pokédex moderna, dinâmica e visualmente atraente desenvolvida em **JavaScript Vanilla**, **HTML5** e **CSS3 Moderno** consumindo a **PokéAPI REST**.
 
 Projeto desenvolvido para o desafio prático de JavaScript da **[Digital Innovation One (DIO)](https://www.dio.me/)**.
+
 Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
 
 ---
