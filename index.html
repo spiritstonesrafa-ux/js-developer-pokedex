@@ -60,6 +60,27 @@
         </div>
       </div>
 
+      <!-- Navegação Principal entre Módulos -->
+      <nav class="app-nav" aria-label="Navegação entre Módulos">
+        <button id="navPokedexBtn" class="nav-tab active" data-tab="pokedex">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Pokédex</span>
+        </button>
+        <button id="navTeamBtn" class="nav-tab" data-tab="team">
+          <i class="fa-solid fa-users"></i>
+          <span>Meu Time</span>
+          <span class="nav-badge">Em breve</span>
+        </button>
+        <button id="navBattleBtn" class="nav-tab" data-tab="battle">
+          <i class="fa-solid fa-khanda"></i>
+          <span>Batalhar</span>
+          <span class="nav-badge">Em breve</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- MÓDULO 1: VISÃO DA POKÉDEX (Totalmente Preservada) -->
+    <div id="pokedexView" class="view-panel">
       <!-- 2. PAINEL DE CONTROLES (Busca em tempo real, filtros e ordenação) -->
       <section class="controls-panel" aria-label="Filtros e Busca">
         
@@ -124,27 +145,32 @@
           <button class="type-pill" data-type="dark" style="--pill-color: var(--type-dark);">🌑 Dark</button>
         </nav>
       </section>
-    </header>
 
-    <!-- 3. CONTEÚDO PRINCIPAL (Grid de Pokémon e Botão de Carregar Mais) -->
-    <main>
-      <div class="stats-summary">
-        <span id="resultCount">Carregando Pokémon...</span>
-      </div>
+      <!-- 3. CONTEÚDO PRINCIPAL (Grid de Pokémon e Botão de Carregar Mais) -->
+      <main>
+        <div class="stats-summary">
+          <span id="resultCount">Carregando Pokémon...</span>
+        </div>
 
-      <!-- Lista ordenada onde os cards dinâmicos serão inseridos pelo JS -->
-      <ol id="pokemonList" class="pokemons-grid">
-        <!-- Preenchido dinamicamente via assets/js/main.js -->
-      </ol>
+        <!-- Lista ordenada onde os cards dinâmicos serão inseridos pelo JS -->
+        <ol id="pokemonList" class="pokemons-grid">
+          <!-- Preenchido dinamicamente via assets/js/main.js -->
+        </ol>
 
-      <!-- Botão de Paginação -->
-      <div class="pagination-container">
-        <button id="loadMoreButton" type="button" class="load-more-btn">
-          <span>Carregar Mais</span>
-          <i class="fa-solid fa-chevron-down"></i>
-        </button>
-      </div>
-    </main>
+        <!-- Botão de Paginação -->
+        <div class="pagination-container">
+          <button id="loadMoreButton" type="button" class="load-more-btn">
+            <span>Carregar Mais</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <!-- MÓDULOS FUTUROS (Em Desenvolvimento - Team Builder e Battle Arena) -->
+    <section id="futureModuleView" class="future-module-view" style="display: none;" aria-live="polite">
+      <!-- Preenchido dinamicamente ao selecionar 'Meu Time' ou 'Batalhar' -->
+    </section>
 
     <!-- 4. MODAL FLUTUANTE (Detalhes, Atributos de Batalha e Evolução) -->
     <div id="modalOverlay" class="modal-overlay" aria-hidden="true">

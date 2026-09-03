@@ -604,3 +604,138 @@ loadMoreButton.addEventListener('click', () => loadPokemonItems(false));
 // 9. INICIALIZAÇÃO DA PÁGINA
 updateFavoriteCounter();
 loadPokemonItems(true);
+
+/**
+ * ====================================================================
+ * 10. NAVEGAÇÃO ENTRE MÓDULOS (Pokédex, Meu Time, Battle Arena)
+ * ====================================================================
+ * Gerencia a alternância entre a Pokédex e as visões de recursos futuros
+ * planejados para as fases PBA-002 e PBA-003+, preservando o estado
+ * e o cache de dados da Pokédex intactos na memória.
+ */
+const navTabs = document.querySelectorAll('.nav-tab');
+const pokedexView = document.getElementById('pokedexView');
+const futureModuleView = document.getElementById('futureModuleView');
+
+const futureModulesData = {
+  team: {
+    icon: 'fa-solid fa-users',
+    badge: 'Fase PBA-002 • Em Desenvolvimento',
+    title: 'Meu Time (Team Builder)',
+    description: 'O gerenciador tático de equipes permitirá escolher até 6 Pokémon favoritos da sua Pokédex, salvar seu time estrategicamente no navegador e avaliar a sinergia de tipos antes das batalhas.',
+    features: [
+      {
+        icon: 'fa-solid fa-list-check',
+        title: 'Seleção de 1 a 6 Pokémon',
+        desc: 'Adicione Pokémon diretamente da Pokédex ou dos favoritos para a sua equipe ativa.'
+      },
+      {
+        icon: 'fa-solid fa-chart-pie',
+        title: 'Cobertura & Sinergia Elemental',
+        desc: 'Visualização tática de fraquezas e resistências combinadas dos tipos do seu time.'
+      },
+      {
+        icon: 'fa-solid fa-floppy-disk',
+        title: 'Persistência no Navegador',
+        desc: 'Salva seu time com segurança via LocalStorage estruturado (padrão team.*).'
+      },
+      {
+        icon: 'fa-solid fa-shield-halved',
+        title: 'Pronto para o Combate',
+        desc: 'Seu time construído aqui será utilizado diretamente no simulador de batalha.'
+      }
+    ]
+  },
+  battle: {
+    icon: 'fa-solid fa-khanda',
+    badge: 'Fase PBA-003+ • Em Desenvolvimento',
+    title: 'Pokémon Battle Arena',
+    description: 'Um simulador completo de batalhas Pokémon por turnos contra inteligência artificial, construído em arquitetura estrita onde a lógica matemática (Game Engine) é 100% desacoplada das animações e áudio (Presentation Engine).',
+    features: [
+      {
+        icon: 'fa-solid fa-bolt',
+        title: 'Simulador por Turnos (1x1 e 3x3)',
+        desc: 'Iniciativa calculada por Speed, turnos dinâmicos e opções de Ataque e Troca.'
+      },
+      {
+        icon: 'fa-solid fa-calculator',
+        title: 'Cálculo Real de Dano',
+        desc: 'Fórmula clássica de combate com STAB, crítico, golpes físicos e especiais.'
+      },
+      {
+        icon: 'fa-solid fa-robot',
+        title: 'Inteligência Artificial',
+        desc: 'Adversário com tomada de decisão baseada em vantagens de tipo e HP restante.'
+      },
+      {
+        icon: 'fa-solid fa-wand-magic-sparkles',
+        title: 'Efeitos Visuais & Áudio Dinâmico',
+        desc: 'Animações de ataque, screen shake, partículas e som característico de cada Pokémon.'
+      }
+    ]
+  }
+};
+
+function renderFutureModule(moduleKey) {
+  const data = futureModulesData[moduleKey];
+  if (!data) return;
+
+  const featuresHtml = data.features.map(f => `
+    <div class="future-feature-item">
+      <h4><i class="${f.icon}"></i> ${f.title}</h4>
+      <p>${f.desc}</p>
+    </div>
+  `).join('');
+
+  futureModuleView.innerHTML = `
+    <div class="future-card">
+      <div class="future-icon-wrapper">
+        <i class="${data.icon}"></i>
+      </div>
+      <span class="future-badge">
+        <i class="fa-solid fa-code"></i> ${data.badge}
+      </span>
+      <h2 class="future-title">${data.title}</h2>
+      <p class="future-description">${data.description}</p>
+      
+      <div class="future-features-grid">
+        ${featuresHtml}
+      </div>
+
+      <div class="future-actions">
+        <button class="return-pokedex-btn" onclick="switchAppTab('pokedex')">
+          <i class="fa-solid fa-arrow-left"></i> Voltar para a Pokédex
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+window.switchAppTab = function(tabName) {
+  navTabs.forEach(tab => {
+    const isActive = tab.dataset.tab === tabName;
+    tab.classList.toggle('active', isActive);
+  });
+
+  if (tabName === 'pokedex') {
+    if (pokedexView) pokedexView.style.display = 'block';
+    if (futureModuleView) futureModuleView.style.display = 'none';
+  } else {
+    if (pokedexView) pokedexView.style.display = 'none';
+    if (futureModuleView) {
+      futureModuleView.style.display = 'block';
+      renderFutureModule(tabName);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+navTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const tabName = tab.dataset.tab;
+    if (tabName) {
+      switchAppTab(tabName);
+    }
+  });
+});
+
