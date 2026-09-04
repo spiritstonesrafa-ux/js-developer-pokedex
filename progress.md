@@ -80,9 +80,9 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
 
 - **Branch**: `main`
 - **Baseline Git**:
-  - HEAD pós-PBA-001: `fadd449b20d5c76408b5a7dbd978fd1b1df184f2`
-  - HEAD atual: Atualizado na entrega da PBA-002
-- **Working Tree**: Limpo após commit
+  - HEAD pós-PBA-001: `9a69d43`
+  - HEAD pós-PBA-002: `804076b`
+- **Working Tree**: Limpo e sincronizado com `origin/main` (push realizado)
 
 ---
 
