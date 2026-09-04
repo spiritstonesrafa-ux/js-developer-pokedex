@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PBA-011: Battle Audio Harness</title>
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.85);
+      --panel-border: rgba(148, 163, 184, 0.2);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e293b, var(--bg-dark));
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header-container {
+      text-align: center;
+      margin-bottom: 1rem;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 0 0 0.5rem 0;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Botão Primário de Desbloqueio */
+    .btn-unlock {
+      width: 100%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      border: none;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-unlock:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+    }
+
+    .btn-unlock.unlocked {
+      background: #334155;
+      color: var(--text-muted);
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Sliders de Volume */
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .slider-row label {
+      width: 90px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      margin: 0 0.75rem;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .slider-val {
+      width: 45px;
+      text-align: right;
+      font-family: monospace;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .mute-btn {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.6rem;
+      background: #475569;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .mute-btn.muted {
+      background: var(--danger);
+    }
+
+    /* Grid de Tipos (18 botões) */
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 0.4rem;
+    }
+
+    .btn-type {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s, filter 0.15s;
+      background: #334155;
+    }
+
+    .btn-type:hover {
+      transform: scale(1.05);
+      filter: brightness(1.2);
+    }
+
+    .btn-type.fire { background: #ef4444; }
+    .btn-type.water { background: #3b82f6; }
+    .btn-type.electric { background: #eab308; color: #000; }
+    .btn-type.grass { background: #22c55e; }
+    .btn-type.ice { background: #06b6d4; color: #000; }
+    .btn-type.fighting { background: #b91c1c; }
+    .btn-type.poison { background: #a855f7; }
+    .btn-type.ground { background: #ca8a04; }
+    .btn-type.flying { background: #38bdf8; }
+    .btn-type.psychic { background: #ec4899; }
+    .btn-type.bug { background: #84cc16; color: #000; }
+    .btn-type.rock { background: #78716c; }
+    .btn-type.ghost { background: #6b21a8; }
+    .btn-type.dragon { background: #6366f1; }
+    .btn-type.dark { background: #1f2937; }
+    .btn-type.steel { background: #64748b; }
+    .btn-type.fairy { background: #f472b6; }
+    .btn-type.normal { background: #94a3b8; color: #000; }
+
+    /* Ações e Desfechos */
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn-action {
+      padding: 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      background: #475569;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-action:hover {
+      background: #64748b;
+      transform: translateY(-1px);
+    }
+
+    .btn-action.music-start { background: #8b5cf6; }
+    .btn-action.music-stop { background: #64748b; }
+    .btn-action.victory { background: #10b981; }
+    .btn-action.defeat { background: #f43f5e; }
+    .btn-action.cry { background: #0ea5e9; }
+
+    /* Canvas de Telemetria */
+    #telemetryCanvas {
+      width: 100%;
+      height: 90px;
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+
+    .telemetry-readout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    .telemetry-item {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .telemetry-item.alert {
+      border-left-color: var(--success);
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-locked { background: #dc2626; color: white; }
+    .badge-ready { background: #16a34a; color: white; }
+
+    #logBox {
+      background: #020617;
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      height: 110px;
+      overflow-y: auto;
+      color: #cbd5e1;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-container">
+    <h1>PBA-011: Battle Audio Harness</h1>
+    <p class="subtitle">Laboratório de Teste e Telemetria da Web Audio API (18 Tipos, Mixer, Procedural SFX & Música)</p>
+  </div>
+
+  <div class="main-grid">
+    <!-- Painel 1: Desbloqueio e Mixer -->
+    <div class="card">
+      <div class="card-title">
+        <span>Mixer & Autoplay Policy</span>
+        <span id="stateBadge" class="status-badge badge-locked">LOCKED</span>
+      </div>
+
+      <button id="unlockBtn" class="btn-unlock" onclick="handleUnlock()">
+        🔊 ATIVAR ÁUDIO (ENABLE AUDIO)
+      </button>
+
+      <div class="slider-group">
+        <div class="slider-row">
+          <label for="masterVol">Master</label>
+          <input type="range" id="masterVol" min="0" max="1" step="0.05" value="0.8" oninput="updateVolume('MASTER', this.value)">
+          <span id="masterVal" class="slider-val">80%</span>
+        </div>
+        <div class="slider-row">
+          <label for="musicVol">Música</label>
+          <input type="range" id="musicVol" min="0" max="1" step="0.05" value="0.5" oninput="updateVolume('MUSIC', this.value)">
+          <span id="musicVal" class="slider-val">50%</span>
+        </div>
+        <div class="slider-row">
+          <label for="sfxVol">SFX</label>
+          <input type="range" id="sfxVol" min="0" max="1" step="0.05" value="0.8" oninput="updateVolume('SFX', this.value)">
+          <span id="sfxVal" class="slider-val">80%</span>
+        </div>
+        <div class="slider-row">
+          <label for="cryVol">Cry</label>
+          <input type="range" id="cryVol" min="0" max="1" step="0.05" value="0.7" oninput="updateVolume('CRY', this.value)">
+          <span id="cryVal" class="slider-val">70%</span>
+        </div>
+      </div>
+
+      <button id="muteBtn" class="mute-btn" onclick="toggleMute()">
+        🔇 Mute Master (Silenciar)
+      </button>
+    </div>
+
+    <!-- Painel 2: Telemetria em Tempo Real (AnalyserNode) -->
+    <div class="card">
+      <div class="card-title">
+        <span>Telemetria de Sinal (AnalyserNode)</span>
+        <span style="font-size:0.75rem; color: var(--accent);">512 FFT</span>
+      </div>
+
+      <canvas id="telemetryCanvas" width="400" height="90"></canvas>
+
+      <div class="telemetry-readout">
+        <div class="telemetry-item" id="telPeak">Peak Signal: 0.000</div>
+        <div class="telemetry-item" id="telRms">RMS Signal: 0.000</div>
+        <div class="telemetry-item" id="telVoices">Vozes Ativas: 0 / 8</div>
+        <div class="telemetry-item" id="telMusic">Música: Inativa</div>
+      </div>
+
+      <div id="logBox">Aguardando desbloqueio de áudio...</div>
+    </div>
+
+    <!-- Painel 3: Disparadores de Ataque Elemental (18 Tipos) -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="card-title">
+        <span>Procedural Move Attack SFX (18 Tipos)</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">Clique em um tipo para sintetizar ataque</span>
+      </div>
+
+      <div class="type-grid" id="typeGrid">
+        <!-- Injetado dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- Painel 4: Desfechos e Música de Batalha -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="card-title">
+        <span>Desfechos, Música de Batalha e Cues</span>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-action" onclick="triggerImpact(1)">💥 Impacto Normal (1x)</button>
+        <button class="btn-action" onclick="triggerImpact(2)">⚡ Super Effective (2x)</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="triggerMiss()">💨 Miss (Dissipação)</button>
+        <button class="btn-action" onclick="triggerImmunity()">🛡️ Imunidade (0x)</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-action music-start" onclick="triggerMusic(true)">🎵 Iniciar Música de Batalha</button>
+        <button class="btn-action music-stop" onclick="triggerMusic(false)">⏹️ Parar Música</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-action victory" onclick="triggerVictory()">🏆 Fanfarra de Vitória</button>
+        <button class="btn-action defeat" onclick="triggerDefeat()">💀 Acorde de Derrota</button>
+      </div>
+      <div class="action-row" style="grid-column: 1 / -1;">
+        <button class="btn-action cry" style="width: 100%;" onclick="triggerCry()">
+          ⚡ Tocar Pokémon Cry (Pikachu #25)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts do Subsistema de Áudio -->
+  <script src="../../assets/js/audio/battle-audio-constants.js"></script>
+  <script src="../../assets/js/audio/audio-context-manager.js"></script>
+  <script src="../../assets/js/audio/audio-mixer.js"></script>
+  <script src="../../assets/js/audio/procedural-sfx.js"></script>
+  <script src="../../assets/js/audio/battle-audio-resolver.js"></script>
+  <script src="../../assets/js/audio/battle-audio-controller.js"></script>
+
+  <script>
+    let audioController = null;
+    let canvas = null;
+    let canvasCtx = null;
+    const PIKACHU_CRY_URL = 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg';
+
+    function log(msg) {
+      const box = document.getElementById('logBox');
+      const time = new Date().toLocaleTimeString();
+      box.innerHTML = `[${time}] ${msg}<br>` + box.innerHTML;
+    }
+
+    function initHarness() {
+      audioController = new window.PBABattleAudio.BattleAudioController();
+      canvas = document.getElementById('telemetryCanvas');
+      canvasCtx = canvas.getContext('2d');
+
+      // Cria os 18 botões de tipos
+      const types = Object.values(window.PBABattleAudio.TYPE_AUDIO_FAMILIES);
+      const grid = document.getElementById('typeGrid');
+      grid.innerHTML = types.map(t => `
+        <button class="btn-type ${t}" onclick="triggerAttack('${t}')">${t}</button>
+      `).join('');
+
+      // Inicia loop de desenho de telemetria
+      requestAnimationFrame(drawTelemetry);
+      log('Harness inicializado em estado LOCKED.');
+    }
+
+    async function handleUnlock() {
+      const btn = document.getElementById('unlockBtn');
+      const badge = document.getElementById('stateBadge');
+      const state = await audioController.unlock();
+
+      if (state === 'READY') {
+        badge.className = 'status-badge badge-ready';
+        badge.textContent = 'READY / RUNNING';
+        btn.className = 'btn-unlock unlocked';
+        btn.textContent = '✅ ÁUDIO DESBLOQUEADO (READY)';
+        log('Web Audio API desbloqueada com sucesso (Running).');
+      } else {
+        log('Falha ao desbloquear áudio.');
+      }
+    }
+
+    function updateVolume(channel, val) {
+      const num = parseFloat(val);
+      audioController.mixer.setVolume(channel, num);
+      document.getElementById(`${channel.toLowerCase()}Val`).textContent = Math.round(num * 100) + '%';
+      log(`Volume ${channel} alterado para ${Math.round(num * 100)}%`);
+    }
+
+    function toggleMute() {
+      const isMuted = !audioController.mixer.isMuted();
+      audioController.mixer.setMute(isMuted);
+      const btn = document.getElementById('muteBtn');
+      if (isMuted) {
+        btn.className = 'mute-btn muted';
+        btn.textContent = '🔊 Unmute Master (Desmutar)';
+        log('Master áudio silenciado (MUTED).');
+      } else {
+        btn.className = 'mute-btn';
+        btn.textContent = '🔇 Mute Master (Silenciar)';
+        log('Master áudio restaurado.');
+      }
+    }
+
+    async function triggerAttack(type) {
+      log(`Disparando ataque procedural: ${type.toUpperCase()}`);
+      await audioController.playMoveAttack({ moveType: type, power: 80 });
+    }
+
+    async function triggerImpact(multiplier) {
+      log(`Disparando impacto: Multiplicador ${multiplier}x`);
+      await audioController.playMoveImpact({ multiplier });
+    }
+
+    async function triggerMiss() {
+      log('Disparando Miss SFX (sem impacto de dano).');
+      await audioController.playMiss();
+    }
+
+    async function triggerImmunity() {
+      log('Disparando Imunidade SFX (sem dano).');
+      await audioController.playImmunity();
+    }
+
+    async function triggerMusic(start) {
+      if (start) {
+        log('Iniciando música de batalha procedural...');
+        await audioController.startBattleMusic();
+      } else {
+        log('Parando música de batalha...');
+        await audioController.stopBattleMusic();
+      }
+    }
+
+    async function triggerVictory() {
+      log('Tocando fanfarra de vitória...');
+      await audioController.playVictory();
+    }
+
+    async function triggerDefeat() {
+      log('Tocando acorde de derrota...');
+      await audioController.playDefeat();
+    }
+
+    async function triggerCry() {
+      log('Disparando reprodução de cry de Pikachu (#25)...');
+      await audioController.playPokemonCry(PIKACHU_CRY_URL);
+    }
+
+    function drawTelemetry() {
+      if (audioController && audioController.mixer && canvasCtx) {
+        const telemetry = audioController.getTelemetry();
+
+        document.getElementById('telPeak').textContent = `Peak Signal: ${telemetry.peakSignal}`;
+        document.getElementById('telRms').textContent = `RMS Signal: ${telemetry.rmsSignal}`;
+        document.getElementById('telVoices').textContent = `Vozes Ativas: ${telemetry.activeVoices} / 8`;
+        document.getElementById('telMusic').textContent = `Música: ${telemetry.isMusicPlaying ? 'Ativa 🎵' : 'Inativa'}`;
+
+        // Renderiza osciloscópio no canvas
+        canvasCtx.fillStyle = '#020617';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const analyser = audioController.mixer._analyserNode;
+        if (analyser && typeof analyser.getByteFrequencyData === 'function') {
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          analyser.getByteFrequencyData(dataArray);
+
+          const barWidth = (canvas.width / (bufferLength / 4));
+          let x = 0;
+
+          for (let i = 0; i < bufferLength / 4; i++) {
+            const barHeight = (dataArray[i] / 255) * canvas.height;
+            canvasCtx.fillStyle = `hsl(${190 + (i * 2)}, 100%, 55%)`;
+            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
+            x += barWidth;
+          }
+        }
+      }
+      requestAnimationFrame(drawTelemetry);
+    }
+
+    window.addEventListener('DOMContentLoaded', initHarness);
+  </script>
+</body>
+</html>

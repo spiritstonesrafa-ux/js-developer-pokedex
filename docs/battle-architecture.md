@@ -709,32 +709,80 @@ $$\text{POKEMON ANIMATION} \neq \text{MOVE VISUAL EFFECT}$$
 
 ---
 
-## 13. Decisões Explicitamente Adiadas
+## 13. Subsistema de Áudio de Batalha (PBA-011)
 
-- **Sistema de Áudio**: Efeitos sonoros de impacto, cries e músicas de batalha (Fase PBA-011).
-- **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
-- **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
+A Fase PBA-011 implementa uma infraestrutura sonora modular, profissional e segura para navegador baseada exclusivamente na **Web Audio API** nativa e HTML5 Audio para cries públicos da PokéAPI, mantendo conformidade estrita com direitos autorais e zero dependência de arquivos comerciais da franquia Pokémon.
+
+### 13.1 Arquitetura e Grafo de Áudio
+```text
+           [ Fontes Sonoras Procedurais / HTML5 Audio Elements ]
+                                     │
+           ┌─────────────────────────┼─────────────────────────┐
+           ▼                         ▼                         ▼
+      [ Music Gain ]            [ SFX Gain ]              [ Cry Gain ]    [ UI Gain ]
+      (Volume: 0.5)            (Volume: 0.8)             (Volume: 0.7)   (Volume: 0.6)
+           │                         │                         │               │
+           └─────────────────────────┼─────────────────────────┴───────────────┘
+                                     ▼
+                               [ Master Gain ] (Volume: 0.8 / Suporte a Mute)
+                                     │
+                                     ▼
+                        [ DynamicsCompressorNode ] (Limiter / Headroom de Segurança)
+                                     │
+                                     ▼
+                           [ AnalyserNode ] (Telemetria FFT e Osciloscópio)
+                                     │
+                                     ▼
+                           [ Audio Destination ] (Alto-falantes / Fones)
+```
+
+### 13.2 Componentes e Responsabilidades
+- **AudioContextManager**: Singleton (`AUDIO_CONTEXT_COUNT = 1`, `AUDIO_CONTEXT_REUSE = YES`) que isola o estado do navegador e protege a aplicação contra bloqueios de autoplay iniciando em estado seguro `LOCKED` até a chamada explícita de `unlock()`;
+- **AudioMixer**: Orquestra os ganhos de cada canal independente (`MASTER`, `MUSIC`, `SFX`, `CRY`, `UI`), valida valores no intervalo normalizado $[0.0, 1.0]$, gerencia `setMute(boolean)` atuando unicamente no Master Gain e expõe telemetria em tempo real através do `AnalyserNode`;
+- **ProceduralSfxGenerator**: Sintetizador procedural de efeitos sonoros com envelopes ADSR, filtros de passa-faixa/passa-baixa, osciladores e ruído sintetizado localmente para todas as 18 Type Audio Families;
+- **BattleAudioResolver**: Mapeador funcional puro que extrai metadados do golpe (`moveType`, `damageClass`, `power`) e produz descritores sonoros com fallback genérico (`AUDIO_DAMAGE_CALCULATION = 0`, `AUDIO_TYPE_CALCULATION = 0`);
+- **BattleAudioController**: Orquestrador central que controla música de batalha (`startBattleMusic`, `stopBattleMusic`), efeitos sonoros de ataques, impactos, miss, imunidade, reprodução tolerante a falhas de cries de Pokémon e fanfarras de vitória/derrota;
+- **BattleAudioAdapter & Composite Adapter**: Integração à Presentation Engine, disparando áudios coordenados em paralelo durante `MOVE_ANNOUNCEMENT`, `HP_TRANSITION`, `MOVE_MISS_FEEDBACK`, `EFFECTIVENESS_FEEDBACK`, `SWITCH_IN_SEQUENCE` e `BATTLE_RESULT`.
+
+### 13.3 Desfechos de Combate e Tratamento Sonoro
+- **Impacto Normal ($1\times$)**: Transiente de impacto seco (kick transient) somado a ruído filtrado de impacto;
+- **Super Efetivo ($\ge 2\times$)**: Transiente ampliado com reforço harmônico superior e maior corpo acústico sem causar distorção no limiter;
+- **Miss (Erro)**: Som de corte de ar / passagem rápida (whoosh). Critério: `MISS_DAMAGE_SOUND = NO`;
+- **Imunidade ($0\times$)**: Ressonância espectral suave / chime dissipado sem transiente de dano corporal. Critério: `IMMUNITY_DAMAGE_SOUND = NO`.
+
+### 13.4 Polifonia, Limpeza e Performance
+- **Teto de Polifonia**: Limitado estritamente a `MAX_SIMULTANEOUS_SFX = 8`, com descarte controlado da voz mais antiga se a capacidade for atingida;
+- **Desconexão Imediata**: Nós de oscilador, ganho e filtro temporários são desconectados imediatamente após o término do envelope (`ACTIVE_TEMPORARY_AUDIO_NODES_AFTER_COMPLETION = 0`);
+- **Instância Única de Música**: A música de batalha utiliza um loop procedural com controle de instância única (`MULTIPLE_MUSIC_INSTANCES = NO`), garantindo ausência de repetições acumuladas ou vazamento de timers (`MUSIC_LOOP_LEAK = NONE`).
 
 ---
 
-## 14. Riscos Técnicos e Estratégias de Mitigação
+## 14. Decisões Explicitamente Adiadas
+
+- **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
+- **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
+- **Trainer Profile & Campanha**: Estatísticas, histórico e progressão de ginásios (Fases PBA-014 e PBA-015).
+
+---
+
+## 15. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
    - *Mitigação*: Armazenar golpes comuns em um dicionário estático local e carregar dados sob demanda com cache em memória (*PokemonRepository* / `moveDetailCache`).
 2. **Políticas de Autoplay de Áudio nos Navegadores**:
    - *Risco*: Navegadores modernos bloqueiam reprodução automática de áudio sem interação prévia do usuário.
-   - *Mitigação*: Inicializar o contexto de áudio somente após o primeiro clique do usuário (ex: botão "Batalhar" ou clique nos controles).
+   - *Mitigação*: Inicializar o contexto de áudio em estado `LOCKED` e fornecer transição segura para `READY`/`running` exclusivamente em resposta ao clique do usuário (`unlock()`).
 3. **Direitos Autorais e Licenciamento de Assets**:
    - *Risco*: Utilizar músicas ou efeitos sonoros proprietários da Nintendo/Game Freak.
-   - *Mitigação*: Usar efeitos de domínio público ou licença aberta (CC0 / OpenGameArt / som gerado via Web Audio API) para a arena de batalha, mantendo apenas os *cries* públicos disponibilizados pela própria PokéAPI.
+   - *Mitigação*: Usar síntese procedural nativa via Web Audio API para todos os golpes, impactos, música e fanfarras, consumindo apenas os *cries* públicos disponibilizados pela própria PokéAPI sem commitá-los no repositório.
 4. **Performance com Múltiplas Animações e Sprites**:
    - *Risco*: Queda de framerate em dispositivos móveis menos potentes.
    - *Mitigação*: Uso de transformações CSS aceleradas por hardware (`transform: translate3d`, `opacity`), desativação de partículas quando detectado `prefers-reduced-motion`.
 
 ---
 
-## 15. Roadmap Técnico Oficial
+## 16. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -747,7 +795,7 @@ $$\text{POKEMON ANIMATION} \neq \text{MOVE VISUAL EFFECT}$$
 [x] PBA-008 Battle Presentation Engine (Orquestrador de Apresentação) ── [CONCLUÍDA]
 [x] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais) ─ [CONCLUÍDA]
 [x] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.) ── [CONCLUÍDA]
-[ ] PBA-011 Audio System (Músicas de Fundo, Golpes e Controles de Som)
+[x] PBA-011 Audio System (Músicas, Efeitos Procedurais e Cries) ─ [CONCLUÍDA]
 [ ] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos)
 [ ] PBA-013 Final Battle UI (Interface Polida e Responsiva de Combate)
 [ ] PBA-014 Trainer Profile (Estatísticas, Histórico e Insígnias)

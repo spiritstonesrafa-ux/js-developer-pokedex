@@ -20,6 +20,7 @@
   let pokemonControllerModule;
   let vfxControllerModule;
   let vfxResolverModule;
+  let audioControllerModule;
 
   if (typeof module !== 'undefined' && module.exports) {
     presentationConstants = require('./battle-presentation-constants.js');
@@ -27,18 +28,21 @@
     pokemonControllerModule = require('./animation/pokemon-animation-controller.js');
     vfxControllerModule = require('../vfx/move-vfx-controller.js');
     vfxResolverModule = require('../vfx/move-vfx-resolver.js');
+    audioControllerModule = require('../audio/battle-audio-controller.js');
   } else if (typeof window !== 'undefined') {
     presentationConstants = window.PBABattlePresentation || {};
     adapterBase = window.PBABattlePresentation || {};
     pokemonControllerModule = (window.PBABattlePresentation && window.PBABattlePresentation.animation) || window.PBABattlePresentation || {};
     vfxControllerModule = window.PBABattleVfx || {};
     vfxResolverModule = (window.PBABattleVfx && window.PBABattleVfx.MoveVfxResolver) || window.PBABattleVfx || {};
+    audioControllerModule = window.PBABattleAudio || {};
   } else {
     presentationConstants = { PRESENTATION_COMMANDS: {} };
     adapterBase = { BattlePresentationAdapter: class {} };
     pokemonControllerModule = {};
     vfxControllerModule = {};
     vfxResolverModule = {};
+    audioControllerModule = {};
   }
 
   const { PRESENTATION_COMMANDS } = presentationConstants;
@@ -49,14 +53,18 @@
      * @param {Object} [options]
      * @param {Object} [options.pokemonController] - Instância de PokemonAnimationController.
      * @param {Object} [options.vfxController] - Instância de MoveVfxController.
+     * @param {Object} [options.audioController] - Instância de BattleAudioController.
      */
     constructor(options = {}) {
       super();
-      this.pokemonController = options.pokemonController || (
+      this.pokemonController = options.pokemonController !== undefined ? options.pokemonController : (
         pokemonControllerModule.createAnimationController ? pokemonControllerModule.createAnimationController(options) : null
       );
-      this.vfxController = options.vfxController || (
+      this.vfxController = options.vfxController !== undefined ? options.vfxController : (
         vfxControllerModule.createVfxController ? vfxControllerModule.createVfxController(options) : null
+      );
+      this.audioController = options.audioController !== undefined ? options.audioController : (
+        audioControllerModule.createBattleAudioController ? audioControllerModule.createBattleAudioController(options) : null
       );
       this.executedCommands = [];
     }
@@ -80,14 +88,22 @@
 
       switch (command.type) {
         case PRESENTATION_COMMANDS.BATTLE_INTRO: {
+          const introTasks = [];
           if (this.pokemonController) {
-            await Promise.all([
-              this.pokemonController.playEntrance('player'),
-              this.pokemonController.playEntrance('enemy')
-            ]);
-            this.pokemonController.startIdle('player');
-            this.pokemonController.startIdle('enemy');
+            introTasks.push(
+              Promise.all([
+                this.pokemonController.playEntrance('player'),
+                this.pokemonController.playEntrance('enemy')
+              ]).then(() => {
+                this.pokemonController.startIdle('player');
+                this.pokemonController.startIdle('enemy');
+              })
+            );
           }
+          if (this.audioController) {
+            introTasks.push(this.audioController.startBattleMusic());
+          }
+          await Promise.all(introTasks);
           break;
         }
 
@@ -115,7 +131,6 @@
                 power: command.power
               });
             } catch (e) {
-              // Fallback defensivo para golpe sem tipo conhecido
               descriptor = null;
             }
 
@@ -130,17 +145,53 @@
             }
           }
 
+          // 3. Efeito sonoro elemental do golpe
+          if (this.audioController) {
+            tasks.push(this.audioController.playMoveAttack({
+              moveId: command.moveId,
+              moveName: command.moveName,
+              moveType: command.moveType,
+              damageClass: command.damageClass,
+              power: command.power,
+              intensity: command.intensity
+            }));
+          }
+
           await Promise.all(tasks);
           break;
         }
 
         case PRESENTATION_COMMANDS.HP_TRANSITION: {
-          // Reação visual a dano corporal apenas quando houver perda real de HP (> 0)
+          const hpTasks = [];
+          // Reação corporal e impacto sonoro quando houver perda real de HP (> 0)
           if (command.damage !== undefined && Number(command.damage) > 0) {
             const side = command.side || command.target;
             if (side && this.pokemonController) {
-              await this.pokemonController.playDamageReaction(side);
+              hpTasks.push(this.pokemonController.playDamageReaction(side));
             }
+            if (this.audioController) {
+              hpTasks.push(this.audioController.playMoveImpact({
+                multiplier: command.multiplier !== undefined ? Number(command.multiplier) : 1,
+                typeFamily: command.attackType || 'normal'
+              }));
+            }
+          }
+          if (hpTasks.length > 0) {
+            await Promise.all(hpTasks);
+          }
+          break;
+        }
+
+        case PRESENTATION_COMMANDS.MOVE_MISS_FEEDBACK: {
+          if (this.audioController) {
+            await this.audioController.playMiss();
+          }
+          break;
+        }
+
+        case PRESENTATION_COMMANDS.EFFECTIVENESS_FEEDBACK: {
+          if (this.audioController && Number(command.multiplier) === 0) {
+            await this.audioController.playImmunity();
           }
           break;
         }
@@ -163,7 +214,8 @@
 
         case PRESENTATION_COMMANDS.SWITCH_IN_SEQUENCE: {
           const side = command.side;
-          if (side && this.pokemonController) {
+          if (side) {
+            const switchTasks = [];
             let pokemonData = null;
             if (context && context[side] && context[side].team) {
               const activeMon = context[side].team.find(p => p.id === command.newPokemonId);
@@ -171,16 +223,36 @@
                 pokemonData = activeMon;
               }
             }
-            await this.pokemonController.playSwitchIn(side, pokemonData);
+            if (this.pokemonController) {
+              switchTasks.push(this.pokemonController.playSwitchIn(side, pokemonData));
+            }
+            if (this.audioController) {
+              const cryUrl = (pokemonData && pokemonData.cry) || command.cry;
+              if (cryUrl) {
+                switchTasks.push(this.audioController.playPokemonCry(cryUrl));
+              }
+            }
+            await Promise.all(switchTasks);
           }
           break;
         }
 
         case PRESENTATION_COMMANDS.BATTLE_RESULT: {
+          const resultTasks = [];
           if (command.winner && (command.winner === 'player' || command.winner === 'enemy')) {
             if (this.pokemonController) {
-              await this.pokemonController.playVictory(command.winner);
+              resultTasks.push(this.pokemonController.playVictory(command.winner));
             }
+            if (this.audioController) {
+              if (command.winner === 'player') {
+                resultTasks.push(this.audioController.playVictory());
+              } else if (command.winner === 'enemy') {
+                resultTasks.push(this.audioController.playDefeat());
+              }
+            }
+          }
+          if (resultTasks.length > 0) {
+            await Promise.all(resultTasks);
           }
           break;
         }
@@ -191,7 +263,7 @@
     }
 
     /**
-     * Cancela animações do Pokémon e efeitos visuais em voo.
+     * Cancela animações do Pokémon, efeitos visuais e áudios em voo.
      */
     cancel() {
       if (this.pokemonController) {
@@ -200,10 +272,13 @@
       if (this.vfxController) {
         this.vfxController.cancel();
       }
+      if (this.audioController) {
+        this.audioController.cancel();
+      }
     }
 
     /**
-     * Reseta ambos os subsistemas para estado limpo.
+     * Reseta todos os subsistemas para estado limpo.
      */
     reset() {
       this.executedCommands = [];
@@ -212,6 +287,9 @@
       }
       if (this.vfxController) {
         this.vfxController.reset();
+      }
+      if (this.audioController) {
+        this.audioController.reset();
       }
     }
   }

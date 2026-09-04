@@ -198,6 +198,26 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
     - `VFX_AUDIO_CALLS = 0`
   - 100% de aprovação nos testes automatizados: 289 testes (40 novos testes VFX01 a VFX40 + 249 testes de fases anteriores) com 0 falhas e 0 regressões.
 
+- **PBA-011 Battle Audio System**:
+  - Implementação de infraestrutura de áudio profissional, modular e segura para navegador baseada exclusivamente na Web Audio API nativa e cries públicos da PokéAPI em `assets/js/audio/`:
+    - `battle-audio-constants.js`: 5 canais de áudio independentes (`MASTER`, `MUSIC`, `SFX`, `CRY`, `UI`), volumes padrão normalizados, catálogo de 18 Type Audio Families, 8 arquétipos sonoros, limites de polifonia (`MAX_SIMULTANEOUS_SFX = 8`) e estados de ciclo de vida (`LOCKED`, `READY`, `SUSPENDED`, `ERROR`);
+    - `audio-context-manager.js`: Singleton gerenciador de AudioContext (`AUDIO_CONTEXT_COUNT = 1`, `AUDIO_CONTEXT_REUSE = YES`) com tratamento seguro de política de autoplay iniciando em `LOCKED` e desbloqueio por gesto humano (`unlock()`), além de mock `FakeAudioContext` para testes headless no Node.js;
+    - `audio-mixer.js`: Grafo de ganho hierárquico com compressor dinâmico (`DynamicsCompressorNode`) contra distorção/clipping, controle de mute no Master preservando volumes individuais (`UNMUTE_VOLUME_RESTORE = PASS`), validação estrita de valores $[0.0, 1.0]$ e telemetria de sinal em tempo real (`AnalyserNode`);
+    - `procedural-sfx.js`: Síntese procedural de efeitos para os 18 tipos elementais com envelopes ADSR, filtros e ruído sintético, impactos diferenciados para dano normal e super efetivo, som de Miss sem impacto de dano (`MISS_DAMAGE_SOUND = NO`), som de Imunidade sem dano (`IMMUNITY_DAMAGE_SOUND = NO`) e limpeza total imediata de nós temporários (`ACTIVE_TEMPORARY_AUDIO_NODES_AFTER_COMPLETION = 0`);
+    - `battle-audio-resolver.js`: Mapeamento funcional puro de golpes para descritores sonoros sem consulta a regras de combate (`AUDIO_DAMAGE_CALCULATION = 0`, `AUDIO_TYPE_CALCULATION = 0`, `AUDIO_GAME_RULES = 0`);
+    - `battle-audio-controller.js`: Controlador mestre de ciclo de vida gerenciando reprodução de SFX, música de batalha em loop procedural original (`MULTIPLE_MUSIC_INSTANCES = NO`, `MUSIC_LOOP_LEAK = NONE`), fanfarras de vitória/derrota, reprodução tolerante de cries com deduplicação ativa (`CRY_DEDUPLICATION = PASS`, `CRY_FAILURE_BLOCKS_BATTLE = NO`), cancelamento e reset;
+    - `battle-audio-adapter.js` e `composite-battle-dom-adapter.js`: Integração com a Presentation Engine executando áudios coordenados em paralelo para animações, VFX e comandos de apresentação;
+    - `tests/visual/battle-audio-harness.html`: Laboratório visual e interativo com botão explícito de unlock, controles de volume/mute, disparadores para os 18 tipos, outcomes, música, cries e osciloscópio de sinal em tempo real via AnalyserNode;
+  - 100% de separação e conformidade arquitetural:
+    - `MOVE VFX ≠ AUDIO SYSTEM`
+    - `AUDIO SYSTEM ≠ GAME RULES`
+    - `AUDIO_DAMAGE_CALCULATION = 0`
+    - `AUDIO_TYPE_CALCULATION = 0`
+    - `AUDIO_AI_DECISIONS = 0`
+    - `AUDIO_GAME_RULES = 0`
+    - `AUDIO_CORE_LOCALSTORAGE_DEPENDENCY = 0`
+  - 100% de aprovação nos testes automatizados: 329 testes (40 novos testes AU01 a AU40 + 289 testes de fases anteriores) com 0 falhas e 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -314,6 +334,29 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    CAMERA_EFFECTS = NOT_YET
    FINAL_BATTLE_UI = NOT_YET
    ```
+11. **Configurações Oficiais do Battle Audio System (PBA-011)**:
+   ```text
+   BATTLE_AUDIO_SYSTEM = YES
+   AUDIO_CONTEXT = YES
+   AUTOPLAY_UNLOCK = YES
+   MASTER_VOLUME = YES
+   MUSIC_VOLUME = YES
+   SFX_VOLUME = YES
+   CRY_VOLUME = YES
+   MUTE = YES
+   TYPE_AUDIO_FAMILIES = 18
+   ATTACK_SFX = YES
+   IMPACT_SFX = YES
+   MISS_SFX = YES
+   IMMUNITY_SFX = YES
+   POKEMON_CRY_INTEGRATION = YES
+   BATTLE_MUSIC_FOUNDATION = YES
+   VICTORY_AUDIO = YES
+   DEFEAT_AUDIO = YES
+   SCREEN_SHAKE = NOT_YET
+   CAMERA_EFFECTS = NOT_YET
+   FINAL_BATTLE_UI = NOT_YET
+   ```
 
 ---
 
@@ -331,15 +374,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-008 = PASS`
   - `PBA-009 = PASS`
   - `PBA-010 = PASS`
-- **Working Tree**: Atualizado com os subsistemas de Move VFX, Composite Adapter, CSS e suíte VFX01–VFX40
+  - `PBA-011 = PASS`
+- **Working Tree**: Atualizado com o subsistema de áudio modular, mixer, procedural SFX, Composite Adapter atualizado e suíte AU01–AU40
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-011 — Audio System
+NEXT_PHASE = PBA-012 — Battle Camera & Impact
 ```
 
-*(Atenção: A Fase PBA-011 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-012 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 
