@@ -73,9 +73,14 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
  * @returns {Promise<Pokemon>} Promise com o Pokémon formatado.
  */
 pokeApi.getPokemonDetail = (pokemonOrUrl) => {
-  const url = typeof pokemonOrUrl === 'string' 
-    ? pokemonOrUrl 
-    : (pokemonOrUrl.url || `https://pokeapi.co/api/v2/pokemon/${pokemonOrUrl}`);
+  let url = '';
+  if (typeof pokemonOrUrl === 'string' && pokemonOrUrl.startsWith('http')) {
+    url = pokemonOrUrl;
+  } else if (typeof pokemonOrUrl === 'object' && pokemonOrUrl !== null && pokemonOrUrl.url) {
+    url = pokemonOrUrl.url;
+  } else {
+    url = `https://pokeapi.co/api/v2/pokemon/${pokemonOrUrl}`;
+  }
 
   return fetch(url)
     .then((response) => {

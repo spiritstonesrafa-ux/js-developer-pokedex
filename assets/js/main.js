@@ -31,6 +31,7 @@ let offset = 0;                 // Ponto de partida na paginação
 let maxLimit = 151;             // Limite máximo da geração selecionada
 let currentPokemons = [];       // Lista filtrada e exibida na tela
 let allLoadedPokemons = [];     // Memória cache dos pokémons já carregados
+window.allLoadedPokemons = allLoadedPokemons;
 let selectedType = 'all';       // Tipo selecionado no filtro
 let selectedGeneration = '1';   // Geração selecionada
 let currentSearchTerm = '';     // Termo de busca digitado pelo usuário
@@ -76,6 +77,7 @@ const pokeballSvg = `
  */
 function createPokemonCard(pokemon) {
   const isFav = favoritePokemonIds.includes(pokemon.number);
+  const isInTeam = window.teamManager ? window.teamManager.hasPokemon(pokemon.number) : false;
   const primaryColor = typeColors[pokemon.type] || '#777';
   const paddedId = `#${String(pokemon.number).padStart(3, '0')}`;
 
@@ -92,7 +94,10 @@ function createPokemonCard(pokemon) {
       ${pokeballSvg}
 
       <div class="card-header">
-        <span class="pokemon-id">${paddedId}</span>
+        <div class="card-badges">
+          <span class="pokemon-id">${paddedId}</span>
+          ${isInTeam ? `<span class="team-card-badge" title="No seu time"><i class="fa-solid fa-shield-halved"></i> No time</span>` : ''}
+        </div>
         <button class="fav-btn ${isFav ? 'active' : ''}" 
                 title="Favoritar" 
                 onclick="event.stopPropagation(); toggleFavorite(${pokemon.number});">
@@ -183,6 +188,7 @@ function loadPokemonItems(initial = false) {
       } else {
         allLoadedPokemons.push(...newPokemons);
       }
+      window.allLoadedPokemons = allLoadedPokemons;
 
       offset += currentLimit;
       applyFiltersAndSort();
@@ -218,6 +224,7 @@ async function loadPokemonsByType(type) {
   try {
     const pokemons = await pokeApi.getPokemonsByType(type, 60);
     allLoadedPokemons = pokemons;
+    window.allLoadedPokemons = allLoadedPokemons;
     applyFiltersAndSort();
   } catch (err) {
     console.error(err);
@@ -452,6 +459,11 @@ window.openPokemonDetails = async function(pokemonId) {
           </div>
         </div>
       </div>
+
+      <!-- Ação de Time (Team Builder - PBA-002) -->
+      <div class="modal-team-action" id="modalTeamActionContainer">
+        ${renderModalTeamButton(pokemon.number)}
+      </div>
     </div>
   `;
 
@@ -460,6 +472,76 @@ window.openPokemonDetails = async function(pokemonId) {
 
   loadEvolutionChain(pokemon.speciesUrl);
 };
+
+/**
+ * Renderiza o botão de ação do time no modal de detalhes.
+ */
+function renderModalTeamButton(pokemonId) {
+  const id = Number(pokemonId);
+  const isInTeam = window.teamManager ? window.teamManager.hasPokemon(id) : false;
+  const isTeamFull = window.teamManager ? window.teamManager.isFull() : false;
+
+  if (isInTeam) {
+    return `
+      <button class="modal-team-btn in-team" onclick="handleModalTeamToggle(${id})">
+        <i class="fa-solid fa-check"></i> No Time (Remover)
+      </button>
+    `;
+  }
+
+  if (isTeamFull) {
+    return `
+      <button class="modal-team-btn disabled" disabled title="Seu time já possui 3 Pokémon (Limite da Fase PBA-002 atingido)">
+        <i class="fa-solid fa-ban"></i> Time Completo (3/3)
+      </button>
+    `;
+  }
+
+  return `
+    <button class="modal-team-btn add" onclick="handleModalTeamToggle(${id})">
+      <i class="fa-solid fa-plus"></i> Adicionar ao Time
+    </button>
+  `;
+}
+
+/**
+ * Manipulador de clique no botão do time dentro do modal de detalhes.
+ */
+window.handleModalTeamToggle = function(pokemonId) {
+  if (!window.teamManager) return;
+
+  window.teamManager.togglePokemon(pokemonId);
+
+  // Atualiza o botão no modal
+  const container = document.getElementById('modalTeamActionContainer');
+  if (container) {
+    container.innerHTML = renderModalTeamButton(pokemonId);
+  }
+};
+
+/**
+ * Atualiza dinamicamente as badges de time nos cards da Pokédex sem recriar o DOM inteiro.
+ */
+function updatePokemonCardsTeamBadges() {
+  document.querySelectorAll('.pokemon-card').forEach(card => {
+    const pokeId = Number(card.dataset.id);
+    const badgesContainer = card.querySelector('.card-badges');
+    if (!badgesContainer) return;
+
+    const existingBadge = badgesContainer.querySelector('.team-card-badge');
+    const isInTeam = window.teamManager ? window.teamManager.hasPokemon(pokeId) : false;
+
+    if (isInTeam && !existingBadge) {
+      const badge = document.createElement('span');
+      badge.className = 'team-card-badge';
+      badge.title = 'No seu time';
+      badge.innerHTML = '<i class="fa-solid fa-shield-halved"></i> No time';
+      badgesContainer.appendChild(badge);
+    } else if (!isInTeam && existingBadge) {
+      existingBadge.remove();
+    }
+  });
+}
 
 /**
  * Toca o som característico (cry) do Pokémon usando a API de Áudio HTML5.
@@ -717,14 +799,26 @@ window.switchAppTab = function(tabName) {
     tab.classList.toggle('active', isActive);
   });
 
+  const teamView = document.getElementById('teamView');
+
   if (tabName === 'pokedex') {
     if (pokedexView) pokedexView.style.display = 'block';
+    if (teamView) teamView.style.display = 'none';
     if (futureModuleView) futureModuleView.style.display = 'none';
-  } else {
+  } else if (tabName === 'team') {
     if (pokedexView) pokedexView.style.display = 'none';
+    if (teamView) {
+      teamView.style.display = 'block';
+      if (window.teamUI) window.teamUI.render();
+    }
+    if (futureModuleView) futureModuleView.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (tabName === 'battle') {
+    if (pokedexView) pokedexView.style.display = 'none';
+    if (teamView) teamView.style.display = 'none';
     if (futureModuleView) {
       futureModuleView.style.display = 'block';
-      renderFutureModule(tabName);
+      renderFutureModule('battle');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -738,4 +832,16 @@ navTabs.forEach(tab => {
     }
   });
 });
+
+// Sincroniza os cards da Pokédex com alterações ocorridas no time
+if (window.teamManager) {
+  window.teamManager.onChange(() => {
+    updatePokemonCardsTeamBadges();
+  });
+}
+
+// Inicializa o Team UI e badges de navegação
+if (window.teamUI) {
+  window.teamUI.init();
+}
 

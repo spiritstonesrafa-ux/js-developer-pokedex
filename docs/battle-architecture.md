@@ -133,14 +133,21 @@ sequenceDiagram
 
 ---
 
-## 7. Decisões Técnicas da Fase Atual (PBA-001)
+## 7. Decisões Técnicas das Fases
 
+### Fase PBA-001 (Foundation)
 1. **Manutenção dos Scripts Globais Sem Quebra**: Os arquivos existentes (`pokemon-model.js`, `poke-api.js`, `main.js`) foram mantidos compatíveis com carregamento direto sem empacotadores, viabilizando execução direta no GitHub Pages e no protocolo local `file://`.
-2. **Navegação Não-Destrutiva**: Introdução das abas de navegação no cabeçalho (`Pokédex`, `Meu Time`, `Batalhar`). As seções de batalha e time exibem uma apresentação profissional em estado "Em Desenvolvimento", sem interfaces falsas que enganem o usuário.
-3. **Estrutura de Armazenamento com Namespaces**:
-   - `pokedex_favorites` (mantido para compatibilidade total com dados existentes dos usuários);
-   - `pokedex_theme` (mantido);
-   - Padrão estabelecido para o futuro: `battle.*`, `team.*`, `settings.*`.
+2. **Navegação Não-Destrutiva**: Introdução das abas de navegação no cabeçalho (`Pokédex`, `Meu Time`, `Batalhar`).
+3. **Estrutura de Armazenamento com Namespaces**: Preservação de `pokedex_favorites` e `pokedex_theme`.
+
+### Fase PBA-002 (Team Builder)
+1. **Modelo do Time**: Capacidade máxima de 3 Pokémon (`TEAM_MAX_SIZE = 3`), proibição estrita de duplicatas (`DUPLICATE_POKEMON = FORBIDDEN`) e preservação da ordem (`ORDER_MATTERS = YES`), onde o **Slot 1** define o Líder (*Lead*) que iniciará futuras batalhas.
+2. **Persistência Estruturada (`team.current`)**: Armazenamento serializado contendo apenas IDs essenciais (`{ "version": 1, "pokemonIds": [25, 6, 94] }`), com sanitização automática contra JSON corrompido, IDs inválidos ou arrays fora dos limites.
+3. **Desacoplamento Modular**: Separação em três componentes especializados em `assets/js/team/`:
+   - `TeamStore`: Manipulação e validação do `localStorage`;
+   - `TeamManager`: Regras de negócio, reordenação e emissão de eventos;
+   - `TeamUI`: Renderização dos slots (ocupados, vazios e erro), feedback dinâmico e botões de atalho.
+4. **Sincronização em Tempo Real**: Atualização instantânea dos cards da Pokédex (`✓ No time`), botões do modal e contadores do cabeçalho sem necessidade de recarregamento.
 
 ---
 
@@ -148,7 +155,7 @@ sequenceDiagram
 
 - **Migração Completa para ES Modules (`import`/`export`)**: Adiada até a introdução de um empacotador ou reorganização modular na Fase PBA-003, para evitar quebra de handlers inline no DOM e problemas de CORS local.
 - **Inserção de Pacotes de Áudio / Músicas**: Adiada para a fase específica de áudio (PBA-011), assegurando que nenhum arquivo com direitos autorais restritos seja inserido no repositório.
-- **Implementação Prematura de Combate / Cálculos de Dano**: Proibida nesta fase para manter a pureza do escopo PBA-001.
+- **Implementação Prematura de Combate / Cálculos de Dano**: Proibida nesta fase para manter a pureza do escopo PBA-002.
 
 ---
 
@@ -172,8 +179,8 @@ sequenceDiagram
 ## 10. Roadmap Técnico Oficial
 
 ```text
-[x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [ESTA FASE]
-[ ] PBA-002 Team Builder (Montagem e Persistência de Equipe)
+[x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
+[x] PBA-002 Team Builder (Montagem e Persistência de Equipe) ── [CONCLUÍDA]
 [ ] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1)
 [ ] PBA-004 Type System (Tabela Completa de Tipos e Efetividades)
 [ ] PBA-005 Move System (Sistemas de Golpes, Categorias e PP)

@@ -69,7 +69,7 @@
         <button id="navTeamBtn" class="nav-tab" data-tab="team">
           <i class="fa-solid fa-users"></i>
           <span>Meu Time</span>
-          <span class="nav-badge">Em breve</span>
+          <span id="teamNavCounter" class="nav-badge">0/3</span>
         </button>
         <button id="navBattleBtn" class="nav-tab" data-tab="battle">
           <i class="fa-solid fa-khanda"></i>
@@ -167,9 +167,14 @@
       </main>
     </div>
 
-    <!-- MÓDULOS FUTUROS (Em Desenvolvimento - Team Builder e Battle Arena) -->
+    <!-- MÓDULO 2: GERENCIADOR DE EQUIPE (Team Builder - PBA-002) -->
+    <section id="teamView" class="view-panel" style="display: none;" aria-label="Meu Time Pokémon">
+      <!-- Preenchido dinamicamente via assets/js/team/team-ui.js -->
+    </section>
+
+    <!-- MÓDULO 3: ARENA DE BATALHA (Em Desenvolvimento - Battle Arena PBA-003+) -->
     <section id="futureModuleView" class="future-module-view" style="display: none;" aria-live="polite">
-      <!-- Preenchido dinamicamente ao selecionar 'Meu Time' ou 'Batalhar' -->
+      <!-- Preenchido dinamicamente ao selecionar 'Batalhar' -->
     </section>
 
     <!-- 4. MODAL FLUTUANTE (Detalhes, Atributos de Batalha e Evolução) -->
@@ -190,10 +195,13 @@
 
   <!-- ====================================================================
        SCRIPTS JAVASCRIPT (Ordem de importação é essencial)
-       1. Modelo de dados -> 2. Chamadas de API -> 3. Lógica de UI
+       1. Modelo de dados -> 2. Chamadas de API -> 3. Módulos do Time -> 4. Lógica de UI
        ==================================================================== -->
   <script src="assets/js/pokemon-model.js"></script>
   <script src="assets/js/poke-api.js"></script>
+  <script src="assets/js/team/team-store.js"></script>
+  <script src="assets/js/team/team-manager.js"></script>
+  <script src="assets/js/team/team-ui.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ Uma plataforma web moderna, dinâmica e visualmente rica desenvolvida em **JavaS
 
 Originalmente concebido como desafio prático de JavaScript da **[Digital Innovation One (DIO)](https://www.dio.me/)**, o projeto está em evolução contínua para se tornar uma aplicação de portfólio completa com simulador de batalhas por turnos e gerenciador tático de equipes.
 
-> **Status Atual**: A **Pokédex Pro** está 100% funcional e operacional. O módulo **Pokémon Battle Arena** e o **Team Builder** encontram-se em desenvolvimento incremental seguindo arquitetura desacoplada em camadas.
+> **Status Atual**: A **Pokédex Pro** e o **Team Builder (Meu Time)** estão 100% funcionais e operacionais. O módulo **Pokémon Battle Arena** encontra-se em desenvolvimento incremental seguindo arquitetura desacoplada em camadas.
 
 Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
 
@@ -26,8 +26,20 @@ Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
   - Medidas físicas (Altura, Peso) e lista de Habilidades.
   - Barras animadas e coloridas com valores de cada Status Base (HP, Attack, Defense, Sp. Atk, Sp. Def, Speed).
   - Linha evolutiva completa e interativa (Evolution Chain).
-- 🧭 **Navegação de Módulos**: Alternância integrada entre Pokédex e visões de desenvolvimento de módulos futuros (Meu Time e Batalhar).
+- 🧭 **Navegação de Módulos**: Alternância integrada entre Pokédex, Meu Time e Arena de Batalha.
 - 📱 **100% Responsivo**: Otimizado para smartphones (360px+), tablets e telas widescreen.
+
+---
+
+## 🛡️ Team Builder / Meu Time (100% Operacional — PBA-002)
+
+- 👥 **Montagem de Equipe (0 a 3 Pokémon)**: Selecione estrategicamente até 3 Pokémon da Pokédex para compor seu time de combate.
+- 👑 **Definição de Líder (Slot 1)**: O primeiro slot é destacado como Líder da equipe e iniciará as futuras batalhas.
+- 🚫 **Bloqueio a Duplicatas**: Validação estrita para impedir Pokémon repetidos na mesma equipe.
+- 🔄 **Reordenação Acessível**: Botões direcionais (`←` e `→`) para alternar a ordem dos Pokémon no time sem depender de gestos complexos.
+- 💾 **Persistência Confiável no LocalStorage**: O time é salvo sob a chave `team.current`, com sanitização automática contra JSON corrompido ou IDs inválidos.
+- 🏷️ **Indicadores Sincronizados**: Cards da Pokédex exibem a tag `✓ No time` em tempo real e o modal adapta seu botão para `[ Adicionar ]`, `[ No Time (Remover) ]` ou `[ Time Completo (3/3) ]`.
+- 🗑️ **Limpeza Segura**: Opção de limpar a equipe com confirmação em duas etapas para evitar cliques acidentais.
 
 ---
 
@@ -36,7 +48,7 @@ Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
 O projeto adota uma arquitetura em camadas visando desacoplar totalmente a lógica de negócio das representações visuais:
 
 ```text
-Data / API (PokéAPI / Repository)
+Data / API (PokéAPI / TeamStore)
      ↓
 Domain Model (Pokemon, Move, Team, Trainer)
      ↓
@@ -44,7 +56,7 @@ Game Engine (BattleEngine, TurnManager, DamageCalculator, BattleAI)
      ↓
 Presentation Engine (AnimationQueue, AudioSystem, VFXManager)
      ↓
-UI (DOM, Cards, Modais, Painéis)
+UI (DOM, Cards, Modais, Team UI)
 ```
 
 ### Regra de Ouro: Game Engine ≠ Presentation Engine
@@ -87,16 +99,21 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 ├── assets/
 │   ├── css/
 │   │   ├── reset.css        # Resets e variáveis de cores dos tipos/temas
-│   │   ├── global.css       # Layout geral, cabeçalho, navegação e controles
+│   │   ├── global.css       # Layout geral, cabeçalho, navegação, controles e Team Builder
 │   │   ├── pokedex.css      # Grid e cards dos pokémons
 │   │   └── modal.css        # Estilos do modal com estatísticas e evolução
 │   └── js/
 │       ├── pokemon-model.js # Classe e modelo de dados do Pokémon
 │       ├── poke-api.js      # Integração e requisições HTTP para a PokéAPI
+│       ├── team/
+│       │   ├── team-store.js   # Persistência e validação no LocalStorage (team.current)
+│       │   ├── team-manager.js # Regras de negócio, limites e reordenação
+│       │   └── team-ui.js      # Renderização dos slots e sincronização visual
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
 ├── index.html               # Estrutura principal da página
+├── progress.md              # Registro contínuo de status e fases para agentes
 └── README.md                # Documentação oficial do projeto
 ```
 
@@ -107,7 +124,7 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 O desenvolvimento do simulador de batalhas segue um planejamento incremental por fases:
 
 - [x] **PBA-001 Foundation / Architecture Preparation** *(Fase Concluída)*: Auditoria do projeto existente, documentação técnica de arquitetura, separação conceitual Engine/Presentation, navegação entre módulos e padronização do repositório.
-- [ ] **PBA-002 Team Builder**: Seleção de time tático (1 a 6 Pokémon), cálculo de cobertura de tipos e persistência em `localStorage`.
+- [x] **PBA-002 Team Builder** *(Fase Concluída)*: Seleção de time tático (até 3 Pokémon), definição de Líder, reordenação acessível, persistência confiável em `localStorage` (`team.current`) e integração total com Pokédex e modal.
 - [ ] **PBA-003 Battle Engine v1**: Mecânica básica de turnos 1x1, iniciativa e ciclo de combate.
 - [ ] **PBA-004 Type System**: Matriz elementar de efetividade (2x, 0.5x, 0x).
 - [ ] **PBA-005 Move System**: Catálogo e seleção de golpes com poder, precisão e categoria.
