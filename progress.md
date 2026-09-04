@@ -125,7 +125,19 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
     - O combate só termina quando os 3 Pokémon adversários estiverem nocauteados;
     - Emissão encadeada de `POKEMON_FAINTED` $\to$ `TEAM_DEFEATED` $\to$ `BATTLE_ENDED`;
   - Compatibilidade 100% preservada com confrontos 1x1 da PBA-003/004/005 (`LEGACY_1V1_REGRESSION = NONE`);
-  - 100% de aprovação nos testes automatizados: 130 testes (35 novos testes B3-01 a B3-35 + 95 testes anteriores) sem nenhuma falha ou regressão.
+- **PBA-007 Battle AI**:
+  - Separação arquitetural estrita: `BATTLE ENGINE ≠ BATTLE AI` e `ENGINE_DEPENDS_ON_AI = NO`;
+  - Implementação do avaliador puro `BattleEvaluator` (`evaluateMove` e `evaluateMatchup`) calculando dano esperado ponderado por Precisão (Accuracy), STAB, fraquezas, imunidades e categorias Physical/Special sem efeitos colaterais (`AI_EVALUATION_MUTATES_STATE = NO`);
+  - Estratégias programáticas `SIMPLE` (rígida, primeiro golpe utilizável, sem troca voluntária) e `SMART` (heurística de dano esperado, bonificação de KO, mitigação de riscos defensivos);
+  - Descarte estrito de golpes com imunidade absoluta (0x) quando alternativas com dano positivo estão disponíveis;
+  - Trocas voluntárias inteligentes (`SWITCH`):
+    - Regra SW1: Imunidade total no ativo com reserva viável no banco (`AVOID_IMMUNITY_SWITCH`);
+    - Regra SW2: Matchup muito desfavorável ($\le 0.5\times$) com reserva super efetiva ($\ge 2.0\times$) superando `SMART_SWITCH_MARGIN = 1.3` (`STRATEGIC_MATCHUP_SWITCH`);
+    - Regra SW3: Ativo sem PP com reserva funcional no banco (`NO_PP_SWITCH`);
+  - Substituição forçada inteligente pós-nocaute (`chooseReplacement`): prioriza reserva com melhor pontuação composta (dano efetivo, sobrevivência defensiva e HP remanescente);
+  - Zero Trapaça (`AI_FUTURE_PLAYER_ACTION_ACCESS = NO`): a IA não conhece a ação futura do jogador nem os rolls de acurácia antes de escolher sua ação;
+  - Zero RNG Interno (`AI_MATH_RANDOM_CALLS = 0`, `AI_CRYPTO_RANDOM_CALLS = 0`): determinismo e reprodutibilidade 100% comprovados por testes;
+  - 100% de aprovação nos testes automatizados: 173 testes (43 novos testes AI-01 a AI-43 + 130 testes anteriores) sem nenhuma falha ou regressão.
 
 ---
 
@@ -163,6 +175,18 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    TEAM_DEFEAT = YES
    AI = NOT_YET
    ```
+7. **Configurações Oficiais da Battle AI (PBA-007)**:
+   ```text
+   BATTLE_AI = YES
+   AI_SIMPLE = YES
+   AI_SMART = YES
+   AI_MOVE_SELECTION = YES
+   AI_VOLUNTARY_SWITCH = YES
+   AI_FORCED_REPLACEMENT = YES
+   AI_EXPECTED_DAMAGE = YES
+   AI_INTERNAL_RNG = NO
+   AI_CHEATING = NO
+   ```
 
 ---
 
@@ -176,15 +200,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-004 = PASS`
   - `PBA-005 = PASS`
   - `PBA-006 = PASS`
-- **Working Tree**: Limpo (pré-commit da fase PBA-006)
+  - `PBA-007 = PASS`
+- **Working Tree**: Limpo (pré-commit da fase PBA-007)
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-007 — Battle AI
+NEXT_PHASE = PBA-008 — Battle Presentation Engine
 ```
 
-*(Atenção: A Fase PBA-007 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-008 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

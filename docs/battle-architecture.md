@@ -428,16 +428,61 @@ $$\text{SWITCH} > \text{MOVE}$$
 
 ---
 
-## 9. Decisões Explicitamente Adiadas
+## 9. Arquitetura da Inteligência Artificial: Battle AI (PBA-007)
+
+A Fase PBA-007 implementou um subsistema dedicado e determinístico de Inteligência Artificial para controle do adversário (ou de qualquer combatente), mantendo a separação estrita:
+$$\text{BATTLE ENGINE} \neq \text{BATTLE AI}$$
+- **Battle Engine**: Autoridade absoluta das regras de combate (turnos, efetividade, cálculo e aplicação de dano, consumo de PP, transição de estados e eventos).
+- **Battle AI**: Analisador estratégico do estado atual visível que escolhe uma ação legal (`MOVE` ou `SWITCH`) sem mutar o estado e sem executar efeitos colaterais.
+
+### 9.1 Avaliador Puro de Combate (BattleEvaluator)
+- **Função**: `BattleEvaluator.evaluateMove(attacker, defender, move)` e `BattleEvaluator.evaluateMatchup(candidate, opponent)`.
+- **Dano Esperado (Expected Value)**:
+  $$\text{expectedDamage} = \lfloor \text{damageIfHit} \times (\text{accuracy} / 100) \rfloor$$
+  Para golpes *Always Hit* (`accuracy: null` ou `'ALWAYS_HIT'`), o fator de acurácia é $1.0$.
+- **Classificação de Nocaute**: `wouldKo = damageIfHit >= defender.currentHp`.
+- **Garantia de Imutabilidade**: Não altera HP, PP, flags ou listas do atacante e do defensor.
+
+### 9.2 Estratégias Programáticas
+1. **SIMPLE**:
+   - Totalmente previsível e rígida;
+   - Nunca realiza troca voluntária (`SIMPLE_AI_VOLUNTARY_SWITCH = NO`);
+   - Seleciona o primeiro golpe com `currentPp > 0` do loadout;
+   - Em caso de substituição obrigatória pós-nocaute, seleciona o primeiro Pokémon vivo na ordem da equipe.
+2. **SMART**:
+   - Avalia profundamente todos os golpes utilizáveis e os confrontos de banco;
+   - Pondera dano esperado, STAB ($1.5\times$), fraquezas e resistências elementais, atributos físicos/especiais e probabilidade de acerto;
+   - Descarta estritamente golpes imunes ($0\times$) quando alternativas com dano positivo existem;
+   - Prioriza nocaute garantido através de bonificação (`KO_BONUS = 1000`);
+   - Realiza trocas voluntárias estratégicas e conservadoras.
+
+### 9.3 Regras de Troca Voluntária da SMART AI
+- **SW1 (Imunidade Total)**: Se todos os golpes utilizáveis do ativo possuem eficácia $0\times$ (imunidade absoluta) e existe reserva capaz de causar dano positivo.
+- **SW2 (Matchup Severamente Desfavorável)**: Se o melhor multiplicador de tipo do ativo for $\le 0.5\times$ (sem KO garantido) e houver reserva com golpe super efetivo ($\ge 2.0\times$) cuja pontuação composta supere o ativo pela margem estratégica (`SMART_SWITCH_MARGIN = 1.3`), sem risco defensivo extremo (reserva não sofre 1-hit KO se o ativo não sofria).
+- **SW3 (Esgotamento de PP)**: Se todos os golpes do ativo estão com 0 PP e há membros no banco com golpes utilizáveis.
+
+### 9.4 Substituição Forçada Pós-Nocaute
+- Avalia todos os reservas vivos (`currentHp > 0`, `index !== activeIndex`);
+- Pontuação composta:
+  $$\text{score} = (\text{effectiveDamage} \times 2.5) + (\text{remainingHpAfterHit} \times 1.5) - (\text{defensiveRisk} \times 150) + \text{bônusKO} - \text{penalidadeKO}$$
+- Prioriza reservas com alto dano efetivo, alta sobrevivência defensiva e maior HP remanescente.
+
+### 9.5 Desempate Determinístico e Segurança
+- Desempate de golpes: 1º maior `score`, 2º maior `expectedDamage`, 3º maior `currentPp`, 4º menor posição no loadout.
+- **Zero RNG Interno**: 0 chamadas a `Math.random()` ou `crypto`. O roll de acurácia é injetado externamente ao enviar a ação ao Engine.
+- **Zero Trapaça**: A IA não inspeciona variáveis externas de ações futuras do jogador ou intenções de turno.
+
+---
+
+## 10. Decisões Explicitamente Adiadas
 
 - **Golpes de Status (Status Moves)**: Reconhecidos na validação, porém com efeitos (Burn, Poison, Paralysis, Sleep, Freeze, Buffs/Debuffs) reservados para fases futuras.
 - **Acertos Críticos (Critical Hits) e Variação de RNG de Dano**: Reservados para uma expansão posterior com semente controlada.
-- **Inteligência Artificial Estratégica**: Reservada para a Fase PBA-007.
 - **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
 
 ---
 
-## 10. Riscos Técnicos e Estratégias de Mitigação
+## 11. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -454,7 +499,7 @@ $$\text{SWITCH} > \text{MOVE}$$
 
 ---
 
-## 11. Roadmap Técnico Oficial
+## 12. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -463,7 +508,7 @@ $$\text{SWITCH} > \text{MOVE}$$
 [x] PBA-004 Type System (Tabela Completa de Tipos e Efetividades) ── [CONCLUÍDA]
 [x] PBA-005 Move System (Sistemas de Golpes, Categorias e PP) ─ [CONCLUÍDA]
 [x] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon) ── [CONCLUÍDA]
-[ ] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários)
+[x] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários) ── [CONCLUÍDA]
 [ ] PBA-008 Battle Presentation Engine (Desacoplamento Visual da Lógica)
 [ ] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais)
 [ ] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.)

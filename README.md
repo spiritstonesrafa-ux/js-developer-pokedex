@@ -116,7 +116,9 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── move-model.js           # Modelo normalizado de golpes (Physical/Special/PP/Accuracy)
 │       │   ├── damage-calculator.js    # Pipeline de dano v2 com Power, STAB e Efetividade
 │       │   ├── turn-manager.js         # Iniciativa por Speed e desempate determinístico
-│       │   └── battle-engine.js        # Motor 1x1 com Combatant Model v3, turnos e eventos
+│       │   ├── battle-engine.js        # Motor 1x1 e 3x3 com Battle State v2, turnos e eventos
+│       │   ├── battle-evaluator.js     # Avaliador puro de dano esperado, STAB e matchups
+│       │   └── battle-ai.js            # Inteligência artificial determinística (SIMPLE e SMART)
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
@@ -127,6 +129,7 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   ├── team-fixtures.js         # Fixtures de equipes 3x3 para simulações e trocas
 │   │   └── type-chart-reference.js  # Referência canônica independente para hardening (18x18)
 │   └── battle/
+│       ├── battle-ai.test.js            # Suíte de testes da Battle AI (AI-01-AI-43)
 │       ├── team-battle.test.js          # Suíte de testes 3x3 e trocas voluntárias/forçadas (B3-01-B3-35)
 │       ├── move-system.test.js          # Suíte de testes do Move System (MV01-MV43)
 │       ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
@@ -150,7 +153,8 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-004 Type System** *(Fase Concluída)*: Matriz completa dos 18 tipos modernos (324 relações), suporte integral a combatentes single e dual-type (multiplicadores 0, 0.25, 0.5, 1, 2, 4), prevalência absoluta de imunidades, classificação estruturada de eventos e integração matemática com o cálculo de dano.
 - [x] **PBA-005 Move System** *(Fase Concluída)*: O Battle Engine agora utiliza golpes normalizados com Power real, Type, Accuracy determinística, PP (Power Points) e categorias Physical/Special. Introdução de STAB (1.5x), seleção de golpes no turno, eventos estruturados de HIT/MISS e hardening do Type Chart contra referência canônica independente.
 - [x] **PBA-006 Battle 3x3** *(Fase Concluída)*: Suporte a batalhas de equipes (3 vs 3) com Battle State v2, Pokémon ativo vs banco, trocas voluntárias com prioridade sobre ataques (`SWITCH > MOVE`), trocas forçadas após nocaute (`AWAITING_REPLACEMENT` / `REPLACEMENT_REQUIRED`), preservação estrita de HP e PP no banco e condição de vitória por aniquilação completa da equipe adversária (`TEAM_DEFEATED`).
-- [ ] **PBA-007 Battle AI**: Inteligência artificial adversária com heurísticas de escolha de golpe e troca.
+- [x] **PBA-007 Battle AI** *(Fase Concluída)*: Inteligência artificial adversária desacoplada e 100% determinística com estratégias `SIMPLE` e `SMART`. Avalia dano esperado ponderado por precisão, STAB, fraquezas/resistências, categorias físicas/especiais, administração de PP, descarte de imunidades, trocas voluntárias estratégicas e seleção inteligente de substituto pós-nocaute.
+- [ ] **PBA-008 Battle Presentation Engine**: Desacoplamento assíncrono entre eventos da engine e camada visual.
 - [ ] **PBA-008 Battle Presentation Engine**: Desacoplamento assíncrono entre eventos da engine e camada visual.
 - [ ] **PBA-009 Pokemon Animations**: Sprites animados, efeitos de entrada, ataque e recuo.
 - [ ] **PBA-010 Move Visual Effects**: Partículas elementais (fogo, água, trovão, etc.).
