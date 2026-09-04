@@ -149,13 +149,81 @@ sequenceDiagram
    - `TeamUI`: Renderização dos slots (ocupados, vazios e erro), feedback dinâmico e botões de atalho.
 4. **Sincronização em Tempo Real**: Atualização instantânea dos cards da Pokédex (`✓ No time`), botões do modal e contadores do cabeçalho sem necessidade de recarregamento.
 
+### Fase PBA-003 (Battle Engine v1)
+1. **Núcleo Matemático Isolado e Desacoplado**:
+   - Criação dos módulos em `assets/js/battle/`:
+     - `battle-constants.js`: Estados (`BATTLE_STATUS`), eventos (`BATTLE_EVENTS`), ações (`BATTLE_ACTIONS`) e configurações (`BATTLE_CONFIG`);
+     - `damage-calculator.js`: Cálculo de dano determinístico baseado estritamente em Ataque e Defesa;
+     - `turn-manager.js`: Gerenciador de iniciativa baseado em Velocidade (*Speed*);
+     - `battle-engine.js`: Criação do estado de combate, normalização de combatentes, validações contra estados inválidos/NaN, resolução de turnos e emissão de eventos ordenados.
+2. **Modelo do Combatente Normalizado**:
+   - Estrutura pura e independente da PokéAPI ou do DOM:
+     ```json
+     {
+       "id": 4,
+       "name": "charmander",
+       "maxHp": 39,
+       "currentHp": 39,
+       "attack": 52,
+       "defense": 43,
+       "speed": 65
+     }
+     ```
+   - Validação estrita: rejeita `id <= 0`, `name` vazio, `hp <= 0`, `attack <= 0`, `defense <= 0`, `speed < 0`, `NaN`, `Infinity`, `null` ou `undefined`.
+3. **Estado de Batalha v1 (Battle State)**:
+   - Serializável, determinístico e imutável nas entradas:
+     ```json
+     {
+       "version": 1,
+       "status": "IN_PROGRESS",
+       "turn": 1,
+       "player": { "id": 4, "name": "charmander", "maxHp": 39, "currentHp": 39, "attack": 52, "defense": 43, "speed": 65 },
+       "enemy": { "id": 1, "name": "bulbasaur", "maxHp": 45, "currentHp": 45, "attack": 49, "defense": 49, "speed": 45 },
+       "winner": null
+     }
+     ```
+   - Estados: `READY`, `IN_PROGRESS`, `PLAYER_WIN`, `ENEMY_WIN`.
+4. **Fórmula de Dano da PBA-003**:
+   - Inspirada na estrutura clássica da franquia, porém estritamente determinística (sem randomização, sem fraquezas/resistências de tipo e sem acertos críticos):
+     ```text
+     SIMULATION_LEVEL = 50
+     BASIC_ATTACK_POWER = 40
+     
+     damage = floor(((((2 * SIMULATION_LEVEL / 5) + 2) * BASIC_ATTACK_POWER * attack / defense) / 50) + 2)
+     damage = max(1, damage)
+     ```
+   - Piso de HP: o dano recebido nunca deixa o combatente com HP negativo (`currentHp = max(0, previousHp - damage)`).
+5. **Regra de Iniciativa e Desempate**:
+   - O combatente com maior *Speed* atua primeiro;
+   - Em caso de empate de *Speed*, aplica-se a regra determinística da fase: `PLAYER_FIRST_ON_SPEED_TIE = true` (jogador sempre atua primeiro no desempate da PBA-003).
+6. **Fluxo do Turno e Suspensão de Contra-Ataque**:
+   - Turno inicia -> Ordem definida -> 1º Pokémon ataca -> Dano aplicado -> Verificação de nocaute (`currentHp === 0`).
+   - Se o primeiro combatente nocautear o alvo: o combate encerra imediatamente (`POKEMON_FAINTED` e `BATTLE_ENDED`), status atualizado para vitória/derrota, e o Pokémon derrotado **NÃO contra-ataca**.
+   - Bloqueio pós-combate: tentativas de invocar `resolveTurn()` em batalha já encerrada são rejeitadas com erro controlado, sem corromper o estado.
+7. **Barramento de Eventos Estruturados**:
+   - Eventos emitidos em sequência ordenada:
+     - `BATTLE_STARTED`
+     - `TURN_STARTED` (com número do turno)
+     - `ACTION_STARTED` (com ator e ação executada)
+     - `DAMAGE_APPLIED` (com fonte, alvo, dano numérico, HP anterior e HP resultante)
+     - `POKEMON_FAINTED` (com alvo derrotado)
+     - `BATTLE_ENDED` (com vencedor e causa)
+8. **Critérios de Isolamento Absoluto**:
+   - `BATTLE_ENGINE_DOM_DEPENDENCIES = 0` (nenhum `document.*` ou `window.*` de interface);
+   - `BATTLE_ENGINE_FETCH_CALLS = 0` (sem chamadas à PokéAPI durante a simulação);
+   - `BATTLE_ENGINE_LOCALSTORAGE_DEPENDENCIES = 0` (sem persistência acoplada);
+   - `BATTLE_ENGINE_AUDIO_DEPENDENCIES = 0` (sem dependências sonoras);
+   - `INPUT_MUTATION = NONE` (entradas são clonadas e imutáveis).
+
 ---
 
 ## 8. Decisões Explicitamente Adiadas
 
-- **Migração Completa para ES Modules (`import`/`export`)**: Adiada até a introdução de um empacotador ou reorganização modular na Fase PBA-003, para evitar quebra de handlers inline no DOM e problemas de CORS local.
-- **Inserção de Pacotes de Áudio / Músicas**: Adiada para a fase específica de áudio (PBA-011), assegurando que nenhum arquivo com direitos autorais restritos seja inserido no repositório.
-- **Implementação Prematura de Combate / Cálculos de Dano**: Proibida nesta fase para manter a pureza do escopo PBA-002.
+- **Sistema de Tipos e Efetividade (Fraquezas / Resistências / Imunidades)**: Reservado integralmente para a Fase PBA-004.
+- **Sistema de Golpes Reais, PP, Acurácia e Crítico**: Reservado para a Fase PBA-005.
+- **Batalhas 3x3 e Trocas de Pokémon**: Reservado para a Fase PBA-006.
+- **Inteligência Artificial Estratégica**: Reservada para a Fase PBA-007.
+- **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
 
 ---
 
@@ -181,7 +249,7 @@ sequenceDiagram
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
 [x] PBA-002 Team Builder (Montagem e Persistência de Equipe) ── [CONCLUÍDA]
-[ ] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1)
+[x] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1) ─ [CONCLUÍDA]
 [ ] PBA-004 Type System (Tabela Completa de Tipos e Efetividades)
 [ ] PBA-005 Move System (Sistemas de Golpes, Categorias e PP)
 [ ] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon)

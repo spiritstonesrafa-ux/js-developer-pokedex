@@ -61,6 +61,17 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Empty state encorajador e celebração de equipe completa (3/3);
   - 100% de testes obrigatórios T01–T12 aprovados.
 
+- **PBA-003 Battle Engine v1**:
+  - Implementação do núcleo matemático de combate 1x1 isolado em `assets/js/battle/`:
+    - `battle-constants.js`: Estados (`READY`, `IN_PROGRESS`, `PLAYER_WIN`, `ENEMY_WIN`), eventos e configurações;
+    - `damage-calculator.js`: Fórmula clássica determinística com nível simulado 50 e poder 40, piso de dano >= 1;
+    - `turn-manager.js`: Ordem por Velocidade (*Speed*), com desempate determinístico em favor do jogador;
+    - `battle-engine.js`: Criação de batalha, validações estritas contra NaN e entradas corrompidas, ciclo de turnos com suspensão de contra-ataque em nocaute e bloqueio pós-combate;
+  - Barramento de eventos estruturados (`BATTLE_STARTED`, `TURN_STARTED`, `ACTION_STARTED`, `DAMAGE_APPLIED`, `POKEMON_FAINTED`, `BATTLE_ENDED`);
+  - 100% de isolamento: `BATTLE_ENGINE_DOM_DEPENDENCIES = 0`, `BATTLE_ENGINE_FETCH_CALLS = 0`, `BATTLE_ENGINE_LOCALSTORAGE_DEPENDENCIES = 0`, `BATTLE_ENGINE_AUDIO_DEPENDENCIES = 0`;
+  - Imutabilidade comprovada (`INPUT_MUTATION = NONE`);
+  - 100% de testes automatizados E01–E18 e Simulação Completa aprovados com Node.js nativo (26/26 testes).
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -73,23 +84,25 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
    - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
 4. **Resiliência de Rede**: Dados de Pokémon do time são buscados sob demanda com cache em memória, apresentando estado localizado de erro caso a PokéAPI esteja indisponível sem quebrar a aplicação.
+5. **Game Engine Pura na PBA-003**: Sem tipos, vantagens elementais, golpes reais ou IA nesta fase. As regras matemáticas de tipos serão introduzidas estritamente na PBA-004.
 
 ---
 
 ## 6. Estado Atual do Repositório
 
 - **Branch**: `main`
-- **Baseline Git**:
-  - HEAD pós-PBA-001: `9a69d43`
-  - HEAD pós-PBA-002: `804076b`
-- **Working Tree**: Limpo e sincronizado com `origin/main` (push realizado)
+- **Status das Fases**:
+  - `PBA-001 = PASS`
+  - `PBA-002 = PASS`
+  - `PBA-003 = PASS`
+- **Working Tree**: Limpo (pré-commit da fase PBA-003)
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-003 — Battle Engine v1
+NEXT_PHASE = PBA-004 — Type System
 ```
 
-*(Atenção: A Fase PBA-003 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-004 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
