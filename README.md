@@ -110,10 +110,12 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── team-manager.js # Regras de negócio, limites e reordenação
 │       │   └── team-ui.js      # Renderização dos slots e sincronização visual
 │       ├── battle/
-│       │   ├── battle-constants.js   # Estados, eventos e constantes do combate
-│       │   ├── damage-calculator.js  # Fórmula clássica determinística de dano
-│       │   ├── turn-manager.js       # Iniciativa por Speed e desempate determinístico
-│       │   └── battle-engine.js      # Núcleo 1x1, ciclo de turnos e eventos estruturados
+│       │   ├── battle-constants.js     # Estados, eventos, ações e catálogo de tipos
+│       │   ├── type-chart.js           # Matriz completa de efetividade (324 relações)
+│       │   ├── type-effectiveness.js   # Cálculo multiplicativo e validação single/dual-type
+│       │   ├── damage-calculator.js    # Fórmula de dano com multiplicadores elementais
+│       │   ├── turn-manager.js         # Iniciativa por Speed e desempate determinístico
+│       │   └── battle-engine.js        # Núcleo 1x1 com ciclo de turnos e eventos estruturados
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
@@ -121,9 +123,10 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   ├── fixtures/
 │   │   └── pokemon-fixtures.js # Fixtures offline para testes unitários
 │   └── battle/
-│       ├── battle-engine.test.js     # Suíte de testes automatizados E01-E18
-│       ├── damage-calculator.test.js # Testes unitários do cálculo de dano
-│       └── turn-manager.test.js      # Testes unitários de ordem de iniciativa
+│       ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
+│       ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
+│       ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
+│       └── turn-manager.test.js         # Testes unitários de ordem de iniciativa
 ├── index.html               # Estrutura principal da página
 ├── progress.md              # Registro contínuo de status e fases para agentes
 └── README.md                # Documentação oficial do projeto
@@ -138,7 +141,7 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-001 Foundation / Architecture Preparation** *(Fase Concluída)*: Auditoria do projeto existente, documentação técnica de arquitetura, separação conceitual Engine/Presentation, navegação entre módulos e padronização do repositório.
 - [x] **PBA-002 Team Builder** *(Fase Concluída)*: Seleção de time tático (até 3 Pokémon), definição de Líder, reordenação acessível, persistência confiável em `localStorage` (`team.current`) e integração total com Pokédex e modal.
 - [x] **PBA-003 Battle Engine v1** *(Fase Concluída)*: Núcleo matemático de combate 1x1 funcional, determinístico e testável, completamente desacoplado de DOM, PokéAPI e áudio. Gerenciamento de turnos por Speed, cálculo de dano puro, piso de HP em zero e emissão de eventos estruturados.
-- [ ] **PBA-004 Type System**: Matriz elementar de efetividade (2x, 0.5x, 0x).
+- [x] **PBA-004 Type System** *(Fase Concluída)*: Matriz completa dos 18 tipos modernos (324 relações), suporte integral a combatentes single e dual-type (multiplicadores 0, 0.25, 0.5, 1, 2, 4), prevalência absoluta de imunidades, classificação estruturada de eventos e integração matemática com o cálculo de dano.
 - [ ] **PBA-005 Move System**: Catálogo e seleção de golpes com poder, precisão e categoria.
 - [ ] **PBA-006 Battle 3x3**: Batalhas completas em equipe com mecânica de substituição.
 - [ ] **PBA-007 Battle AI**: Inteligência artificial adversária com heurísticas de escolha de golpe e troca.

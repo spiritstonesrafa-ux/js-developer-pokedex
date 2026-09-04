@@ -215,12 +215,65 @@ sequenceDiagram
    - `BATTLE_ENGINE_AUDIO_DEPENDENCIES = 0` (sem dependências sonoras);
    - `INPUT_MUTATION = NONE` (entradas são clonadas e imutáveis).
 
+### Fase PBA-004 (Type System)
+1. **Catálogo Canônico dos 18 Tipos**:
+   - `POKEMON_TYPES`: `normal`, `fire`, `water`, `electric`, `grass`, `ice`, `fighting`, `poison`, `ground`, `flying`, `psychic`, `bug`, `rock`, `ghost`, `dragon`, `dark`, `steel`, `fairy`.
+   - Normalização rigorosa de casing e espaçamento (`" FIRE "` -> `"fire"`), com rejeição estrita de tipos inválidos, vazios ou desconhecidos (`shadow`, `unknown`, etc.).
+2. **Matriz Completa de Efetividade (Type Chart)**:
+   - Implementação em `assets/js/battle/type-chart.js` cobrindo todas as 324 relações elementais ($18 \times 18$) das gerações modernas (Gen 6+ com tipo Fairy).
+   - Multiplicadores para defensores single-type: `0` (imune), `0.5` (resistido), `1` (neutro), `2` (super efetivo).
+3. **Cálculo e Combinações de Dual-Type (`TypeEffectiveness`)**:
+   - Módulo puro `assets/js/battle/type-effectiveness.js` calculando a efetividade combinada:
+     $$\text{multiplier} = \text{chart}[A][D_1] \times \text{chart}[A][D_2]$$
+   - Suporte completo aos multiplicadores resultantes: `0`, `0.25`, `0.5`, `1`, `2` e `4`.
+   - Prevalência estrita de imunidade: se qualquer relação elemental for $0$, o multiplicador final é necessariamente $0$ ($x \times 0 = 0$).
+   - Validações: rejeita defensores com tipos duplicados (`['water', 'water']`), mais de 2 tipos ou listas vazias.
+   - Classificação estruturada: `IMMUNE` (0), `RESISTED` (< 1), `NEUTRAL` (1), `SUPER_EFFECTIVE` (> 1).
+4. **Combatant Model v2**:
+   - Normalização de combatentes com tipos canônicos validados:
+     ```json
+     {
+       "id": 4,
+       "name": "charmander",
+       "types": ["fire"],
+       "maxHp": 39,
+       "currentHp": 39,
+       "attack": 52,
+       "defense": 43,
+       "speed": 65
+     }
+     ```
+5. **Integração com a Calculadora de Dano (`DamageCalculator`)**:
+   - Separação modular de responsabilidades:
+     - `calculateBaseDamage(attack, defense, power, level)`: gera o dano base puro ($\ge 1$).
+     - `applyModifier(baseDamage, multiplier)`: aplica a efetividade com piso em zero para imunidade e piso mínimo de $1$ para não-imunidades:
+       ```javascript
+       if (multiplier === 0) return 0;
+       return Math.max(1, Math.floor(baseDamage * multiplier));
+       ```
+6. **Barramento de Eventos Atualizado**:
+   - Inclusão do evento `TYPE_EFFECTIVENESS_RESOLVED` disparado imediatamente antes de `DAMAGE_APPLIED`:
+     ```json
+     {
+       "type": "TYPE_EFFECTIVENESS_RESOLVED",
+       "source": "player",
+       "target": "enemy",
+       "attackType": "fire",
+       "defenderTypes": ["grass", "poison"],
+       "multiplier": 2,
+       "classification": "SUPER_EFFECTIVE"
+     }
+     ```
+   - Ordem estrita do ciclo de ação: `ACTION_STARTED` -> `TYPE_EFFECTIVENESS_RESOLVED` -> `DAMAGE_APPLIED` (-> `POKEMON_FAINTED` -> `BATTLE_ENDED`).
+7. **Ponte Temporária do `BASIC_ATTACK`**:
+   - Enquanto o catálogo de movimentos (*Move System*) não é introduzido na Fase PBA-005, o `BASIC_ATTACK` adota temporariamente o tipo primário do atacante (`attacker.types[0]`).
+   - STAB (*Same-Type Attack Bonus*) **não foi implementado**, permanecendo reservado para fases futuras.
+
 ---
 
 ## 8. Decisões Explicitamente Adiadas
 
-- **Sistema de Tipos e Efetividade (Fraquezas / Resistências / Imunidades)**: Reservado integralmente para a Fase PBA-004.
-- **Sistema de Golpes Reais, PP, Acurácia e Crítico**: Reservado para a Fase PBA-005.
+- **Sistema de Golpes Reais, PP, Acurácia, Categoria (Físico/Especial) e Crítico**: Reservado para a Fase PBA-005.
 - **Batalhas 3x3 e Trocas de Pokémon**: Reservado para a Fase PBA-006.
 - **Inteligência Artificial Estratégica**: Reservada para a Fase PBA-007.
 - **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
@@ -250,7 +303,7 @@ sequenceDiagram
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
 [x] PBA-002 Team Builder (Montagem e Persistência de Equipe) ── [CONCLUÍDA]
 [x] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1) ─ [CONCLUÍDA]
-[ ] PBA-004 Type System (Tabela Completa de Tipos e Efetividades)
+[x] PBA-004 Type System (Tabela Completa de Tipos e Efetividades) ── [CONCLUÍDA]
 [ ] PBA-005 Move System (Sistemas de Golpes, Categorias e PP)
 [ ] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon)
 [ ] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários)

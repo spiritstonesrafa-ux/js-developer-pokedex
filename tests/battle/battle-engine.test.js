@@ -1,8 +1,9 @@
 /**
  * ====================================================================
- * SUÍTE DE TESTES AUTOMATIZADOS: BATTLE ENGINE V1 (battle-engine.test.js)
+ * SUÍTE DE TESTES AUTOMATIZADOS: BATTLE ENGINE V1 + TYPE SYSTEM
+ * (battle-engine.test.js)
  * ====================================================================
- * Validação rigorosa dos gates E01 a E18 e Simulação Completa.
+ * Validação rigorosa dos gates E01 a E18 e TY21 a TY25, além da Simulação Completa.
  * Execução com Node.js nativo (node --test).
  * 
  * Critérios:
@@ -10,7 +11,8 @@
  * - Sem dependência de DOM;
  * - Sem dependência de LocalStorage;
  * - Sem dependência de áudio;
- * - Determinístico e imutável.
+ * - Determinístico e imutável;
+ * - Efetividade de tipos integrada ao ciclo de combate.
  */
 
 const { test, describe } = require('node:test');
@@ -31,10 +33,18 @@ const {
   HighAttackFixture,
   LowAttackFixture,
   SpeedTieWithCharmanderFixture,
-  FragileOneHpFixture
+  FragileOneHpFixture,
+  GyaradosFixture,
+  SwampertFixture,
+  ScizorFixture,
+  CharizardFixture,
+  KingdraFixture,
+  GastlyFixture,
+  GeodudeFixture,
+  ClefairyFixture
 } = require('../fixtures/pokemon-fixtures.js');
 
-describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
+describe('PHASE PBA-003 & PBA-004 — BATTLE ENGINE & TYPE SYSTEM SUITE', () => {
 
   // --- E01: CREATE BATTLE ---
   test('E01 — Create Battle: inicializa batalha válida com dados corretos', () => {
@@ -46,6 +56,8 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
     assert.equal(battle.winner, null, 'Vencedor inicial deve ser null');
     assert.equal(battle.player.currentHp, battle.player.maxHp, 'Player HP inicial deve ser igual a maxHp');
     assert.equal(battle.enemy.currentHp, battle.enemy.maxHp, 'Enemy HP inicial deve ser igual a maxHp');
+    assert.deepEqual(battle.player.types, ['fire'], 'Tipos do jogador devem ser inicializados');
+    assert.deepEqual(battle.enemy.types, ['grass', 'poison'], 'Tipos do adversário devem ser inicializados');
   });
 
   // --- E02: INVALID COMBATANT ---
@@ -54,21 +66,26 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
       null,
       undefined,
       {},
-      { id: 'abc', name: 'poke' }, // id inválido
-      { id: 1, name: '' }, // nome vazio
-      { id: 1, name: 'poke', stats: { hp: 0, attack: 10, defense: 10, speed: 10 } }, // hp <= 0
-      { id: 1, name: 'poke', stats: { hp: -5, attack: 10, defense: 10, speed: 10 } }, // hp negativo
-      { id: 1, name: 'poke', stats: { hp: 10, attack: 0, defense: 10, speed: 10 } }, // attack <= 0
-      { id: 1, name: 'poke', stats: { hp: 10, attack: 10, defense: -2, speed: 10 } }, // defense <= 0
-      { id: 1, name: 'poke', stats: { hp: 10, attack: 10, defense: 10, speed: -1 } }, // speed < 0
-      { id: 1, name: 'poke', stats: { hp: NaN, attack: 10, defense: 10, speed: 10 } }, // NaN
-      { id: 1, name: 'poke', stats: { hp: 10, attack: Infinity, defense: 10, speed: 10 } }, // Infinity
+      { id: 'abc', name: 'poke', types: ['fire'] }, // id inválido
+      { id: 1, name: '', types: ['fire'] }, // nome vazio
+      { id: 1, name: 'poke', stats: { hp: 10, attack: 10, defense: 10, speed: 10 } }, // tipos ausentes
+      { id: 1, name: 'poke', types: [], stats: { hp: 10, attack: 10, defense: 10, speed: 10 } }, // tipos vazios
+      { id: 1, name: 'poke', types: ['shadow'], stats: { hp: 10, attack: 10, defense: 10, speed: 10 } }, // tipo desconhecido
+      { id: 1, name: 'poke', types: ['fire', 'fire'], stats: { hp: 10, attack: 10, defense: 10, speed: 10 } }, // tipos duplicados
+      { id: 1, name: 'poke', types: ['fire', 'water', 'grass'], stats: { hp: 10, attack: 10, defense: 10, speed: 10 } }, // > 2 tipos
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: 0, attack: 10, defense: 10, speed: 10 } }, // hp <= 0
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: -5, attack: 10, defense: 10, speed: 10 } }, // hp negativo
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: 10, attack: 0, defense: 10, speed: 10 } }, // attack <= 0
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: 10, attack: 10, defense: -2, speed: 10 } }, // defense <= 0
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: 10, attack: 10, defense: 10, speed: -1 } }, // speed < 0
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: NaN, attack: 10, defense: 10, speed: 10 } }, // NaN
+      { id: 1, name: 'poke', types: ['fire'], stats: { hp: 10, attack: Infinity, defense: 10, speed: 10 } }, // Infinity
     ];
 
     for (const invalid of invalidInputs) {
       assert.throws(
         () => BattleEngine.createCombatant(invalid),
-        /Combatente inválido|ID do combatente|Nome do combatente|HP do combatente|Ataque do combatente|Defesa do combatente|Velocidade do combatente/,
+        /Combatente inválido|ID do combatente|Nome do combatente|HP do combatente|Ataque do combatente|Defesa do combatente|Velocidade do combatente|Tipos do combatente|Tipo|Quantidade de tipos/,
         `Deveria lançar erro para input inválido: ${JSON.stringify(invalid)}`
       );
     }
@@ -95,7 +112,6 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
     );
     assert.deepEqual(order, ['player', 'enemy']);
 
-    // Verifica também na resolução do turno
     const battle = BattleEngine.createBattle(CharmanderFixture, BulbasaurFixture);
     const { events } = BattleEngine.resolveTurn(battle);
     const firstAction = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.ACTION_STARTED);
@@ -118,8 +134,7 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
   });
 
   // --- E06: SPEED TIE ---
-  test('E06 — Speed Tie: desempate determinístico favorece jogador na PBA-003', () => {
-    // Charmander (Speed 65) vs SpeedTieWithCharmander (Speed 65)
+  test('E06 — Speed Tie: desempate determinístico favorece jogador na PBA-003/PBA-004', () => {
     const order = TurnManager.determineOrder(
       { speed: 65 },
       { speed: 65 }
@@ -129,7 +144,6 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
 
   // --- E07: MINIMUM DAMAGE ---
   test('E07 — Minimum Damage: mesmo com defesa massiva, o dano mínimo é sempre >= 1', () => {
-    // Attack 10 vs Defense 9999
     const damage = DamageCalculator.calculate(10, HighDefenseFixture.stats.defense);
     assert.ok(damage >= 1, `Dano calculado foi ${damage}, esperado >= 1`);
   });
@@ -160,7 +174,6 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
 
   // --- E10: HP FLOOR ---
   test('E10 — HP Floor: HP nunca atinge valor negativo (piso em 0)', () => {
-    // FragileOneHpFixture tem 1 HP. Charmander causa mais de 10 de dano.
     const battle = BattleEngine.createBattle(CharmanderFixture, FragileOneHpFixture);
     const { state } = BattleEngine.resolveTurn(battle);
 
@@ -170,16 +183,12 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
 
   // --- E11: FAINT STOPS COUNTERATTACK ---
   test('E11 — Faint Stops Counterattack: combatente nocauteado no 1º golpe não contra-ataca', () => {
-    // Jogador é mais rápido e nocauteia o adversário (1 HP) na primeira ação
     const battle = BattleEngine.createBattle(CharmanderFixture, FragileOneHpFixture);
     const { state, events } = BattleEngine.resolveTurn(battle);
 
-    // Deve haver apenas uma ação de ataque no turno
     const actionEvents = events.filter(e => e.type === BattleConstants.BATTLE_EVENTS.ACTION_STARTED);
     assert.equal(actionEvents.length, 1, 'Deve haver apenas 1 ação de ataque no turno do nocaute');
     assert.equal(actionEvents[0].actor, 'player');
-
-    // O jogador não deve ter sofrido dano
     assert.equal(state.player.currentHp, state.player.maxHp, 'Jogador não deve ter recebido contra-ataque');
   });
 
@@ -194,7 +203,6 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
 
   // --- E13: ENEMY VICTORY ---
   test('E13 — Enemy Victory: registra vitória do inimigo ao nocautear jogador', () => {
-    // Inimigo Pikachu mais rápido e com ataque alto contra jogador frágil
     const battle = BattleEngine.createBattle(FragileOneHpFixture, PikachuFixture);
     const { state } = BattleEngine.resolveTurn(battle);
 
@@ -209,25 +217,22 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
 
     assert.notEqual(endedState.status, BattleConstants.BATTLE_STATUS.IN_PROGRESS);
 
-    // Salva snapshot do estado final
     const hpPlayerBefore = endedState.player.currentHp;
     const hpEnemyBefore = endedState.enemy.currentHp;
     const statusBefore = endedState.status;
 
-    // Tentativa de executar turno em batalha encerrada deve lançar erro e não corromper estado
     assert.throws(
       () => BattleEngine.resolveTurn(endedState),
       /Não é possível executar turno em uma batalha com status/
     );
 
-    // Verifica que o estado continuou inalterado
     assert.equal(endedState.player.currentHp, hpPlayerBefore);
     assert.equal(endedState.enemy.currentHp, hpEnemyBefore);
     assert.equal(endedState.status, statusBefore);
   });
 
   // --- E15: EVENT ORDERING ---
-  test('E15 — Event Ordering: eventos estruturados emitidos na ordem lógica exata', () => {
+  test('E15 — Event Ordering: eventos estruturados emitidos na ordem lógica exata (incluindo TYPE_EFFECTIVENESS_RESOLVED)', () => {
     const battle = BattleEngine.createBattle(CharmanderFixture, FragileOneHpFixture);
     const { events } = BattleEngine.resolveTurn(battle);
 
@@ -235,16 +240,24 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
     const expectedSequence = [
       BattleConstants.BATTLE_EVENTS.TURN_STARTED,
       BattleConstants.BATTLE_EVENTS.ACTION_STARTED,
+      BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED,
       BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED,
       BattleConstants.BATTLE_EVENTS.POKEMON_FAINTED,
       BattleConstants.BATTLE_EVENTS.BATTLE_ENDED
     ];
 
-    assert.deepEqual(eventTypes, expectedSequence, 'Sequência de eventos do nocaute deve ser rigorosamente ordenada');
+    assert.deepEqual(eventTypes, expectedSequence, 'Sequência de eventos com nocaute deve ser rigorosamente ordenada');
+
+    // Valida propriedades do TYPE_EFFECTIVENESS_RESOLVED
+    const typeEvent = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED);
+    assert.equal(typeEvent.attackType, 'fire');
+    assert.deepEqual(typeEvent.defenderTypes, ['normal']);
+    assert.equal(typeEvent.multiplier, 1);
 
     // Valida propriedades do DAMAGE_APPLIED
     const damageEvent = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED);
     assert.ok(damageEvent.damage > 0);
+    assert.equal(damageEvent.multiplier, 1);
     assert.equal(damageEvent.previousHp, 1);
     assert.equal(damageEvent.currentHp, 0);
   });
@@ -264,28 +277,27 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
     const sourceCharmander = {
       id: 4,
       name: 'charmander',
+      types: ['fire'],
       stats: { hp: 39, attack: 52, defense: 43, speed: 65 }
     };
     const sourceBulbasaur = {
       id: 1,
       name: 'bulbasaur',
+      types: ['grass', 'poison'],
       stats: { hp: 45, attack: 49, defense: 49, speed: 45 }
     };
 
     const cloneCharmander = JSON.parse(JSON.stringify(sourceCharmander));
     const cloneBulbasaur = JSON.parse(JSON.stringify(sourceBulbasaur));
 
-    // Executa criação e simulação completa
     BattleEngine.simulateBattle(sourceCharmander, sourceBulbasaur);
 
-    // Garante que os objetos fontes continuam 100% idênticos
     assert.deepEqual(sourceCharmander, cloneCharmander, 'Objeto original do Charmander não pode ser modificado');
     assert.deepEqual(sourceBulbasaur, cloneBulbasaur, 'Objeto original do Bulbasaur não pode ser modificado');
   });
 
   // --- E18: OFFLINE ENGINE ---
   test('E18 — Offline Engine: motor executa puramente sem chamadas de rede ou PokéAPI', () => {
-    // Desabilita global.fetch para comprovar que nenhuma chamada de rede é realizada
     const originalFetch = global.fetch;
     global.fetch = () => {
       throw new Error('REDE BLOQUEADA: Battle Engine não pode invocar fetch!');
@@ -299,9 +311,91 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
     }
   });
 
-  // --- TESTE DE BATALHA COMPLETA COM PROTEÇÃO DE LOOP ---
-  test('FULL BATTLE SIMULATION: Charmander vs Bulbasaur com logs de turnos e proteção contra loop', () => {
+  // --- TY21: BATTLE USES TYPES ---
+  test('TY21 — Battle Uses Types: fraqueza elemental altera decisivamente o dano na batalha real', () => {
+    // Charmander (Fire) contra Scizor (Bug/Steel -> 4x fraqueza para Fire)
+    const battleVsScizor = BattleEngine.createBattle(CharmanderFixture, ScizorFixture);
+    const { events: eventsScizor } = BattleEngine.resolveTurn(battleVsScizor);
+    const dmgScizor = eventsScizor.find(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED && e.source === 'player');
+
+    // Charmander (Fire) contra LowDefense (Normal -> 1x neutro) com mesma defesa
+    const neutralTarget = {
+      id: 990,
+      name: 'neutral-target',
+      types: ['normal'],
+      stats: { hp: 100, attack: 10, defense: ScizorFixture.stats.defense, speed: 10 }
+    };
+    const battleVsNeutral = BattleEngine.createBattle(CharmanderFixture, neutralTarget);
+    const { events: eventsNeutral } = BattleEngine.resolveTurn(battleVsNeutral);
+    const dmgNeutral = eventsNeutral.find(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED && e.source === 'player');
+
+    assert.ok(
+      dmgScizor.damage > dmgNeutral.damage,
+      `Dano 4x no Scizor (${dmgScizor.damage}) deve ser estritamente maior que no alvo neutro (${dmgNeutral.damage})`
+    );
+    assert.equal(dmgScizor.multiplier, 4, 'Multiplicador contra Scizor deve ser 4');
+  });
+
+  // --- TY22: EFFECTIVENESS EVENT ---
+  test('TY22 — Effectiveness Event: evento TYPE_EFFECTIVENESS_RESOLVED contém payload completo', () => {
+    const battle = BattleEngine.createBattle(PikachuFixture, GyaradosFixture);
+    const { events } = BattleEngine.resolveTurn(battle);
+
+    const typeEvent = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED && e.source === 'player');
+    assert.ok(typeEvent, 'Evento TYPE_EFFECTIVENESS_RESOLVED deve existir');
+    assert.equal(typeEvent.source, 'player');
+    assert.equal(typeEvent.target, 'enemy');
+    assert.equal(typeEvent.attackType, 'electric');
+    assert.deepEqual(typeEvent.defenderTypes, ['water', 'flying']);
+    assert.equal(typeEvent.multiplier, 4);
+    assert.equal(typeEvent.classification, BattleConstants.TYPE_EFFECTIVENESS_CLASSIFICATION.SUPER_EFFECTIVE);
+  });
+
+  // --- TY23: EVENT ORDERING IN COMBAT ACTION ---
+  test('TY23 — Event Ordering: ACTION_STARTED -> TYPE_EFFECTIVENESS_RESOLVED -> DAMAGE_APPLIED', () => {
+    const battle = BattleEngine.createBattle(SquirtleFixture, CharmanderFixture);
+    const { events } = BattleEngine.resolveTurn(battle);
+
+    const actionIdx = events.findIndex(e => e.type === BattleConstants.BATTLE_EVENTS.ACTION_STARTED);
+    const typeIdx = events.findIndex(e => e.type === BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED);
+    const damageIdx = events.findIndex(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED);
+
+    assert.ok(actionIdx < typeIdx, 'ACTION_STARTED deve vir antes de TYPE_EFFECTIVENESS_RESOLVED');
+    assert.ok(typeIdx < damageIdx, 'TYPE_EFFECTIVENESS_RESOLVED deve vir antes de DAMAGE_APPLIED');
+  });
+
+  // --- TY24: IMMUNITY BATTLE EVENT ---
+  test('TY24 — Immunity Battle Event: ataque contra alvo imune resulta em 0 de dano e mantém HP intacto', () => {
+    // Pikachu (Electric) contra Geodude (Rock/Ground) -> Imunidade Ground
+    const battle = BattleEngine.createBattle(PikachuFixture, GeodudeFixture);
+    const initialGeodudeHp = battle.enemy.currentHp;
+
+    const { events, state } = BattleEngine.resolveTurn(battle);
+
+    const pikaTypeEvent = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED && e.source === 'player');
+    assert.equal(pikaTypeEvent.multiplier, 0);
+    assert.equal(pikaTypeEvent.classification, BattleConstants.TYPE_EFFECTIVENESS_CLASSIFICATION.IMMUNE);
+
+    const pikaDamageEvent = events.find(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED && e.source === 'player');
+    assert.equal(pikaDamageEvent.damage, 0);
+    assert.equal(pikaDamageEvent.currentHp, initialGeodudeHp, 'HP do defensor imune deve permanecer inalterado');
+    assert.equal(state.enemy.currentHp, initialGeodudeHp);
+  });
+
+  // --- TY25: DETERMINISM PRESERVED ---
+  test('TY25 — Determinism Preserved: simulações completas com tipos mantêm determinismo rigoroso', () => {
+    const run1 = BattleEngine.simulateBattle(SquirtleFixture, CharmanderFixture);
+    const run2 = BattleEngine.simulateBattle(SquirtleFixture, CharmanderFixture);
+
+    assert.deepEqual(run1.state, run2.state, 'Estados finais devem ser idênticos');
+    assert.deepEqual(run1.events, run2.events, 'Eventos emitidos devem ser rigorosamente idênticos');
+    assert.equal(run1.totalTurns, run2.totalTurns, 'Contador de turnos deve ser rigorosamente igual');
+  });
+
+  // --- FULL BATTLE SIMULATION COM TYPE EFFECTIVENESS ---
+  test('FULL BATTLE SIMULATION: Confronto elemental com logs de efetividade e proteção contra loop', () => {
     const maxTestTurns = 50;
+    // Charmander (Fire) vs Bulbasaur (Grass/Poison -> 2x fraqueza para Fire)
     const battle = BattleEngine.createBattle(CharmanderFixture, BulbasaurFixture);
     let currentState = battle;
     let turnCount = 0;
@@ -316,26 +410,27 @@ describe('PHASE PBA-003 — BATTLE ENGINE V1 TEST SUITE', () => {
       const result = BattleEngine.resolveTurn(currentState);
       currentState = result.state;
 
+      const typeEvents = result.events.filter(e => e.type === BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED);
       const damageEvents = result.events.filter(e => e.type === BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED);
+
       combatLog.push({
         turn: turnCount,
-        damages: damageEvents.map(d => `${d.source} causou ${d.damage} de dano em ${d.target} (HP: ${d.previousHp} -> ${d.currentHp})`)
+        actions: damageEvents.map((d, i) => {
+          const typeEvt = typeEvents[i];
+          return `${d.source} (${d.attackType}) atacou ${d.target} [${typeEvt ? typeEvt.classification : 'N/A'}, mult ${d.multiplier}x] -> ${d.damage} de dano (HP: ${d.previousHp} -> ${d.currentHp})`;
+        })
       });
     }
 
     assert.ok(
       currentState.status === BattleConstants.BATTLE_STATUS.PLAYER_WIN || currentState.status === BattleConstants.BATTLE_STATUS.ENEMY_WIN,
-      'Status final deve ser vitória de um dos combatentes'
+      'Status final deve ser vitória'
     );
-    assert.ok(currentState.winner === 'player' || currentState.winner === 'enemy', 'Vencedor deve ser definido');
-    assert.ok(turnCount > 0 && turnCount <= maxTestTurns, 'Quantidade de turnos deve ser razoável');
-    
-    // Prova que pelo menos um combatente chegou a 0 HP
-    const loserHp = currentState.winner === 'player' ? currentState.enemy.currentHp : currentState.player.currentHp;
-    assert.equal(loserHp, 0, 'O combatente derrotado deve ter exatamente 0 HP');
+    assert.ok(currentState.winner === 'player' || currentState.winner === 'enemy', 'Vencedor deve existir');
 
-    // Prova que o vencedor tem HP positivo
-    const winnerHp = currentState.winner === 'player' ? currentState.player.currentHp : currentState.enemy.currentHp;
-    assert.ok(winnerHp > 0, 'O vencedor deve ter HP maior que zero');
+    // Com Fire (2x) contra Grass/Poison e Bulbasaur Grass (0.5x) contra Fire, Charmander vence com folga
+    assert.equal(currentState.winner, 'player', 'Charmander deve vencer o confronto elemental contra Bulbasaur');
+    assert.equal(currentState.enemy.currentHp, 0, 'Bulbasaur derrotado deve ter exatamente 0 HP');
+    assert.ok(currentState.player.currentHp > 0, 'Charmander vencedor deve ter HP maior que zero');
   });
 });

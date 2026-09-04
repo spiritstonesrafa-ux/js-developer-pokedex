@@ -72,6 +72,20 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Imutabilidade comprovada (`INPUT_MUTATION = NONE`);
   - 100% de testes automatizados E01–E18 e Simulação Completa aprovados com Node.js nativo (26/26 testes).
 
+- **PBA-004 Type System**:
+  - Implementação da matriz completa de 18x18 tipos modernos (`type-chart.js`) com todas as 324 relações resolvíveis;
+  - Módulo puro de cálculo de efetividade (`type-effectiveness.js`) com suporte integral a combatentes single e dual-type;
+  - Multiplicadores elementais canônicos suportados: `0` (imune), `0.25` (dupla resistência), `0.5` (resistido), `1` (neutro), `2` (super efetivo) e `4` (dupla fraqueza);
+  - Prevalência estrita de imunidade em Pokémon dual-type ($x \times 0 = 0$);
+  - Classificação semântica de eventos: `IMMUNE`, `RESISTED`, `NEUTRAL` e `SUPER_EFFECTIVE`;
+  - Combatant Model v2 atualizado com validação e normalização de 1 a 2 tipos únicos;
+  - Integração com `DamageCalculator`: dano zero para imunidades absolutas e piso mínimo de $1$ para ataques não-imunes;
+  - Emissão do evento `TYPE_EFFECTIVENESS_RESOLVED` antes de `DAMAGE_APPLIED`;
+  - Ponte transitória: `BASIC_ATTACK` adota temporariamente o tipo primário do atacante (`attacker.types[0]`), sem STAB;
+  - 100% de isolamento mantido: `DOM = 0`, `FETCH = 0`, `LOCALSTORAGE = 0`, `AUDIO = 0`;
+  - Encapsulamento de todos os módulos de batalha em IIFE para prevenir colisões de escopo no navegador;
+  - 100% de aprovação nos testes automatizados: 52 testes (TY01–TY25, integridade das 324 relações e regressão completa E01–E18).
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -84,7 +98,7 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
    - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
 4. **Resiliência de Rede**: Dados de Pokémon do time são buscados sob demanda com cache em memória, apresentando estado localizado de erro caso a PokéAPI esteja indisponível sem quebrar a aplicação.
-5. **Game Engine Pura na PBA-003**: Sem tipos, vantagens elementais, golpes reais ou IA nesta fase. As regras matemáticas de tipos serão introduzidas estritamente na PBA-004.
+5. **Regras Elementais na PBA-004**: O tipo do Pokémon agora altera decisivamente o dano de batalha. O Move System (golpes reais, categorias, PP e acurácia) será introduzido estritamente na PBA-005.
 
 ---
 
@@ -95,14 +109,15 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-001 = PASS`
   - `PBA-002 = PASS`
   - `PBA-003 = PASS`
-- **Working Tree**: Limpo (pré-commit da fase PBA-003)
+  - `PBA-004 = PASS`
+- **Working Tree**: Limpo (pré-commit da fase PBA-004)
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-004 — Type System
+NEXT_PHASE = PBA-005 — Move System
 ```
 
-*(Atenção: A Fase PBA-004 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-005 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
