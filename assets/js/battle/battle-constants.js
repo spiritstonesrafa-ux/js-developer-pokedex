@@ -3,7 +3,8 @@
  * CONSTANTES DO MOTOR DE BATALHA: BATTLE CONSTANTS (battle-constants.js)
  * ====================================================================
  * Centraliza todos os estados, tipos de eventos, identificadores de ações,
- * catálogo de tipos elementais e parâmetros matemáticos das Fases PBA-003 e PBA-004.
+ * catálogo de tipos elementais, categorias de golpe e parâmetros matemáticos
+ * das Fases PBA-003, PBA-004 e PBA-005.
  * 
  * Compatível com Node.js (CommonJS) e navegadores (window.PBABattle).
  */
@@ -20,6 +21,11 @@
     BATTLE_STARTED: 'BATTLE_STARTED',
     TURN_STARTED: 'TURN_STARTED',
     ACTION_STARTED: 'ACTION_STARTED',
+    MOVE_SELECTED: 'MOVE_SELECTED',
+    MOVE_USED: 'MOVE_USED',
+    PP_CHANGED: 'PP_CHANGED',
+    MOVE_MISSED: 'MOVE_MISSED',
+    STAB_RESOLVED: 'STAB_RESOLVED',
     TYPE_EFFECTIVENESS_RESOLVED: 'TYPE_EFFECTIVENESS_RESOLVED',
     DAMAGE_APPLIED: 'DAMAGE_APPLIED',
     POKEMON_FAINTED: 'POKEMON_FAINTED',
@@ -27,7 +33,14 @@
   });
 
   const BATTLE_ACTIONS = Object.freeze({
-    BASIC_ATTACK: 'BASIC_ATTACK'
+    MOVE: 'MOVE',
+    BASIC_ATTACK: 'BASIC_ATTACK' // Mantido para compatibilidade
+  });
+
+  const MOVE_DAMAGE_CLASSES = Object.freeze({
+    PHYSICAL: 'physical',
+    SPECIAL: 'special',
+    STATUS: 'status'
   });
 
   const POKEMON_TYPES = Object.freeze({
@@ -62,13 +75,17 @@
     SIMULATION_LEVEL: 50,
     BASIC_ATTACK_POWER: 40,
     PLAYER_FIRST_ON_SPEED_TIE: true,
-    MAX_TURNS_LIMIT: 100
+    MAX_TURNS_LIMIT: 100,
+    MOVE_LOADOUT_MIN: 1,
+    MOVE_LOADOUT_MAX: 4,
+    STAB_MULTIPLIER: 1.5
   });
 
   const BattleConstants = Object.freeze({
     BATTLE_STATUS,
     BATTLE_EVENTS,
     BATTLE_ACTIONS,
+    MOVE_DAMAGE_CLASSES,
     POKEMON_TYPES,
     TYPE_EFFECTIVENESS_CLASSIFICATION,
     BATTLE_CONFIG

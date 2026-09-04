@@ -170,3 +170,78 @@ pokeApi.getPokemonsByType = async (type, limit = 40) => {
   const detailPromises = pokemonEntries.map(entry => pokeApi.getPokemonDetail(entry.pokemon.url));
   return Promise.all(detailPromises);
 };
+
+// Cache em memória para golpes já consultados (evita requisições redundantes à PokéAPI)
+const moveDetailCache = new Map();
+
+/**
+ * Busca detalhes de um golpe (Move) na PokéAPI com cache em memória
+ * e o normaliza via MoveModel (PBA-005).
+ *
+ * @param {string|number|Object} moveOrIdOrUrl - Nome, ID, URL ou objeto { url } do golpe.
+ * @returns {Promise<Object>} Objeto Move normalizado e imutável.
+ */
+pokeApi.getMoveDetail = async (moveOrIdOrUrl) => {
+  if (!moveOrIdOrUrl) {
+    throw new Error('Identificador do golpe é obrigatório.');
+  }
+
+  let cacheKey;
+  let url;
+
+  if (typeof moveOrIdOrUrl === 'object' && moveOrIdOrUrl !== null && moveOrIdOrUrl.url) {
+    url = moveOrIdOrUrl.url;
+    cacheKey = String(moveOrIdOrUrl.name || url).toLowerCase();
+  } else if (typeof moveOrIdOrUrl === 'string' && moveOrIdOrUrl.startsWith('http')) {
+    url = moveOrIdOrUrl;
+    cacheKey = url.toLowerCase();
+  } else {
+    cacheKey = String(moveOrIdOrUrl).trim().toLowerCase();
+    url = `https://pokeapi.co/api/v2/move/${cacheKey}`;
+  }
+
+  if (moveDetailCache.has(cacheKey)) {
+    return moveDetailCache.get(cacheKey);
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar golpe "${cacheKey}" na PokéAPI (status: ${response.status}).`);
+  }
+
+  const rawData = await response.json();
+
+  let normalizedMove;
+  if (typeof window !== 'undefined' && window.PBABattle && window.PBABattle.MoveModel) {
+    normalizedMove = window.PBABattle.MoveModel.convertPokeApiMove(rawData);
+  } else if (typeof require !== 'undefined') {
+    const MoveModel = require('./battle/move-model.js');
+    normalizedMove = MoveModel.convertPokeApiMove(rawData);
+  } else {
+    normalizedMove = {
+      id: rawData.id,
+      name: rawData.name,
+      type: rawData.type?.name,
+      power: rawData.power,
+      accuracy: rawData.accuracy,
+      pp: rawData.pp,
+      damageClass: rawData.damage_class?.name
+    };
+  }
+
+  moveDetailCache.set(cacheKey, normalizedMove);
+  if (normalizedMove.id) {
+    moveDetailCache.set(String(normalizedMove.id), normalizedMove);
+  }
+  if (normalizedMove.name) {
+    moveDetailCache.set(normalizedMove.name.toLowerCase(), normalizedMove);
+  }
+
+  return normalizedMove;
+};
+
+// Permite limpar o cache durante testes se necessário
+pokeApi.clearMoveCache = () => {
+  moveDetailCache.clear();
+};
+

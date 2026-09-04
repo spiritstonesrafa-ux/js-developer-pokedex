@@ -113,16 +113,20 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── battle-constants.js     # Estados, eventos, ações e catálogo de tipos
 │       │   ├── type-chart.js           # Matriz completa de efetividade (324 relações)
 │       │   ├── type-effectiveness.js   # Cálculo multiplicativo e validação single/dual-type
-│       │   ├── damage-calculator.js    # Fórmula de dano com multiplicadores elementais
+│       │   ├── move-model.js           # Modelo normalizado de golpes (Physical/Special/PP/Accuracy)
+│       │   ├── damage-calculator.js    # Pipeline de dano v2 com Power, STAB e Efetividade
 │       │   ├── turn-manager.js         # Iniciativa por Speed e desempate determinístico
-│       │   └── battle-engine.js        # Núcleo 1x1 com ciclo de turnos e eventos estruturados
+│       │   └── battle-engine.js        # Motor 1x1 com Combatant Model v3, turnos e eventos
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
 ├── tests/
 │   ├── fixtures/
-│   │   └── pokemon-fixtures.js # Fixtures offline para testes unitários
+│   │   ├── pokemon-fixtures.js      # Fixtures offline com Combatant Model v3 e moves
+│   │   ├── move-fixtures.js         # Catálogo estático de golpes para testes unitários
+│   │   └── type-chart-reference.js  # Referência canônica independente para hardening (18x18)
 │   └── battle/
+│       ├── move-system.test.js          # Suíte de testes do Move System (MV01-MV43)
 │       ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
 │       ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
 │       ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
@@ -142,7 +146,7 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-002 Team Builder** *(Fase Concluída)*: Seleção de time tático (até 3 Pokémon), definição de Líder, reordenação acessível, persistência confiável em `localStorage` (`team.current`) e integração total com Pokédex e modal.
 - [x] **PBA-003 Battle Engine v1** *(Fase Concluída)*: Núcleo matemático de combate 1x1 funcional, determinístico e testável, completamente desacoplado de DOM, PokéAPI e áudio. Gerenciamento de turnos por Speed, cálculo de dano puro, piso de HP em zero e emissão de eventos estruturados.
 - [x] **PBA-004 Type System** *(Fase Concluída)*: Matriz completa dos 18 tipos modernos (324 relações), suporte integral a combatentes single e dual-type (multiplicadores 0, 0.25, 0.5, 1, 2, 4), prevalência absoluta de imunidades, classificação estruturada de eventos e integração matemática com o cálculo de dano.
-- [ ] **PBA-005 Move System**: Catálogo e seleção de golpes com poder, precisão e categoria.
+- [x] **PBA-005 Move System** *(Fase Concluída)*: O Battle Engine agora utiliza golpes normalizados com Power real, Type, Accuracy determinística, PP (Power Points) e categorias Physical/Special. Introdução de STAB (1.5x), seleção de golpes no turno, eventos estruturados de HIT/MISS e hardening do Type Chart contra referência canônica independente.
 - [ ] **PBA-006 Battle 3x3**: Batalhas completas em equipe com mecânica de substituição.
 - [ ] **PBA-007 Battle AI**: Inteligência artificial adversária com heurísticas de escolha de golpe e troca.
 - [ ] **PBA-008 Battle Presentation Engine**: Desacoplamento assíncrono entre eventos da engine e camada visual.

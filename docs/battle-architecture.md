@@ -273,7 +273,87 @@ sequenceDiagram
 
 ## 8. Decisões Explicitamente Adiadas
 
-- **Sistema de Golpes Reais, PP, Acurácia, Categoria (Físico/Especial) e Crítico**: Reservado para a Fase PBA-005.
+### Fase PBA-005 (Move System)
+1. **Modelo Canônico de Golpe (`MoveModel`)**:
+   - Estrutura imutável normalizada com validação rigorosa (`assets/js/battle/move-model.js`):
+     ```json
+     {
+       "id": 85,
+       "name": "thunderbolt",
+       "type": "electric",
+       "power": 90,
+       "accuracy": 100,
+       "pp": 15,
+       "damageClass": "special"
+     }
+     ```
+   - Categoria de dano (`damageClass`): `physical` e `special`.
+   - Golpes da categoria `status` (ex: *Growl*, *Thunder Wave*) são reconhecidos pelo modelo, porém rejeitados com erro controlado (`UNSUPPORTED_IN_PBA_005`), sem conversão para danos fictícios.
+   - Suporte a golpes *Always-Hit* (com `accuracy: null`), dispensando checagem de acurácia.
+2. **Combatant Model v3**:
+   - Expansão dos atributos de combate para incluir ataque/defesa especial e catálogo de movimentos:
+     ```json
+     {
+       "id": 6,
+       "name": "charizard",
+       "types": ["fire", "flying"],
+       "maxHp": 78,
+       "currentHp": 78,
+       "attack": 84,
+       "defense": 78,
+       "specialAttack": 109,
+       "specialDefense": 85,
+       "speed": 100,
+       "moves": [
+         { "id": 53, "name": "flamethrower", "type": "fire", "power": 90, "accuracy": 100, "maxPp": 15, "currentPp": 15, "damageClass": "special" },
+         { "id": 337, "name": "dragon-claw", "type": "dragon", "power": 80, "accuracy": 100, "maxPp": 15, "currentPp": 15, "damageClass": "physical" },
+         { "id": 10, "name": "scratch", "type": "normal", "power": 40, "accuracy": 100, "maxPp": 35, "currentPp": 35, "damageClass": "physical" }
+       ]
+     }
+     ```
+   - Regras de loadout: mínimo de 1 golpe, máximo de 4 golpes (`MOVE_LOADOUT_MIN = 1`, `MOVE_LOADOUT_MAX = 4`), sem duplicatas por ID ou nome.
+3. **Divisão Físico vs Especial e Seleção de Atributos**:
+   - Golpes Físicos: utilizam `attacker.attack` contra `defender.defense`.
+   - Golpes Especiais: utilizam `attacker.specialAttack` contra `defender.specialDefense`.
+   - Independência cruzada comprovada: alterar `specialAttack` não altera o dano físico, e alterar `attack` não altera o dano especial.
+4. **Move Power & Desativação do Tipo Primário Temporário**:
+   - O poder do ataque agora é dinâmico e fornecido pelo golpe selecionado (`move.power`).
+   - O tipo da ação agora é derivado exclusivamente do golpe (`attackType = move.type`).
+   - A regra de ponte temporária da PBA-004 (`BASIC_ATTACK_PRIMARY_TYPE_BRIDGE_ACTIVE`) foi desativada no caminho ativo do Battle Engine (`NO`).
+5. **Sistema de PP (Power Points)**:
+   - Estado runtime (`currentPp`) isolado do modelo estático (`maxPp`).
+   - Consumo de 1 PP ocorre no início da execução da ação, tanto em acertos (*hit*) quanto em erros (*miss*).
+   - Bloqueio estrito de golpes com `currentPp <= 0` (`ACTION_REJECTED`).
+   - Preservação em nocaute: se o primeiro atacante nocautear o adversário, o golpe do defensor **não é executado e seu PP permanece inalterado**.
+6. **Resolução Determinística de Precisão (Accuracy)**:
+   - A Battle Engine não invoca `Math.random()`.
+   - Ações externas recebem opcionalmente `accuracyRoll` ($1 \le \text{roll} \le 100$).
+   - Condição de acerto: $\text{roll} \le \text{move.accuracy}$ (ou golpe *Always-Hit*).
+   - Em caso de *miss*: emite evento `MOVE_MISSED`, consome PP, não emite `DAMAGE_APPLIED` e mantém o HP do defensor intacto.
+7. **STAB (Same-Type Attack Bonus) e Pipeline de Dano v2**:
+   - Multiplicador de $1.5\times$ caso `attacker.types.includes(move.type)`, e $1.0\times$ caso contrário.
+   - Prevalência estrita de imunidade: se `typeMultiplier === 0`, o dano final é impreterivelmente $0$ (STAB jamais supera imunidade).
+   - Pipeline de cálculo:
+     $$\text{baseDamage} = \text{calculateBaseDamage}(\text{attackStat}, \text{defenseStat}, \text{power}, \text{level})$$
+     $$\text{finalDamage} = \text{applyModifier}(\text{baseDamage}, \text{typeMultiplier}, \text{stabMultiplier})$$
+     $$\text{danoModificado} = \lfloor \text{baseDamage} \times \text{stabMultiplier} \times \text{typeMultiplier} \rfloor$$
+     $$\text{finalDamage} = \begin{cases} 0 & \text{se } \text{typeMultiplier} = 0 \\ \max(1, \text{danoModificado}) & \text{se } \text{typeMultiplier} > 0 \end{cases}$$
+8. **Fronteira de Dados e Integração com a PokéAPI**:
+   - `pokeApi.getMoveDetail(moveOrIdOrUrl)` implementado em `assets/js/poke-api.js` com cache em memória (`Map`) para evitar requisições repetidas.
+   - A Battle Engine permanece 100% isolada de chamadas `fetch()`.
+9. **Barramento de Eventos do Move System**:
+   - Fluxo completo em caso de HIT:
+     $$\text{TURN\_STARTED} \to \text{ACTION\_STARTED} \to \text{MOVE\_SELECTED} \to \text{MOVE\_USED} \to \text{PP\_CHANGED} \to \text{STAB\_RESOLVED} \to \text{TYPE\_EFFECTIVENESS\_RESOLVED} \to \text{DAMAGE\_APPLIED}$$
+     (seguido de $\text{POKEMON\_FAINTED} \to \text{BATTLE\_ENDED}$ em caso de nocaute).
+   - Fluxo em caso de MISS:
+     $$\text{TURN\_STARTED} \to \text{ACTION\_STARTED} \to \text{MOVE\_SELECTED} \to \text{MOVE\_USED} \to \text{PP\_CHANGED} \to \text{MOVE\_MISSED}$$
+
+---
+
+## 8. Decisões Explicitamente Adiadas
+
+- **Golpes de Status (Status Moves)**: Reconhecidos na validação, porém com efeitos (Burn, Poison, Paralysis, Sleep, Freeze, Buffs/Debuffs) reservados para fases futuras.
+- **Acertos Críticos (Critical Hits) e Variação de RNG de Dano**: Reservados para uma expansão posterior com semente controlada.
 - **Batalhas 3x3 e Trocas de Pokémon**: Reservado para a Fase PBA-006.
 - **Inteligência Artificial Estratégica**: Reservada para a Fase PBA-007.
 - **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
@@ -284,7 +364,7 @@ sequenceDiagram
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
-   - *Mitigação*: Armazenar golpes comuns em um dicionário estático local e carregar dados sob demanda com cache em memória (*PokemonRepository*).
+   - *Mitigação*: Armazenar golpes comuns em um dicionário estático local e carregar dados sob demanda com cache em memória (*PokemonRepository* / `moveDetailCache`).
 2. **Políticas de Autoplay de Áudio nos Navegadores**:
    - *Risco*: Navegadores modernos bloqueiam reprodução automática de áudio sem interação prévia do usuário.
    - *Mitigação*: Inicializar o contexto de áudio somente após o primeiro clique do usuário (ex: botão "Batalhar" ou clique nos controles).
@@ -304,7 +384,7 @@ sequenceDiagram
 [x] PBA-002 Team Builder (Montagem e Persistência de Equipe) ── [CONCLUÍDA]
 [x] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1) ─ [CONCLUÍDA]
 [x] PBA-004 Type System (Tabela Completa de Tipos e Efetividades) ── [CONCLUÍDA]
-[ ] PBA-005 Move System (Sistemas de Golpes, Categorias e PP)
+[x] PBA-005 Move System (Sistemas de Golpes, Categorias e PP) ─ [CONCLUÍDA]
 [ ] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon)
 [ ] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários)
 [ ] PBA-008 Battle Presentation Engine (Desacoplamento Visual da Lógica)
@@ -319,3 +399,4 @@ sequenceDiagram
 [ ] PBA-017 Automated Tests (Testes de Regras, Cálculos e Efetividade)
 [ ] PBA-018 Portfolio Release (Deploy Final e Documentação de Caso de Estudo)
 ```
+

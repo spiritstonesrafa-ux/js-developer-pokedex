@@ -2,9 +2,41 @@
  * ====================================================================
  * FIXTURES DE POKÉMON PARA TESTES OFFLINE (pokemon-fixtures.js)
  * ====================================================================
- * Dados estáticos e isolados para testes automatizados das Fases PBA-003 e PBA-004.
+ * Dados estáticos e isolados para testes automatizados das Fases PBA-003, PBA-004 e PBA-005.
  * Permite execução 100% offline sem nenhuma dependência da PokéAPI.
+ * Atualizado para Combatant Model v3 (com specialAttack, specialDefense e moves).
  */
+
+let moveFixtures;
+if (typeof require !== 'undefined') {
+  moveFixtures = require('./move-fixtures.js');
+} else if (typeof window !== 'undefined' && window.PBABattleMoveFixtures) {
+  moveFixtures = window.PBABattleMoveFixtures;
+} else {
+  moveFixtures = {
+    ThunderboltFixture: { id: 85, name: 'thunderbolt', type: 'electric', power: 90, accuracy: 100, pp: 15, damageClass: 'special' },
+    ScratchFixture: { id: 10, name: 'scratch', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' },
+    FlamethrowerFixture: { id: 53, name: 'flamethrower', type: 'fire', power: 90, accuracy: 100, pp: 15, damageClass: 'special' },
+    EmberFixture: { id: 52, name: 'ember', type: 'fire', power: 40, accuracy: 100, pp: 25, damageClass: 'special' },
+    WaterGunFixture: { id: 55, name: 'water-gun', type: 'water', power: 40, accuracy: 100, pp: 25, damageClass: 'special' },
+    HydroPumpFixture: { id: 56, name: 'hydro-pump', type: 'water', power: 110, accuracy: 80, pp: 5, damageClass: 'special' },
+    VineWhipFixture: { id: 22, name: 'vine-whip', type: 'grass', power: 45, accuracy: 100, pp: 25, damageClass: 'physical' },
+    EarthquakeFixture: { id: 89, name: 'earthquake', type: 'ground', power: 100, accuracy: 100, pp: 10, damageClass: 'physical' },
+    DragonClawFixture: { id: 337, name: 'dragon-claw', type: 'dragon', power: 80, accuracy: 100, pp: 15, damageClass: 'physical' }
+  };
+}
+
+const {
+  ThunderboltFixture,
+  ScratchFixture,
+  FlamethrowerFixture,
+  EmberFixture,
+  WaterGunFixture,
+  HydroPumpFixture,
+  VineWhipFixture,
+  EarthquakeFixture,
+  DragonClawFixture
+} = moveFixtures;
 
 const CharmanderFixture = Object.freeze({
   id: 4,
@@ -14,8 +46,11 @@ const CharmanderFixture = Object.freeze({
     hp: 39,
     attack: 52,
     defense: 43,
+    specialAttack: 60,
+    specialDefense: 50,
     speed: 65
-  }
+  },
+  moves: [EmberFixture, ScratchFixture]
 });
 
 const BulbasaurFixture = Object.freeze({
@@ -26,8 +61,11 @@ const BulbasaurFixture = Object.freeze({
     hp: 45,
     attack: 49,
     defense: 49,
+    specialAttack: 65,
+    specialDefense: 65,
     speed: 45
-  }
+  },
+  moves: [VineWhipFixture, ScratchFixture]
 });
 
 const SquirtleFixture = Object.freeze({
@@ -38,8 +76,11 @@ const SquirtleFixture = Object.freeze({
     hp: 44,
     attack: 48,
     defense: 65,
+    specialAttack: 50,
+    specialDefense: 64,
     speed: 43
-  }
+  },
+  moves: [WaterGunFixture, ScratchFixture]
 });
 
 const PikachuFixture = Object.freeze({
@@ -50,8 +91,11 @@ const PikachuFixture = Object.freeze({
     hp: 35,
     attack: 55,
     defense: 40,
+    specialAttack: 50,
+    specialDefense: 50,
     speed: 90
-  }
+  },
+  moves: [ThunderboltFixture, ScratchFixture]
 });
 
 const HighDefenseFixture = Object.freeze({
@@ -61,9 +105,12 @@ const HighDefenseFixture = Object.freeze({
   stats: {
     hp: 20,
     attack: 10,
-    defense: 9999, // Defesa altíssima para testar dano mínimo
+    defense: 9999,
+    specialAttack: 10,
+    specialDefense: 9999,
     speed: 5
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const LowDefenseFixture = Object.freeze({
@@ -74,8 +121,11 @@ const LowDefenseFixture = Object.freeze({
     hp: 100,
     attack: 50,
     defense: 10,
+    specialAttack: 50,
+    specialDefense: 10,
     speed: 50
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const HighAttackFixture = Object.freeze({
@@ -86,8 +136,11 @@ const HighAttackFixture = Object.freeze({
     hp: 100,
     attack: 150,
     defense: 50,
+    specialAttack: 150,
+    specialDefense: 50,
     speed: 50
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const LowAttackFixture = Object.freeze({
@@ -98,8 +151,11 @@ const LowAttackFixture = Object.freeze({
     hp: 100,
     attack: 20,
     defense: 50,
+    specialAttack: 20,
+    specialDefense: 50,
     speed: 50
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const SpeedTieWithCharmanderFixture = Object.freeze({
@@ -110,8 +166,11 @@ const SpeedTieWithCharmanderFixture = Object.freeze({
     hp: 50,
     attack: 50,
     defense: 50,
-    speed: 65 // Exatamente igual a Charmander (65)
-  }
+    specialAttack: 50,
+    specialDefense: 50,
+    speed: 65
+  },
+  moves: [ScratchFixture]
 });
 
 const FragileOneHpFixture = Object.freeze({
@@ -119,11 +178,14 @@ const FragileOneHpFixture = Object.freeze({
   name: 'fragile-mon',
   types: ['normal'],
   stats: {
-    hp: 1, // 1 HP para ser derrotado no primeiro golpe
+    hp: 1,
     attack: 30,
     defense: 30,
+    specialAttack: 30,
+    specialDefense: 30,
     speed: 10
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 // --- FIXTURES ESPECÍFICAS DA FASE PBA-004 (TYPE SYSTEM) ---
@@ -131,109 +193,136 @@ const FragileOneHpFixture = Object.freeze({
 const GyaradosFixture = Object.freeze({
   id: 130,
   name: 'gyarados',
-  types: ['water', 'flying'], // 4x fraqueza para Electric
+  types: ['water', 'flying'],
   stats: {
     hp: 95,
     attack: 125,
     defense: 79,
+    specialAttack: 60,
+    specialDefense: 100,
     speed: 81
-  }
+  },
+  moves: [WaterGunFixture, ScratchFixture]
 });
 
 const SwampertFixture = Object.freeze({
   id: 260,
   name: 'swampert',
-  types: ['water', 'ground'], // 4x fraqueza para Grass, Imune a Electric
+  types: ['water', 'ground'],
   stats: {
     hp: 100,
     attack: 110,
     defense: 90,
+    specialAttack: 85,
+    specialDefense: 90,
     speed: 60
-  }
+  },
+  moves: [WaterGunFixture, EarthquakeFixture]
 });
 
 const ScizorFixture = Object.freeze({
   id: 212,
   name: 'scizor',
-  types: ['bug', 'steel'], // 4x fraqueza para Fire
+  types: ['bug', 'steel'],
   stats: {
     hp: 70,
     attack: 130,
     defense: 100,
+    specialAttack: 55,
+    specialDefense: 80,
     speed: 65
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const CharizardFixture = Object.freeze({
   id: 6,
   name: 'charizard',
-  types: ['fire', 'flying'], // 0.25x resistência contra Grass e Bug
+  types: ['fire', 'flying'],
   stats: {
     hp: 78,
     attack: 84,
     defense: 78,
+    specialAttack: 109,
+    specialDefense: 85,
     speed: 100
-  }
+  },
+  moves: [FlamethrowerFixture, DragonClawFixture, ScratchFixture]
 });
 
 const KingdraFixture = Object.freeze({
   id: 230,
   name: 'kingdra',
-  types: ['water', 'dragon'], // 0.25x resistência contra Fire e Water
+  types: ['water', 'dragon'],
   stats: {
     hp: 75,
     attack: 95,
     defense: 95,
+    specialAttack: 95,
+    specialDefense: 95,
     speed: 85
-  }
+  },
+  moves: [WaterGunFixture, DragonClawFixture]
 });
 
 const GastlyFixture = Object.freeze({
   id: 92,
   name: 'gastly',
-  types: ['ghost', 'poison'], // Imune a Normal e Fighting
+  types: ['ghost', 'poison'],
   stats: {
     hp: 30,
     attack: 35,
     defense: 30,
+    specialAttack: 100,
+    specialDefense: 35,
     speed: 80
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const GeodudeFixture = Object.freeze({
   id: 74,
   name: 'geodude',
-  types: ['rock', 'ground'], // Imune a Electric
+  types: ['rock', 'ground'],
   stats: {
     hp: 40,
     attack: 80,
     defense: 100,
+    specialAttack: 30,
+    specialDefense: 30,
     speed: 20
-  }
+  },
+  moves: [EarthquakeFixture, ScratchFixture]
 });
 
 const ClefairyFixture = Object.freeze({
   id: 35,
   name: 'clefairy',
-  types: ['fairy'], // Imune a Dragon
+  types: ['fairy'],
   stats: {
     hp: 70,
     attack: 45,
     defense: 48,
+    specialAttack: 60,
+    specialDefense: 65,
     speed: 35
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 const PidgeotFixture = Object.freeze({
   id: 18,
   name: 'pidgeot',
-  types: ['normal', 'flying'], // Imune a Ghost e Ground
+  types: ['normal', 'flying'],
   stats: {
     hp: 83,
     attack: 80,
     defense: 75,
+    specialAttack: 70,
+    specialDefense: 70,
     speed: 101
-  }
+  },
+  moves: [ScratchFixture]
 });
 
 if (typeof module !== 'undefined' && module.exports) {

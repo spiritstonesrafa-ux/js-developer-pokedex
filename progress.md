@@ -86,6 +86,25 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Encapsulamento de todos os módulos de batalha em IIFE para prevenir colisões de escopo no navegador;
   - 100% de aprovação nos testes automatizados: 52 testes (TY01–TY25, integridade das 324 relações e regressão completa E01–E18).
 
+- **PBA-005 Move System**:
+  - Implementação do modelo normalizado de golpes (`MoveModel` em `assets/js/battle/move-model.js`) com `id`, `name`, `type`, `power`, `accuracy`, `pp` e `damageClass`;
+  - Suporte completo às categorias de dano `physical` e `special`;
+  - Golpes da categoria `status` (ex: *Growl*) são reconhecidos na validação, mas rejeitados como `UNSUPPORTED_IN_PBA_005` (sem danos fictícios);
+  - Combatant Model v3: incorporação de `specialAttack`, `specialDefense` e loadout de 1 a 4 moves (`MOVE_LOADOUT_MIN = 1`, `MOVE_LOADOUT_MAX = 4`) sem duplicatas;
+  - Resolução de atributos ofensivos e defensivos:
+    - Físico: `attacker.attack` vs `defender.defense`;
+    - Especial: `attacker.specialAttack` vs `defender.specialDefense`;
+    - Independência estatística comprovada por testes (alterar stats físicos não altera danos especiais e vice-versa);
+  - Desativação do tipo primário temporário: o tipo elemental da ação agora é estritamente regido pelo golpe (`BASIC_ATTACK_PRIMARY_TYPE_BRIDGE_ACTIVE = NO`);
+  - Sistema de PP: estado runtime isolado, decremento de 1 PP em hits e misses, bloqueio em zero PP (`ACTION_REJECTED`), e preservação de PP do defensor em caso de nocaute no primeiro ataque;
+  - Resolução determinística de Precisão (Accuracy): sem `Math.random()`, rolls externos ($1 \le \text{roll} \le 100$), suporte a *Always-Hit* (`accuracy: null`), com miss causando 0 dano e deixando o HP intacto;
+  - STAB (Same-Type Attack Bonus): multiplicador de $1.5\times$ quando o tipo do golpe coincide com os tipos do atacante ($1.0\times$ caso contrário);
+  - Prevalência estrita de imunidade: multiplicador elemental $0$ anula o dano final independentemente de STAB ou poder base;
+  - Pipeline de dano v2: $\lfloor \text{baseDamage} \times \text{stabMultiplier} \times \text{typeMultiplier} \rfloor$;
+  - Fronteira de dados da PokéAPI: `pokeApi.getMoveDetail` com cache em memória (`Map`) e adaptador para `MoveModel`, mantendo o Battle Engine 100% isolado de chamadas `fetch`;
+  - Hardening do Type Chart: verificação independente de todas as 324 relações $18 \times 18$ contra fixture canônica autônoma (`type-chart-reference.js`);
+  - 100% de aprovação nos testes automatizados: 95 testes (MV01–MV43, TY01–TY25, E01–E18) sem nenhuma regressão.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -98,7 +117,17 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
    - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
 4. **Resiliência de Rede**: Dados de Pokémon do time são buscados sob demanda com cache em memória, apresentando estado localizado de erro caso a PokéAPI esteja indisponível sem quebrar a aplicação.
-5. **Regras Elementais na PBA-004**: O tipo do Pokémon agora altera decisivamente o dano de batalha. O Move System (golpes reais, categorias, PP e acurácia) será introduzido estritamente na PBA-005.
+5. **Configurações Oficiais do Move System (PBA-005)**:
+   ```text
+   MOVE_SYSTEM = COMPLETE_V1
+   PHYSICAL_MOVES = YES
+   SPECIAL_MOVES = YES
+   STATUS_MOVES = NOT_YET
+   PP = YES
+   ACCURACY = YES
+   STAB = YES
+   INTERNAL_RNG = NO
+   ```
 
 ---
 
@@ -110,14 +139,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-002 = PASS`
   - `PBA-003 = PASS`
   - `PBA-004 = PASS`
-- **Working Tree**: Limpo (pré-commit da fase PBA-004)
+  - `PBA-005 = PASS`
+- **Working Tree**: Limpo (pré-commit da fase PBA-005)
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-005 — Move System
+NEXT_PHASE = PBA-006 — Battle 3x3
 ```
 
-*(Atenção: A Fase PBA-005 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-006 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+

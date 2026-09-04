@@ -240,6 +240,10 @@ describe('PHASE PBA-003 & PBA-004 — BATTLE ENGINE & TYPE SYSTEM SUITE', () => 
     const expectedSequence = [
       BattleConstants.BATTLE_EVENTS.TURN_STARTED,
       BattleConstants.BATTLE_EVENTS.ACTION_STARTED,
+      BattleConstants.BATTLE_EVENTS.MOVE_SELECTED,
+      BattleConstants.BATTLE_EVENTS.MOVE_USED,
+      BattleConstants.BATTLE_EVENTS.PP_CHANGED,
+      BattleConstants.BATTLE_EVENTS.STAB_RESOLVED,
       BattleConstants.BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED,
       BattleConstants.BATTLE_EVENTS.DAMAGE_APPLIED,
       BattleConstants.BATTLE_EVENTS.POKEMON_FAINTED,
@@ -278,13 +282,15 @@ describe('PHASE PBA-003 & PBA-004 — BATTLE ENGINE & TYPE SYSTEM SUITE', () => 
       id: 4,
       name: 'charmander',
       types: ['fire'],
-      stats: { hp: 39, attack: 52, defense: 43, speed: 65 }
+      stats: { hp: 39, attack: 52, defense: 43, specialAttack: 60, specialDefense: 50, speed: 65 },
+      moves: [{ id: 52, name: 'ember', type: 'fire', power: 40, accuracy: 100, pp: 25, damageClass: 'special' }]
     };
     const sourceBulbasaur = {
       id: 1,
       name: 'bulbasaur',
       types: ['grass', 'poison'],
-      stats: { hp: 45, attack: 49, defense: 49, speed: 45 }
+      stats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 },
+      moves: [{ id: 22, name: 'vine-whip', type: 'grass', power: 45, accuracy: 100, pp: 25, damageClass: 'physical' }]
     };
 
     const cloneCharmander = JSON.parse(JSON.stringify(sourceCharmander));
@@ -323,7 +329,8 @@ describe('PHASE PBA-003 & PBA-004 — BATTLE ENGINE & TYPE SYSTEM SUITE', () => 
       id: 990,
       name: 'neutral-target',
       types: ['normal'],
-      stats: { hp: 100, attack: 10, defense: ScizorFixture.stats.defense, speed: 10 }
+      stats: { hp: 100, attack: 10, defense: ScizorFixture.stats.defense, speed: 10 },
+      moves: [{ id: 10, name: 'scratch', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' }]
     };
     const battleVsNeutral = BattleEngine.createBattle(CharmanderFixture, neutralTarget);
     const { events: eventsNeutral } = BattleEngine.resolveTurn(battleVsNeutral);
