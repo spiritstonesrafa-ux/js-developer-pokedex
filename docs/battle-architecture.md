@@ -556,17 +556,96 @@ A **Battle Presentation Engine** atua como o orquestrador desacoplado entre os e
 
 ---
 
-## 11. Decisões Explicitamente Adiadas
+## 11. Pokémon Animation Subsystem (Fase PBA-009)
 
-- **Animações Gráficas de Sprites**: Idle, ataque físico/especial, dano e desmaio (Fase PBA-009).
-- **Efeitos Visuais de Golpes (VFX)**: Partículas elementais de fogo, água, eletricidade, etc. (Fase PBA-010).
+A Fase PBA-009 implementou o primeiro sistema visual concreto da Battle Arena: a camada de animações dos sprites dos Pokémon.
+O subsistema obedece estritamente à regra de desacoplamento:
+$$\text{PRESENTATION ENGINE} \neq \text{ANIMATION IMPLEMENTATION}$$
+- **Presentation Engine**: Orquestra comandos cronológicos (`MOVE_ANNOUNCEMENT`, `HP_TRANSITION`, etc.).
+- **Animation Controller / Registry / Adapter**: Concretizam a movimentação gráfica no DOM sem ter conhecimento de dano, tipos, IA, turnos ou regras do jogo.
+
+```text
+       ┌───────────────────────────────┐
+       │   Battle Presentation Engine  │
+       └──────────────┬────────────────┘
+                      │ Presentation Commands
+                      ▼
+       ┌───────────────────────────────┐
+       │ PokemonAnimationDomAdapter    │  (Traduz comandos para chamadas visuais)
+       └──────────────┬────────────────┘
+                      │
+       ┌──────────────┴────────────────┐
+       │                               │
+       ▼                               ▼
+┌──────────────────────────────┐ ┌──────────────────────────────┐
+│  PokemonAnimationRegistry    │ │  PokemonAnimationController  │
+│  (side, element, metadata,   │ │  (lifecycle, CSS classes,    │
+│   fallback de sprites)       │ │   idle, cancel, reset)       │
+└──────────────────────────────┘ └──────────────┬───────────────┘
+                                                │
+                                                ▼
+                                 ┌──────────────────────────────┐
+                                 │ DOM / CSS Hardware Transform │
+                                 │ (translate, scale, opacity)  │
+                                 └──────────────────────────────┘
+```
+
+### 11.1 Catálogo de Animações Centralizado (`POKEMON_ANIMATIONS`)
+| Animação | Duração Padrão | Reduced Motion | Descrição Visual |
+|---|---|---|---|
+| `ENTER` | 500ms | 0ms | Entrada com fade-in, scale progressivo e translação a partir da origem do treinador |
+| `IDLE` | 1400ms (loop) | Desativada | Movimento respiratório suave em Y ($\pm 3\text{px}$), contínuo enquanto ativo |
+| `ATTACK` | 350ms | 0ms | Salto/investida física frontal em direção ao adversário com retorno à base |
+| `DAMAGE` | 300ms | 0ms | Recoil defensivo com micro-shake lateral e flash de impacto translúcido |
+| `FAINT` | 600ms | 0ms | Perda de força, colapso vertical descendente e fade-out permanente até `opacity: 0` |
+| `SWITCH_OUT` | 400ms | 0ms | Retirada voluntária para a lateral com redução de escala e fade-out |
+| `SWITCH_IN` | 500ms | 0ms | Entrada do novo combatente em campo com fade-in e scale restaurado |
+| `VICTORY` | 700ms | 0ms | Salto de vitória em elevação vertical com micro-pulso de escala |
+
+### 11.2 Componentes e Responsabilidades
+1. **`PokemonAnimationConstants` (`pokemon-animation-constants.js`)**:
+   - Centralização de catálogo (`POKEMON_ANIMATIONS`), durações nominais (`ANIMATION_DURATIONS`), multiplicadores de direção (`ANIMATION_DIRECTIONS`: Player = $+1$, Enemy = $-1$) e classes CSS (`ANIMATION_CLASSES`).
+2. **`PokemonAnimationRegistry` (`pokemon-animation-registry.js`)**:
+   - Relaciona `side` (`player` / `enemy`) ao alvo DOM (`targetElement`, `spriteElement`, `containerElement`);
+   - Trata erros controlados caso o alvo não seja encontrado (`Target not found for side: ...`);
+   - Implementa suporte a fallback de sprite estático via listeners seguros caso a imagem animada falhe.
+3. **`PokemonAnimationController` (`pokemon-animation-controller.js`)**:
+   - Métodos públicos: `playEntrance()`, `startIdle()`, `stopIdle()`, `playAttack()`, `playDamageReaction()`, `playFaint()`, `playSwitchOut()`, `playSwitchIn()`, `playVictory()`, `cancel()`, `reset()`;
+   - **Gerenciamento de Ciclo de Vida do Idle**: Pausa automaticamente o idle antes de ataques, reações de dano ou trocas, restaurando-o apenas quando a ação termina com o Pokémon ainda ativo e vivo;
+   - **Política de Concorrência**: Adota `CANCEL_PREVIOUS` caso uma nova animação chegue para o mesmo alvo antes da conclusão da anterior, limpando classes e timers sem corrupção de estado visual;
+   - **Cancelamento e Limpeza**: Remove classes temporárias, limpa listeners de `animationend` e timers pendentes, restaurando o estilo base.
+4. **`PokemonAnimationDomAdapter` (`pokemon-animation-dom-adapter.js`)**:
+   - Conecta a `BattlePresentationEngine` ao `PokemonAnimationController`;
+   - Mapeia `MOVE_ANNOUNCEMENT` $\to$ `playAttack`;
+   - Mapeia `HP_TRANSITION` com `damage > 0` $\to$ `playDamageReaction`;
+   - Bloqueia reação de dano se `damage === 0` (imunidade ou ausência de dano);
+   - Mapeia `FAINT_SEQUENCE` $\to$ `playFaint`;
+   - Mapeia `SWITCH_OUT_SEQUENCE` / `SWITCH_IN_SEQUENCE` $\to$ `playSwitchOut` / `playSwitchIn`;
+   - Mapeia `BATTLE_RESULT` $\to$ `playVictory` para o lado vencedor ativo;
+   - Resolve comandos não visuais (`PP_TRANSITION`, `STAB_METADATA`, `EFFECTIVENESS_FEEDBACK`, etc.) de forma imediata e segura.
+
+### 11.3 Performance e Acessibilidade (GPU + Reduced Motion)
+- **Zero Layout Thrashing**: Utilização exclusiva de `transform` e `opacity`. Nenhuma propriedade contínua de fluxo geométrico (`top`, `left`, `width`, `height`, `margin`) é animada;
+- **Will-Change Controlado**: Ativado temporariamente durante as transições ativas e removido no cleanup;
+- **Responsividade**: Deslocamentos calculados via `clamp()` e variáveis CSS (`--pba-dir`), garantindo funcionamento em viewports desde 360px até 1366px sem overflow horizontal;
+- **Acessibilidade**: Ativação nativa via `@media (prefers-reduced-motion: reduce)` e opção programática `reducedMotion = true`, forçando durações nominais a zero e transição imediata para o estado final coerente.
+
+### 11.4 Fronteira Estrita de Escopo
+- O sistema de animação da PBA-009 cuida **apenas do corpo/sprite do Pokémon**.
+- **Move Visual Effects (VFX)** como partículas de fogo, água, raios elétricos e projéteis pertencem exclusivamente à **Fase PBA-010**.
+
+---
+
+## 12. Decisões Explicitamente Adiadas
+
+- **Efeitos Visuais de Golpes (Move VFX)**: Partículas elementais de fogo, água, eletricidade, etc. (Fase PBA-010).
 - **Sistema de Áudio**: Efeitos sonoros de impacto, cries e músicas de batalha (Fase PBA-011).
 - **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
 - **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
 
 ---
 
-## 12. Riscos Técnicos e Estratégias de Mitigação
+## 13. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -583,7 +662,7 @@ A **Battle Presentation Engine** atua como o orquestrador desacoplado entre os e
 
 ---
 
-## 13. Roadmap Técnico Oficial
+## 14. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -594,7 +673,7 @@ A **Battle Presentation Engine** atua como o orquestrador desacoplado entre os e
 [x] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon) ── [CONCLUÍDA]
 [x] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários) ── [CONCLUÍDA]
 [x] PBA-008 Battle Presentation Engine (Orquestrador de Apresentação) ── [CONCLUÍDA]
-[ ] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais)
+[x] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais) ─ [CONCLUÍDA]
 [ ] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.)
 [ ] PBA-011 Audio System (Músicas de Fundo, Golpes e Controles de Som)
 [ ] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos)

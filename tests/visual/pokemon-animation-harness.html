@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PBA-009 — Pokémon Animation Test Harness</title>
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/battle-animations.css">
+  <style>
+    body {
+      background-color: #121214;
+      color: #e1e1e6;
+      font-family: 'Inter', sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    .harness-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .harness-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .harness-header h1 {
+      font-family: 'Outfit', sans-serif;
+      color: #72ec72;
+      margin-bottom: 8px;
+    }
+    .harness-stage {
+      background: radial-gradient(circle at center, #292d3e 0%, #151720 100%);
+      border: 2px solid #383e5a;
+      border-radius: 16px;
+      height: 380px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px clamp(20px, 6vw, 80px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+    .combatant-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      width: clamp(140px, 25vw, 220px);
+      height: 240px;
+      justify-content: flex-end;
+    }
+    .combatant-platform {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 34px;
+      background: radial-gradient(ellipse at center, rgba(114, 236, 114, 0.35) 0%, rgba(0,0,0,0) 70%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .combatant-zone.enemy-zone .combatant-platform {
+      background: radial-gradient(ellipse at center, rgba(238, 129, 48, 0.35) 0%, rgba(0,0,0,0) 70%);
+    }
+    .pba-pokemon-sprite {
+      position: relative;
+      z-index: 2;
+      width: clamp(100px, 18vw, 160px);
+      height: clamp(100px, 18vw, 160px);
+      object-fit: contain;
+    }
+    .combatant-label {
+      position: absolute;
+      top: 0;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #444;
+    }
+    .player-zone .combatant-label { color: #72ec72; border-color: #72ec72; }
+    .enemy-zone .combatant-label { color: #ee8130; border-color: #ee8130; }
+
+    .harness-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .control-card {
+      background: #1a1c24;
+      border: 1px solid #2e3346;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .control-card h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .harness-btn {
+      background: #2b3147;
+      color: #fff;
+      border: 1px solid #3d4563;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .harness-btn:hover {
+      background: #3e4768;
+      border-color: #5c6899;
+    }
+    .harness-btn:active {
+      transform: scale(0.97);
+    }
+    .harness-btn.btn-player { border-left: 4px solid #72ec72; }
+    .harness-btn.btn-enemy { border-left: 4px solid #ee8130; }
+    .harness-btn.btn-global { border-left: 4px solid #3b82f6; }
+
+    .log-panel {
+      background: #0d0e12;
+      border: 1px solid #232736;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 4px; color: #a0aec0; }
+    .log-entry.success { color: #72ec72; }
+    .log-entry.info { color: #63b3ed; }
+  </style>
+</head>
+<body>
+  <div class="harness-container">
+    <header class="harness-header">
+      <h1>PBA-009 — Pokémon Animation Test Harness</h1>
+      <p>Ambiente isolado de validação visual dos movimentos corporais (sprites) da Battle Arena.</p>
+    </header>
+
+    <!-- ARENA VISUAL -->
+    <div class="harness-stage" id="battleStage">
+      <!-- LADO JOGADOR -->
+      <div class="combatant-zone player-zone" data-battle-side="player" id="playerZone">
+        <span class="combatant-label">Player (Pikachu)</span>
+        <div class="combatant-platform"></div>
+        <img id="playerSprite" class="pba-pokemon-sprite"
+             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif"
+             data-fallback="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+             alt="Pikachu" />
+      </div>
+
+      <!-- LADO ADVERSÁRIO -->
+      <div class="combatant-zone enemy-zone" data-battle-side="enemy" id="enemyZone">
+        <span class="combatant-label">Enemy (Charmander)</span>
+        <div class="combatant-platform"></div>
+        <img id="enemySprite" class="pba-pokemon-sprite"
+             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/4.gif"
+             data-fallback="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png"
+             alt="Charmander" />
+      </div>
+    </div>
+
+    <!-- CONTROLES INTERATIVOS -->
+    <div class="harness-controls">
+      <!-- Controles do Jogador -->
+      <div class="control-card">
+        <h3 style="color: #72ec72;">🟢 Player Actions</h3>
+        <div class="btn-group">
+          <button class="harness-btn btn-player" id="btnPlayerEnter">Enter</button>
+          <button class="harness-btn btn-player" id="btnPlayerIdle">Idle Toggle</button>
+          <button class="harness-btn btn-player" id="btnPlayerAttack">Attack (+X)</button>
+          <button class="harness-btn btn-player" id="btnPlayerDamage">Damage</button>
+          <button class="harness-btn btn-player" id="btnPlayerFaint">Faint</button>
+          <button class="harness-btn btn-player" id="btnPlayerSwitch">Switch (Squirtle)</button>
+          <button class="harness-btn btn-player" id="btnPlayerVictory">Victory</button>
+        </div>
+      </div>
+
+      <!-- Controles do Oponente -->
+      <div class="control-card">
+        <h3 style="color: #ee8130;">🔴 Enemy Actions</h3>
+        <div class="btn-group">
+          <button class="harness-btn btn-enemy" id="btnEnemyEnter">Enter</button>
+          <button class="harness-btn btn-enemy" id="btnEnemyIdle">Idle Toggle</button>
+          <button class="harness-btn btn-enemy" id="btnEnemyAttack">Attack (-X)</button>
+          <button class="harness-btn btn-enemy" id="btnEnemyDamage">Damage</button>
+          <button class="harness-btn btn-enemy" id="btnEnemyFaint">Faint</button>
+          <button class="harness-btn btn-enemy" id="btnEnemySwitch">Switch (Bulbasaur)</button>
+          <button class="harness-btn btn-enemy" id="btnEnemyVictory">Victory</button>
+        </div>
+      </div>
+
+      <!-- Controles Globais -->
+      <div class="control-card">
+        <h3 style="color: #3b82f6;">⚙️ Global & Acessibilidade</h3>
+        <div class="btn-group">
+          <button class="harness-btn btn-global" id="btnCancel">Cancel Timeline</button>
+          <button class="harness-btn btn-global" id="btnReset">Reset Stage</button>
+          <button class="harness-btn btn-global" id="btnToggleReducedMotion">Toggle Reduced Motion: <span id="rmStatus">OFF</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG DE EXECUÇÃO -->
+    <div class="log-panel" id="logPanel">
+      <div class="log-entry info">[SYSTEM] Test Harness inicializado. Pronto para testar animações.</div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS DA APRESENTAÇÃO E ANIMAÇÃO -->
+  <script src="../../assets/js/presentation/battle-presentation-constants.js"></script>
+  <script src="../../assets/js/presentation/battle-presentation-adapter.js"></script>
+  <script src="../../assets/js/presentation/battle-presentation-scheduler.js"></script>
+  <script src="../../assets/js/presentation/battle-presentation-mapper.js"></script>
+  <script src="../../assets/js/presentation/battle-presentation-engine.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-constants.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-registry.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-controller.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-dom-adapter.js"></script>
+
+  <script>
+    const logPanel = document.getElementById('logPanel');
+    function log(msg, type = 'entry') {
+      const el = document.createElement('div');
+      el.className = `log-entry ${type}`;
+      el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logPanel.appendChild(el);
+      logPanel.scrollTop = logPanel.scrollHeight;
+    }
+
+    // Inicializa Registry e Controller
+    const { PokemonAnimationRegistry } = window.PBABattlePresentation;
+    const { PokemonAnimationController } = window.PBABattlePresentation;
+    const { DomBattlePresentationAdapter } = window.PBABattlePresentation;
+
+    const registry = new PokemonAnimationRegistry();
+    const controller = new PokemonAnimationController({ registry });
+    const domAdapter = new DomBattlePresentationAdapter({ controller, registry });
+
+    // Registra os elementos na arena
+    registry.register('player', {
+      sprite: document.getElementById('playerSprite'),
+      container: document.getElementById('playerZone'),
+      metadata: { id: 25, name: 'Pikachu' }
+    });
+
+    registry.register('enemy', {
+      sprite: document.getElementById('enemySprite'),
+      container: document.getElementById('enemyZone'),
+      metadata: { id: 4, name: 'Charmander' }
+    });
+
+    // Vinculação de eventos do Player
+    document.getElementById('btnPlayerEnter').addEventListener('click', async () => {
+      log('Player: playEntrance()', 'info');
+      await controller.playEntrance('player');
+      log('Player: Entrance concluído', 'success');
+    });
+
+    document.getElementById('btnPlayerIdle').addEventListener('click', () => {
+      if (controller.isIdleActive('player')) {
+        controller.stopIdle('player');
+        log('Player: Idle parado');
+      } else {
+        controller.startIdle('player');
+        log('Player: Idle iniciado', 'success');
+      }
+    });
+
+    document.getElementById('btnPlayerAttack').addEventListener('click', async () => {
+      log('Player: playAttack() [Lunge +X]', 'info');
+      await controller.playAttack('player');
+      log('Player: Attack concluído', 'success');
+    });
+
+    document.getElementById('btnPlayerDamage').addEventListener('click', async () => {
+      log('Player: playDamageReaction()', 'info');
+      await controller.playDamageReaction('player');
+      log('Player: Damage Reaction concluído', 'success');
+    });
+
+    document.getElementById('btnPlayerFaint').addEventListener('click', async () => {
+      log('Player: playFaint()', 'info');
+      await controller.playFaint('player');
+      log('Player: Faint concluído (oculto)', 'success');
+    });
+
+    document.getElementById('btnPlayerSwitch').addEventListener('click', async () => {
+      log('Player: Switch Out (Pikachu)', 'info');
+      await controller.playSwitchOut('player');
+      log('Player: Switch In (Squirtle)', 'info');
+      await controller.playSwitchIn('player', {
+        id: 7,
+        name: 'Squirtle',
+        animatedUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/7.gif',
+        fallbackUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png'
+      });
+      log('Player: Switch concluído com Squirtle ativo', 'success');
+    });
+
+    document.getElementById('btnPlayerVictory').addEventListener('click', async () => {
+      log('Player: playVictory()', 'info');
+      await controller.playVictory('player');
+      log('Player: Victory concluído', 'success');
+    });
+
+    // Vinculação de eventos do Enemy
+    document.getElementById('btnEnemyEnter').addEventListener('click', async () => {
+      log('Enemy: playEntrance()', 'info');
+      await controller.playEntrance('enemy');
+      log('Enemy: Entrance concluído', 'success');
+    });
+
+    document.getElementById('btnEnemyIdle').addEventListener('click', () => {
+      if (controller.isIdleActive('enemy')) {
+        controller.stopIdle('enemy');
+        log('Enemy: Idle parado');
+      } else {
+        controller.startIdle('enemy');
+        log('Enemy: Idle iniciado', 'success');
+      }
+    });
+
+    document.getElementById('btnEnemyAttack').addEventListener('click', async () => {
+      log('Enemy: playAttack() [Lunge -X]', 'info');
+      await controller.playAttack('enemy');
+      log('Enemy: Attack concluído', 'success');
+    });
+
+    document.getElementById('btnEnemyDamage').addEventListener('click', async () => {
+      log('Enemy: playDamageReaction()', 'info');
+      await controller.playDamageReaction('enemy');
+      log('Enemy: Damage Reaction concluído', 'success');
+    });
+
+    document.getElementById('btnEnemyFaint').addEventListener('click', async () => {
+      log('Enemy: playFaint()', 'info');
+      await controller.playFaint('enemy');
+      log('Enemy: Faint concluído (oculto)', 'success');
+    });
+
+    document.getElementById('btnEnemySwitch').addEventListener('click', async () => {
+      log('Enemy: Switch Out (Charmander)', 'info');
+      await controller.playSwitchOut('enemy');
+      log('Enemy: Switch In (Bulbasaur)', 'info');
+      await controller.playSwitchIn('enemy', {
+        id: 1,
+        name: 'Bulbasaur',
+        animatedUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/1.gif',
+        fallbackUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png'
+      });
+      log('Enemy: Switch concluído com Bulbasaur ativo', 'success');
+    });
+
+    document.getElementById('btnEnemyVictory').addEventListener('click', async () => {
+      log('Enemy: playVictory()', 'info');
+      await controller.playVictory('enemy');
+      log('Enemy: Victory concluído', 'success');
+    });
+
+    // Globais
+    document.getElementById('btnCancel').addEventListener('click', () => {
+      controller.cancel();
+      log('Global: cancel() executado', 'info');
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      controller.reset();
+      log('Global: reset() executado — alvos restaurados ao estado base', 'success');
+    });
+
+    let reducedMotionActive = false;
+    document.getElementById('btnToggleReducedMotion').addEventListener('click', () => {
+      reducedMotionActive = !reducedMotionActive;
+      controller.reducedMotion = reducedMotionActive;
+      document.body.classList.toggle('pba-reduced-motion', reducedMotionActive);
+      document.getElementById('rmStatus').textContent = reducedMotionActive ? 'ON' : 'OFF';
+      log(`Acessibilidade: Reduced Motion alterado para ${reducedMotionActive ? 'ON' : 'OFF'}`, 'info');
+    });
+
+    // Expondo no window para automação e testes visuais
+    window.pbaHarness = {
+      registry,
+      controller,
+      domAdapter
+    };
+  </script>
+</body>
+</html>

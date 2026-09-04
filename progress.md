@@ -157,6 +157,26 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Preparação para acessibilidade: suporte injetável a `reducedMotion: true` e `skipAnimations: true` zerando durações sem acessar DOM diretamente;
   - 100% de aprovação nos testes automatizados: 213 testes (40 novos testes PR01 a PR40 + 173 testes de fases anteriores) com 0 regressões.
 
+- **PBA-009 Pokémon Animations**:
+  - Implementação do primeiro subsistema visual real para movimentação dos sprites de Pokémon na Battle Arena em `assets/js/presentation/animation/` e `assets/css/battle-animations.css`:
+    - `pokemon-animation-constants.js`: Catálogo de 8 animações corporais (`ENTER`, `IDLE`, `ATTACK`, `DAMAGE`, `FAINT`, `SWITCH_OUT`, `SWITCH_IN`, `VICTORY`), durações nominais centralizadas, multiplicadores direcionais (+1 player, -1 enemy) e classes CSS de transição;
+    - `battle-animations.css`: Estilização GPU-accelerated via `transform` e `opacity` sem layout thrashing, responsividade com `clamp()` e suporte completo a acessibilidade via `@media (prefers-reduced-motion: reduce)` e classes `.pba-reduced-motion`;
+    - `pokemon-animation-registry.js`: Registro determinístico de combatentes e alvos DOM (`player`/`enemy`) com suporte nativo a fallback de imagem caso sprite animado falhe;
+    - `pokemon-animation-controller.js`: Controlador mestre de ciclo de vida visual com métodos dedicados, gerenciamento automático de pausa/retomada de idle, política de concorrência `CANCEL_PREVIOUS`, cancelamento seguro e reset completo de estado base;
+    - `pokemon-animation-dom-adapter.js`: Adaptador real implementando a interface `BattlePresentationAdapter` da PBA-008, conectando Presentation Commands aos métodos do Animation Controller, com bloqueio estrito de reação a dano quando `damage === 0`;
+    - `tests/visual/pokemon-animation-harness.html`: Harness visual dedicado e isolado para testes manuais e em navegadores reais;
+  - 100% de separação e conformidade arquitetural:
+    - `PRESENTATION ENGINE ≠ ANIMATION IMPLEMENTATION`
+    - `ANIMATION_DAMAGE_CALCULATION = 0`
+    - `ANIMATION_TYPE_CALCULATION = 0`
+    - `ANIMATION_AI_DECISIONS = 0`
+    - `ANIMATION_BATTLE_RULES = 0`
+    - `ANIMATION_FETCH_CALLS = 0`
+    - `ANIMATION_LOCALSTORAGE = 0`
+    - `ANIMATION_AUDIO_CALLS = 0`
+  - Fronteira estrita respeitada: Move VFX (fogo, água, raio, partículas) NÃO implementados nesta fase (escopo exclusivo da PBA-010);
+  - 100% de aprovação nos testes automatizados: 249 testes (36 novos testes AN01 a AN36 + 213 testes de fases anteriores) com 0 falhas e 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -232,6 +252,28 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    AUDIO = NOT_YET
    FINAL_BATTLE_UI = NOT_YET
    ```
+9. **Configurações Oficiais das Pokémon Animations (PBA-009)**:
+   ```text
+   POKEMON_ANIMATION_SYSTEM = YES
+   ENTER_ANIMATION = YES
+   IDLE_ANIMATION = YES
+   ATTACK_MOTION = YES
+   DAMAGE_REACTION = YES
+   FAINT_ANIMATION = YES
+   SWITCH_OUT = YES
+   SWITCH_IN = YES
+   VICTORY_ANIMATION = YES
+   PLAYER_ENEMY_ORIENTATION = YES
+   GPU_HARDWARE_ACCELERATION = YES
+   REDUCED_MOTION_SUPPORT = YES
+   IDLE_LIFECYCLE_MANAGEMENT = YES
+   CONCURRENCY_POLICY = CANCEL_PREVIOUS
+   SPRITE_FALLBACK = YES
+   MOVE_VFX = NOT_YET
+   AUDIO = NOT_YET
+   CAMERA_EFFECTS = NOT_YET
+   FINAL_BATTLE_UI = NOT_YET
+   ```
 
 ---
 
@@ -247,15 +289,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-006 = PASS`
   - `PBA-007 = PASS`
   - `PBA-008 = PASS`
-- **Working Tree**: Atualizado com os módulos de apresentação e suíte PR01–PR40
+  - `PBA-009 = PASS`
+- **Working Tree**: Atualizado com os módulos de animação, CSS e suíte AN01–AN36
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-009 — Pokémon Animations
+NEXT_PHASE = PBA-010 — Move Visual Effects
 ```
 
-*(Atenção: A Fase PBA-009 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-010 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

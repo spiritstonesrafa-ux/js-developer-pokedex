@@ -1,0 +1,288 @@
+/**
+ * ====================================================================
+ * FOLHA DE ESTILOS: ANIMAÇÕES DE POKÉMON (battle-animations.css)
+ * ====================================================================
+ * Animações GPU-friendly (transform & opacity) para os sprites de combate
+ * da Battle Arena (Fase PBA-009).
+ *
+ * Princípios Fundamentais:
+ * - Apenas transform e opacity para prevenir layout thrashing e repaints pesados;
+ * - Responsivo e elástico via clamp() e CSS custom properties;
+ * - Suporte estrito a prefers-reduced-motion e classe .pba-reduced-motion;
+ * - Sem z-index destrutivo ou overflow:hidden que corte futuros projéteis da PBA-010.
+ */
+
+:root {
+  --pba-travel-distance: clamp(24px, 7vw, 65px);
+  --pba-enter-distance: clamp(40px, 12vw, 110px);
+  --pba-duration-enter: 500ms;
+  --pba-duration-idle: 1400ms;
+  --pba-duration-attack: 350ms;
+  --pba-duration-damage: 300ms;
+  --pba-duration-faint: 600ms;
+  --pba-duration-switch-out: 400ms;
+  --pba-duration-switch-in: 500ms;
+  --pba-duration-victory: 700ms;
+}
+
+/* Orientações base por lado de combate */
+[data-battle-side="player"],
+.pba-side-player {
+  --pba-dir: 1; /* Player ataca e avança para a direita (+X) */
+}
+
+[data-battle-side="enemy"],
+.pba-side-enemy {
+  --pba-dir: -1; /* Enemy ataca e avança para a esquerda (-X) */
+}
+
+/* Elemento base do sprite */
+.pba-pokemon-sprite {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  transform-origin: center bottom;
+  transition: opacity 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Estado oculto pós-faint ou fora de campo */
+.pba-sprite-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* 1. ANIMAÇÃO DE ENTRADA (ENTER) */
+.pba-anim-enter {
+  will-change: transform, opacity;
+  animation: pba-keyframe-enter var(--pba-duration-enter) cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes pba-keyframe-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(calc(var(--pba-enter-distance) * -1 * var(--pba-dir))) scale(0.65);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(calc(var(--pba-enter-distance) * 0.1 * var(--pba-dir))) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* 2. ANIMAÇÃO DE REPOUSO (IDLE) */
+.pba-anim-idle {
+  will-change: transform;
+  animation: pba-keyframe-idle var(--pba-duration-idle) ease-in-out infinite;
+}
+
+@keyframes pba-keyframe-idle {
+  0%, 100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.02, 0.98);
+  }
+}
+
+/* 3. ANIMAÇÃO DE ATAQUE GENÉRICO (ATTACK) */
+.pba-anim-attack {
+  will-change: transform;
+  animation: pba-keyframe-attack var(--pba-duration-attack) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes pba-keyframe-attack {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    transform: translateX(calc(var(--pba-travel-distance) * var(--pba-dir))) scale(1.12);
+  }
+  75% {
+    transform: translateX(calc(var(--pba-travel-distance) * 0.8 * var(--pba-dir))) scale(1.04);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* 4. REAÇÃO A DANO (DAMAGE) */
+.pba-anim-damage {
+  will-change: transform, opacity;
+  animation: pba-keyframe-damage var(--pba-duration-damage) ease-in-out forwards;
+}
+
+@keyframes pba-keyframe-damage {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  15% {
+    transform: translate(calc(-10px * var(--pba-dir)), -4px);
+    opacity: 0.4;
+  }
+  35% {
+    transform: translate(calc(8px * var(--pba-dir)), 2px);
+    opacity: 1;
+  }
+  55% {
+    transform: translate(calc(-6px * var(--pba-dir)), -2px);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translate(calc(3px * var(--pba-dir)), 1px);
+    opacity: 1;
+  }
+}
+
+/* 5. ANIMAÇÃO DE NOCAUTE (FAINT) */
+.pba-anim-faint {
+  will-change: transform, opacity;
+  animation: pba-keyframe-faint var(--pba-duration-faint) cubic-bezier(0.4, 0, 0.8, 1) forwards;
+}
+
+@keyframes pba-keyframe-faint {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    opacity: 0.85;
+    transform: translateY(8px) scale(0.95, 0.85);
+  }
+  65% {
+    opacity: 0.4;
+    transform: translateY(22px) scale(0.8, 0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.5);
+  }
+}
+
+/* 6. TROCA: SAÍDA (SWITCH OUT) */
+.pba-anim-switch-out {
+  will-change: transform, opacity;
+  animation: pba-keyframe-switch-out var(--pba-duration-switch-out) ease-in forwards;
+}
+
+@keyframes pba-keyframe-switch-out {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.7) translateY(10px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2) translateY(25px);
+  }
+}
+
+/* 7. TROCA: ENTRADA (SWITCH IN) */
+.pba-anim-switch-in {
+  will-change: transform, opacity;
+  animation: pba-keyframe-switch-in var(--pba-duration-switch-in) cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes pba-keyframe-switch-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.25) translateY(-25px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 8. ANIMAÇÃO DE VITÓRIA (VICTORY) */
+.pba-anim-victory {
+  will-change: transform;
+  animation: pba-keyframe-victory var(--pba-duration-victory) ease-in-out forwards;
+}
+
+@keyframes pba-keyframe-victory {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-22px) scale(1.12);
+  }
+  50% {
+    transform: translateY(0) scale(0.98, 1.02);
+  }
+  75% {
+    transform: translateY(-12px) scale(1.06);
+  }
+}
+
+/* ====================================================================
+   ACESSIBILIDADE: REDUCED MOTION (prefers-reduced-motion & .pba-reduced-motion)
+   ==================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .pba-pokemon-sprite,
+  .pba-anim-enter,
+  .pba-anim-idle,
+  .pba-anim-attack,
+  .pba-anim-damage,
+  .pba-anim-faint,
+  .pba-anim-switch-out,
+  .pba-anim-switch-in,
+  .pba-anim-victory {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+
+  .pba-anim-faint,
+  .pba-anim-switch-out {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  .pba-anim-enter,
+  .pba-anim-switch-in {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+.pba-reduced-motion .pba-pokemon-sprite,
+.pba-reduced-motion.pba-anim-enter,
+.pba-reduced-motion.pba-anim-idle,
+.pba-reduced-motion.pba-anim-attack,
+.pba-reduced-motion.pba-anim-damage,
+.pba-reduced-motion.pba-anim-faint,
+.pba-reduced-motion.pba-anim-switch-out,
+.pba-reduced-motion.pba-anim-switch-in,
+.pba-reduced-motion.pba-anim-victory {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transform: none !important;
+}
+
+.pba-reduced-motion.pba-anim-faint,
+.pba-reduced-motion.pba-anim-switch-out {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.pba-reduced-motion.pba-anim-enter,
+.pba-reduced-motion.pba-anim-switch-in {
+  opacity: 1 !important;
+  visibility: visible !important;
+}

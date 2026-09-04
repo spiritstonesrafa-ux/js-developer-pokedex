@@ -101,7 +101,8 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   ├── reset.css        # Resets e variáveis de cores dos tipos/temas
 │   │   ├── global.css       # Layout geral, cabeçalho, navegação, controles e Team Builder
 │   │   ├── pokedex.css      # Grid e cards dos pokémons
-│   │   └── modal.css        # Estilos do modal com estatísticas e evolução
+│   │   ├── modal.css        # Estilos do modal com estatísticas e evolução
+│   │   └── battle-animations.css # Animações GPU-accelerated de sprites da arena (PBA-009)
 │   └── js/
 │       ├── pokemon-model.js # Classe e modelo de dados do Pokémon
 │       ├── poke-api.js      # Integração e requisições HTTP para a PokéAPI
@@ -124,7 +125,12 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── battle-presentation-adapter.js   # Interface assíncrona, NullAdapter e RecordingAdapter
 │       │   ├── battle-presentation-scheduler.js # Agendador de delays (ImmediateScheduler e TimerScheduler)
 │       │   ├── battle-presentation-mapper.js    # Mapeamento puro determinístico dos eventos da Engine
-│       │   └── battle-presentation-engine.js    # Orquestrador de timeline sequencial e cancelamento
+│       │   ├── battle-presentation-engine.js    # Orquestrador de timeline sequencial e cancelamento
+│       │   └── animation/
+│       │       ├── pokemon-animation-constants.js   # Catálogo de animações, timings e classes
+│       │       ├── pokemon-animation-registry.js    # Registro de alvos DOM e fallback de sprites
+│       │       ├── pokemon-animation-controller.js  # Controle de ciclo de vida visual, idle e cancel
+│       │       └── pokemon-animation-dom-adapter.js # Adaptador DOM ligando comandos às animações
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
@@ -142,8 +148,12 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
 │   │   ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
 │   │   └── turn-manager.test.js         # Testes unitários de ordem de iniciativa
-│   └── presentation/
-│       └── battle-presentation.test.js  # Suíte de testes da Presentation Engine (PR01-PR40)
+│   ├── presentation/
+│   │   └── battle-presentation.test.js  # Suíte de testes da Presentation Engine (PR01-PR40)
+│   ├── animation/
+│   │   └── pokemon-animation.test.js    # Suíte de testes das Animações de Pokémon (AN01-AN36)
+│   └── visual/
+│       └── pokemon-animation-harness.html # Harness visual dedicado para inspeção no navegador
 ├── index.html               # Estrutura principal da página
 ├── progress.md              # Registro contínuo de status e fases para agentes
 └── README.md                # Documentação oficial do projeto
@@ -163,7 +173,7 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-006 Battle 3x3** *(Fase Concluída)*: Suporte a batalhas de equipes (3 vs 3) com Battle State v2, Pokémon ativo vs banco, trocas voluntárias com prioridade sobre ataques (`SWITCH > MOVE`), trocas forçadas após nocaute (`AWAITING_REPLACEMENT` / `REPLACEMENT_REQUIRED`), preservação estrita de HP e PP no banco e condição de vitória por aniquilação completa da equipe adversária (`TEAM_DEFEATED`).
 - [x] **PBA-007 Battle AI** *(Fase Concluída)*: Inteligência artificial adversária desacoplada e 100% determinística com estratégias `SIMPLE` e `SMART`. Avalia dano esperado ponderado por precisão, STAB, fraquezas/resistências, categorias físicas/especiais, administração de PP, descarte de imunidades, trocas voluntárias estratégicas e seleção inteligente de substituto pós-nocaute.
 - [x] **PBA-008 Battle Presentation Engine** *(Fase Concluída)*: O projeto agora possui uma Battle Presentation Engine responsável por transformar eventos do motor de batalha em timelines estruturadas e assíncronas de apresentação. Orquestrador sequencial com suporte a cancelamento, agendador desacoplado (`ImmediateScheduler` e `TimerScheduler`), adaptadores assíncronos (`NullAdapter` e `RecordingAdapter`), proteção contra concorrência e preparação para acessibilidade (`reducedMotion`). 100% de cobertura de eventos do Battle Engine e zero regras de combate na camada visual.
-- [ ] **PBA-009 Pokemon Animations**: Sprites animados, efeitos de entrada, ataque e recuo.
+- [x] **PBA-009 Pokemon Animations** *(Fase Concluída)*: A Battle Arena agora possui um sistema reutilizável de animações de Pokémon integrado à Presentation Engine, incluindo entrada, idle, ataque genérico, reação ao dano, faint, troca e vitória. Suporte completo a aceleração por hardware (GPU), orientações espelhadas para player/enemy, controle automático de idle, cancelamento limpo e acessibilidade com reduced motion.
 - [ ] **PBA-010 Move Visual Effects**: Partículas elementais (fogo, água, trovão, etc.).
 - [ ] **PBA-011 Audio System**: Gerenciamento de trilha sonora, efeitos de impacto e controle de volume.
 - [ ] **PBA-012 Battle Camera & Impact**: Screen shake, efeitos de acerto crítico e feedback dinâmico.
