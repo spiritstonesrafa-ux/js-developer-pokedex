@@ -103,7 +103,29 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Pipeline de dano v2: $\lfloor \text{baseDamage} \times \text{stabMultiplier} \times \text{typeMultiplier} \rfloor$;
   - Fronteira de dados da PokéAPI: `pokeApi.getMoveDetail` com cache em memória (`Map`) e adaptador para `MoveModel`, mantendo o Battle Engine 100% isolado de chamadas `fetch`;
   - Hardening do Type Chart: verificação independente de todas as 324 relações $18 \times 18$ contra fixture canônica autônoma (`type-chart-reference.js`);
-  - 100% de aprovação nos testes automatizados: 95 testes (MV01–MV43, TY01–TY25, E01–E18) sem nenhuma regressão.
+- **PBA-006 Battle 3x3 & Switching**:
+  - Implementação completa do conceito de Battle Team com tamanho obrigatório de 3 Pokémon (`TEAM_SIZE = 3`);
+  - Rejeição estrita de equipes inválidas (0, 1, 2 ou 4+ Pokémon) e espécies duplicadas (`DUPLICATE_SPECIES = REJECTED`);
+  - Preservação do Líder: Slot 1 da equipe (índice 0) entra automaticamente como o primeiro combatente ativo;
+  - Battle State v2 serializável e determinístico com rastreamento isolado de `activeIndex`, equipe ativa e reservas no banco;
+  - Regra de ouro mantida: `team.current` (LocalStorage) $\neq$ Battle Runtime State (cópias profundas independentes);
+  - Apenas o Pokémon ativo pode atacar, receber danos e gastar PP; o banco é totalmente protegido de ações e danos;
+  - Troca Voluntária (`SWITCH`):
+    - Prioridade estrita da troca sobre ataques ofensivos ($\text{SWITCH} > \text{MOVE}$);
+    - Em `SWITCH vs MOVE`, o Pokémon reserva entra em campo e recebe o golpe adversário;
+    - Em `SWITCH vs SWITCH`, ambas as trocas ocorrem deterministicamente antes de qualquer dano;
+    - Validação rígida: impede troca para Pokémon inexistente, fora da equipe, já ativo ou nocauteado;
+  - Persistência incondicional de HP e PP no banco (`SWITCH_HP_PERSISTENCE = PASS`, `SWITCH_PP_PERSISTENCE = PASS`);
+  - Troca Forçada após Nocaute (`AWAITING_REPLACEMENT`):
+    - Nocaute com reservas vivas não finaliza o combate;
+    - Emissão do evento semântico `REPLACEMENT_REQUIRED` contendo o ID nocauteado e os IDs disponíveis no banco;
+    - API explícita `BattleEngine.resolveReplacement(state, replacementActions)` desacoplada da UI e da IA;
+    - Suspensão de contra-ataque fantasma do Pokémon nocauteado no mesmo turno;
+  - Derrota da Equipe e Vitória (`TEAM_DEFEATED`):
+    - O combate só termina quando os 3 Pokémon adversários estiverem nocauteados;
+    - Emissão encadeada de `POKEMON_FAINTED` $\to$ `TEAM_DEFEATED` $\to$ `BATTLE_ENDED`;
+  - Compatibilidade 100% preservada com confrontos 1x1 da PBA-003/004/005 (`LEGACY_1V1_REGRESSION = NONE`);
+  - 100% de aprovação nos testes automatizados: 130 testes (35 novos testes B3-01 a B3-35 + 95 testes anteriores) sem nenhuma falha ou regressão.
 
 ---
 
@@ -128,6 +150,19 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    STAB = YES
    INTERNAL_RNG = NO
    ```
+6. **Configurações Oficiais da Batalha 3x3 (PBA-006)**:
+   ```text
+   BATTLE_3V3 = YES
+   PLAYER_TEAM_SIZE = 3
+   ENEMY_TEAM_SIZE = 3
+   VOLUNTARY_SWITCH = YES
+   SWITCH_PRIORITY = YES
+   FORCED_REPLACEMENT = YES
+   HP_PERSISTS_ACROSS_SWITCH = YES
+   PP_PERSISTS_ACROSS_SWITCH = YES
+   TEAM_DEFEAT = YES
+   AI = NOT_YET
+   ```
 
 ---
 
@@ -140,15 +175,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-003 = PASS`
   - `PBA-004 = PASS`
   - `PBA-005 = PASS`
-- **Working Tree**: Limpo (pré-commit da fase PBA-005)
+  - `PBA-006 = PASS`
+- **Working Tree**: Limpo (pré-commit da fase PBA-006)
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-006 — Battle 3x3
+NEXT_PHASE = PBA-007 — Battle AI
 ```
 
-*(Atenção: A Fase PBA-006 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-007 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

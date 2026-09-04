@@ -1,8 +1,9 @@
 /**
  * ====================================================================
- * MOTOR DE BATALHA: BATTLE ENGINE V2 + MOVE SYSTEM (battle-engine.js)
+ * MOTOR DE BATALHA: BATTLE ENGINE V2 + 3v3 TEAM SYSTEM (battle-engine.js)
  * ====================================================================
- * Núcleo matemático de simulação de combate 1x1 das Fases PBA-003, PBA-004 e PBA-005.
+ * Núcleo matemático de simulação de combate 1x1 e 3x3 das Fases
+ * PBA-003, PBA-004, PBA-005 e PBA-006.
  * 
  * Princípios Fundamentais:
  * - GAME ENGINE ≠ PRESENTATION ENGINE;
@@ -10,7 +11,9 @@
  * - Determinístico: acurácia resolvida com rolls externos fornecidos pelo chamador;
  * - Imutabilidade: entradas originais nunca são modificadas;
  * - Move System completo: Power, Accuracy, Physical/Special, PP e STAB;
- * - Integração completa com o sistema de tipos (TypeEffectiveness);
+ * - Sistema de Equipes 3x3: Pokémon ativo, banco, trocas voluntárias e forçadas;
+ * - Prioridade de Troca: Ação SWITCH executa antes de MOVE;
+ * - Persistência estrita de HP e PP entre trocas no banco;
  * - Suporta Node.js (testes automatizados) e Browser (window.PBABattle).
  */
 
@@ -38,6 +41,7 @@
       BATTLE_STATUS: {
         READY: 'READY',
         IN_PROGRESS: 'IN_PROGRESS',
+        AWAITING_REPLACEMENT: 'AWAITING_REPLACEMENT',
         PLAYER_WIN: 'PLAYER_WIN',
         ENEMY_WIN: 'ENEMY_WIN'
       },
@@ -53,11 +57,20 @@
         TYPE_EFFECTIVENESS_RESOLVED: 'TYPE_EFFECTIVENESS_RESOLVED',
         DAMAGE_APPLIED: 'DAMAGE_APPLIED',
         POKEMON_FAINTED: 'POKEMON_FAINTED',
+        SWITCH_STARTED: 'SWITCH_STARTED',
+        POKEMON_SWITCHED: 'POKEMON_SWITCHED',
+        REPLACEMENT_REQUIRED: 'REPLACEMENT_REQUIRED',
+        TEAM_DEFEATED: 'TEAM_DEFEATED',
         BATTLE_ENDED: 'BATTLE_ENDED'
       },
       BATTLE_ACTIONS: {
         MOVE: 'MOVE',
+        SWITCH: 'SWITCH',
         BASIC_ATTACK: 'BASIC_ATTACK'
+      },
+      SWITCH_REASON: {
+        VOLUNTARY: 'VOLUNTARY',
+        FAINT_REPLACEMENT: 'FAINT_REPLACEMENT'
       },
       MOVE_DAMAGE_CLASSES: {
         PHYSICAL: 'physical',
@@ -71,13 +84,14 @@
         MAX_TURNS_LIMIT: 100,
         MOVE_LOADOUT_MIN: 1,
         MOVE_LOADOUT_MAX: 4,
-        STAB_MULTIPLIER: 1.5
+        STAB_MULTIPLIER: 1.5,
+        TEAM_SIZE: 3
       }
     };
   }
 
   const BattleEngine = (() => {
-    const { BATTLE_STATUS, BATTLE_EVENTS, BATTLE_ACTIONS, MOVE_DAMAGE_CLASSES, BATTLE_CONFIG } = constants;
+    const { BATTLE_STATUS, BATTLE_EVENTS, BATTLE_ACTIONS, SWITCH_REASON, MOVE_DAMAGE_CLASSES, BATTLE_CONFIG } = constants;
 
     /**
      * Valida e normaliza um Pokémon para o Combatant Model v3.
@@ -215,14 +229,76 @@
     }
 
     /**
+     * Valida e constrói uma equipe completa de 3 combatentes (PBA-006).
+     * 
+     * @param {Array<Object>} rawTeam - Lista com exatamente 3 Pokémon.
+     * @param {string} label - Identificador do time ('player' ou 'enemy').
+     * @returns {Array<Object>} Lista de 3 combatentes normalizados.
+     * @throws {Error} Se o tamanho for diferente de 3 ou houver espécies duplicadas.
+     */
+    function validateAndCreateTeam(rawTeam, label = 'team') {
+      if (!Array.isArray(rawTeam)) {
+        throw new Error(`Equipe "${label}" inválida: deve ser um array com exatamente ${BATTLE_CONFIG.TEAM_SIZE} membros.`);
+      }
+
+      if (rawTeam.length !== BATTLE_CONFIG.TEAM_SIZE) {
+        throw new Error(`Tamanho de equipe inválido para "${label}": possui ${rawTeam.length} membros, deve possuir exatamente ${BATTLE_CONFIG.TEAM_SIZE}.`);
+      }
+
+      const seenIds = new Set();
+      const seenNames = new Set();
+      const team = [];
+
+      for (const rawMon of rawTeam) {
+        if (!rawMon || typeof rawMon !== 'object') {
+          throw new Error(`Membro inválido na equipe "${label}".`);
+        }
+
+        const id = Number(rawMon.id);
+        const name = String(rawMon.name || '').trim().toLowerCase();
+
+        if (seenIds.has(id) || (name && seenNames.has(name))) {
+          throw new Error(`Espécie duplicada na equipe "${label}": [ID ${id} - ${name}].`);
+        }
+        seenIds.add(id);
+        if (name) seenNames.add(name);
+
+        team.push(createCombatant(rawMon));
+      }
+
+      return team;
+    }
+
+    /**
+     * Retorna o combatente ativo atual para o lado especificado.
+     * Compatível com Battle State v1 (1v1) e v2 (3v3).
+     * 
+     * @param {Object} state - Estado atual da batalha.
+     * @param {'player'|'enemy'} role - Papel ('player' ou 'enemy').
+     * @returns {Object} Combatente ativo.
+     */
+    function getActiveCombatant(state, role) {
+      if (state.version === 2) {
+        const side = state[role];
+        return side.team[side.activeIndex];
+      }
+      return state[role];
+    }
+
+    /**
      * Inicializa um estado de batalha 1x1 a partir de dois combatentes.
+     * Se forem passados arrays, delega automaticamente para createTeamBattle.
      * Garante total imutabilidade dos parâmetros de entrada.
      * 
-     * @param {Object} playerInput - Dados do Pokémon do jogador.
-     * @param {Object} enemyInput - Dados do Pokémon adversário.
+     * @param {Object|Array} playerInput - Dados do Pokémon ou equipe do jogador.
+     * @param {Object|Array} enemyInput - Dados do Pokémon ou equipe adversária.
      * @returns {Object} Estado inicial da batalha.
      */
     function createBattle(playerInput, enemyInput) {
+      if (Array.isArray(playerInput) || Array.isArray(enemyInput)) {
+        return createTeamBattle(playerInput, enemyInput);
+      }
+
       const playerCombatant = createCombatant(playerInput);
       const enemyCombatant = createCombatant(enemyInput);
 
@@ -239,11 +315,103 @@
     }
 
     /**
+     * Inicializa um estado de batalha 3x3 a partir de duas equipes (PBA-006).
+     * Slot 1 (índice 0) é o Líder e começa ativo em combate.
+     * 
+     * @param {Array<Object>} playerTeamInput - Lista com 3 Pokémon do jogador.
+     * @param {Array<Object>} enemyTeamInput - Lista com 3 Pokémon adversários.
+     * @returns {Object} Estado inicial Battle State v2.
+     */
+    function createTeamBattle(playerTeamInput, enemyTeamInput) {
+      const playerTeam = validateAndCreateTeam(playerTeamInput, 'player');
+      const enemyTeam = validateAndCreateTeam(enemyTeamInput, 'enemy');
+
+      const state = {
+        version: 2,
+        status: BATTLE_STATUS.IN_PROGRESS,
+        turn: 1,
+        player: {
+          activeIndex: 0,
+          team: playerTeam
+        },
+        enemy: {
+          activeIndex: 0,
+          team: enemyTeam
+        },
+        winner: null
+      };
+
+      return state;
+    }
+
+    /**
+     * Executa a troca voluntária de Pokémon ativo para um lado da batalha.
+     * Valida limites, integridade de alvo, nocaute e emite eventos correspondentes.
+     * 
+     * @private
+     * @param {'player'|'enemy'} role - Papel ('player' ou 'enemy').
+     * @param {Object} state - Estado mutável do turno.
+     * @param {Array<Object>} events - Lista de eventos acumulados.
+     * @param {Object} action - Ação de troca { targetPokemonId, targetIndex }.
+     * @param {string} [reason] - Motivo ('VOLUNTARY' ou 'FAINT_REPLACEMENT').
+     */
+    function executeSwitch(role, state, events, action, reason = 'VOLUNTARY') {
+      if (state.version !== 2) {
+        throw new Error('Ação de troca (SWITCH) não é suportada em batalhas 1x1.');
+      }
+
+      const side = state[role];
+      const previousActive = side.team[side.activeIndex];
+
+      let targetIndex = -1;
+      if (action.targetIndex !== undefined) {
+        const idx = Number(action.targetIndex);
+        if (Number.isInteger(idx) && idx >= 0 && idx < side.team.length) {
+          targetIndex = idx;
+        }
+      } else if (action.targetPokemonId !== undefined) {
+        targetIndex = side.team.findIndex(p => p.id === Number(action.targetPokemonId));
+      }
+
+      if (targetIndex === -1) {
+        throw new Error(`Alvo de troca inválido ou não pertence à equipe de "${role}": ${JSON.stringify(action)}`);
+      }
+
+      const targetPokemon = side.team[targetIndex];
+
+      if (targetIndex === side.activeIndex || targetPokemon.id === previousActive.id) {
+        throw new Error(`Troca inválida: "${targetPokemon.name}" já é o Pokémon ativo.`);
+      }
+
+      if (targetPokemon.currentHp === 0) {
+        throw new Error(`Troca inválida: não é possível trocar para "${targetPokemon.name}", pois já está nocauteado.`);
+      }
+
+      events.push({
+        type: BATTLE_EVENTS.SWITCH_STARTED,
+        actor: role,
+        previousPokemonId: previousActive.id,
+        targetPokemonId: targetPokemon.id
+      });
+
+      side.activeIndex = targetIndex;
+
+      events.push({
+        type: BATTLE_EVENTS.POKEMON_SWITCHED,
+        side: role,
+        previousPokemonId: previousActive.id,
+        newPokemonId: targetPokemon.id,
+        reason: constants.SWITCH_REASON ? constants.SWITCH_REASON[reason] || reason : reason
+      });
+    }
+
+    /**
      * Executa um único turno completo da batalha.
+     * Suporta batalhas 1x1 (v1) e 3x3 (v2), com prioridade estrita de SWITCH sobre MOVE.
      * Não muta o estado recebido; retorna um novo estado clonado e a lista de eventos.
      * 
      * @param {Object} currentState - Estado atual da batalha.
-     * @param {Object} [actions] - Comandos de ação: { player: { moveId, accuracyRoll }, enemy: { moveId, accuracyRoll } }.
+     * @param {Object} [actions] - Comandos de ação: { player: {...}, enemy: {...} }.
      * @returns {{ state: Object, events: Array<Object> }} Novo estado e eventos gerados.
      * @throws {Error} Se o estado for inválido ou se a batalha já estiver encerrada.
      */
@@ -253,7 +421,7 @@
       }
 
       if (currentState.status !== BATTLE_STATUS.IN_PROGRESS) {
-        throw new Error(`Não é possível executar turno em uma batalha com status: ${currentState.status}. A batalha já foi encerrada.`);
+        throw new Error(`Não é possível executar turno em uma batalha com status: ${currentState.status}. A batalha já foi encerrada ou aguarda substituição.`);
       }
 
       // Clona o estado para garantir total imutabilidade da entrada
@@ -267,8 +435,47 @@
         turn: currentTurn
       });
 
-      // Determina a ordem de ação usando o TurnManager
-      const order = TurnManager.determineOrder(nextState.player, nextState.enemy);
+      const isPlayerSwitch = actions.player && actions.player.type === BATTLE_ACTIONS.SWITCH;
+      const isEnemySwitch = actions.enemy && actions.enemy.type === BATTLE_ACTIONS.SWITCH;
+
+      // CENÁRIO 1: AMBOS ESCOLHERAM SWITCH (Prioridade total, ordem determinística player -> enemy)
+      if (isPlayerSwitch && isEnemySwitch) {
+        executeSwitch('player', nextState, events, actions.player, 'VOLUNTARY');
+        executeSwitch('enemy', nextState, events, actions.enemy, 'VOLUNTARY');
+
+        nextState.turn += 1;
+        return { state: nextState, events };
+      }
+
+      // CENÁRIO 2: PLAYER SWITCH VS ENEMY MOVE (Switch tem prioridade sobre Move)
+      if (isPlayerSwitch && !isEnemySwitch) {
+        executeSwitch('player', nextState, events, actions.player, 'VOLUNTARY');
+        // O ataque do adversário atinge o NOVO Pokémon ativo que acabou de entrar!
+        executeAction('enemy', 'player', nextState, events, actions.enemy);
+
+        if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
+          nextState.turn += 1;
+        }
+        return { state: nextState, events };
+      }
+
+      // CENÁRIO 3: ENEMY SWITCH VS PLAYER MOVE (Switch tem prioridade sobre Move)
+      if (!isPlayerSwitch && isEnemySwitch) {
+        executeSwitch('enemy', nextState, events, actions.enemy, 'VOLUNTARY');
+        // O ataque do jogador atinge o NOVO Pokémon ativo adversário!
+        executeAction('player', 'enemy', nextState, events, actions.player);
+
+        if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
+          nextState.turn += 1;
+        }
+        return { state: nextState, events };
+      }
+
+      // CENÁRIO 4: AMBOS ESCOLHERAM MOVE (Velocidade determina ordem clássica)
+      const activePlayer = getActiveCombatant(nextState, 'player');
+      const activeEnemy = getActiveCombatant(nextState, 'enemy');
+
+      const order = TurnManager.determineOrder(activePlayer, activeEnemy);
       const [firstRole, secondRole] = order;
 
       const firstAction = actions[firstRole];
@@ -277,7 +484,7 @@
       // --- AÇÃO DO PRIMEIRO COMBATENTE ---
       executeAction(firstRole, secondRole, nextState, events, firstAction);
 
-      // Se o defensor foi derrotado, o segundo combatente NÃO contra-ataca e NÃO consome PP
+      // Se o defensor foi nocauteado (ou a batalha terminou), o segundo combatente NÃO contra-ataca
       if (nextState.status !== BATTLE_STATUS.IN_PROGRESS) {
         return {
           state: nextState,
@@ -288,7 +495,7 @@
       // --- AÇÃO DO SEGUNDO COMBATENTE ---
       executeAction(secondRole, firstRole, nextState, events, secondAction);
 
-      // Se a batalha continuar, avança o contador de turnos
+      // Se a batalha continuar em progresso, avança o contador de turnos
       if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
         nextState.turn += 1;
       }
@@ -311,8 +518,13 @@
      * @param {Object} [action] - Comando da ação { moveId, accuracyRoll }.
      */
     function executeAction(attackerRole, defenderRole, state, events, action) {
-      const attacker = state[attackerRole];
-      const defender = state[defenderRole];
+      const attacker = getActiveCombatant(state, attackerRole);
+      const defender = getActiveCombatant(state, defenderRole);
+
+      // B3-06: Validação de que apenas o Pokémon ativo pode realizar ações de combate
+      if (action && action.pokemonId !== undefined && Number(action.pokemonId) !== attacker.id) {
+        throw new Error(`Apenas o Pokémon ativo ("${attacker.name}") pode realizar ações de combate.`);
+      }
 
       // 1. Seleciona o golpe a ser executado
       let selectedMove;
@@ -467,6 +679,7 @@
         target: defenderRole,
         attackType: selectedMove.type,
         damageClass: selectedMove.damageClass,
+        defenderTypes: effectiveness.defenderTypes,
         moveName: selectedMove.name,
         power: selectedMove.power,
         baseDamage,
@@ -486,27 +699,147 @@
           pokemonName: defender.name
         });
 
-        state.winner = attackerRole;
-        state.status = attackerRole === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
+        if (state.version === 2) {
+          const defenderTeam = state[defenderRole].team;
+          const isAllDefeated = defenderTeam.every(p => p.currentHp === 0);
 
-        events.push({
-          type: BATTLE_EVENTS.BATTLE_ENDED,
-          winner: attackerRole,
-          reason: `${defender.name} foi derrotado.`
-        });
+          if (isAllDefeated) {
+            // Derrota completa da equipe inteira
+            events.push({
+              type: BATTLE_EVENTS.TEAM_DEFEATED,
+              side: defenderRole,
+              winner: attackerRole
+            });
+
+            state.winner = attackerRole;
+            state.status = attackerRole === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
+
+            events.push({
+              type: BATTLE_EVENTS.BATTLE_ENDED,
+              winner: attackerRole,
+              reason: `Todos os Pokémon da equipe ${defenderRole} foram derrotados.`
+            });
+          } else {
+            // Ainda há reservas vivas no banco: substituição obrigatória
+            state.status = BATTLE_STATUS.AWAITING_REPLACEMENT;
+
+            const availablePokemonIds = defenderTeam.filter(p => p.currentHp > 0).map(p => p.id);
+            events.push({
+              type: BATTLE_EVENTS.REPLACEMENT_REQUIRED,
+              side: defenderRole,
+              faintedPokemonId: defender.id,
+              availablePokemonIds
+            });
+          }
+        } else {
+          // Batalha 1x1 (v1 legacy)
+          state.winner = attackerRole;
+          state.status = attackerRole === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
+
+          events.push({
+            type: BATTLE_EVENTS.BATTLE_ENDED,
+            winner: attackerRole,
+            reason: `${defender.name} foi derrotado.`
+          });
+        }
       }
     }
 
     /**
-     * Simula uma batalha completa até existir um vencedor ou atingir o limite de turnos.
+     * Resolve a substituição obrigatória de um ou ambos os lados após um nocaute (PBA-006).
+     * Transita a batalha de volta para IN_PROGRESS e incrementa o turno para a próxima rodada.
      * 
-     * @param {Object} playerInput - Dados do Pokémon do jogador.
-     * @param {Object} enemyInput - Dados do Pokémon adversário.
+     * @param {Object} currentState - Estado atual em AWAITING_REPLACEMENT.
+     * @param {Object} replacementActions - Ações { player: { targetPokemonId }, enemy: { targetPokemonId } }.
+     * @returns {{ state: Object, events: Array<Object> }}
+     */
+    function resolveReplacement(currentState, replacementActions = {}) {
+      if (!currentState || typeof currentState !== 'object') {
+        throw new Error('Estado de batalha inválido.');
+      }
+
+      if (currentState.status !== BATTLE_STATUS.AWAITING_REPLACEMENT) {
+        throw new Error(`resolveReplacement só pode ser executado quando a batalha está em AWAITING_REPLACEMENT. Status atual: ${currentState.status}.`);
+      }
+
+      const nextState = JSON.parse(JSON.stringify(currentState));
+      const events = [];
+      const roles = ['player', 'enemy'];
+      let replacedAny = false;
+
+      for (const role of roles) {
+        const side = nextState[role];
+        const active = side.team[side.activeIndex];
+
+        if (active.currentHp === 0) {
+          const action = replacementActions[role];
+          if (!action) {
+            throw new Error(`Ação de substituição obrigatória ausente para "${role}".`);
+          }
+
+          let targetIndex = -1;
+          if (action.targetIndex !== undefined) {
+            const idx = Number(action.targetIndex);
+            if (Number.isInteger(idx) && idx >= 0 && idx < side.team.length) {
+              targetIndex = idx;
+            }
+          } else if (action.targetPokemonId !== undefined) {
+            targetIndex = side.team.findIndex(p => p.id === Number(action.targetPokemonId));
+          }
+
+          if (targetIndex === -1) {
+            throw new Error(`Substituto inválido ou não pertence à equipe de "${role}": ${JSON.stringify(action)}`);
+          }
+
+          if (targetIndex === side.activeIndex) {
+            throw new Error(`Substituto inválido: Pokémon no índice ${targetIndex} é o que acabou de ser nocauteado.`);
+          }
+
+          const target = side.team[targetIndex];
+          if (target.currentHp === 0) {
+            throw new Error(`Substituto inválido: "${target.name}" já está nocauteado.`);
+          }
+
+          const previousActive = active;
+          side.activeIndex = targetIndex;
+          replacedAny = true;
+
+          events.push({
+            type: BATTLE_EVENTS.POKEMON_SWITCHED,
+            side: role,
+            previousPokemonId: previousActive.id,
+            newPokemonId: target.id,
+            reason: constants.SWITCH_REASON ? constants.SWITCH_REASON.FAINT_REPLACEMENT : 'FAINT_REPLACEMENT'
+          });
+        }
+      }
+
+      if (replacedAny) {
+        nextState.status = BATTLE_STATUS.IN_PROGRESS;
+        nextState.turn += 1;
+      }
+
+      return {
+        state: nextState,
+        events
+      };
+    }
+
+    /**
+     * Simula uma batalha 1x1 completa até existir um vencedor ou atingir o limite de turnos.
+     * Se forem passados arrays, delega automaticamente para simulateTeamBattle.
+     * 
+     * @param {Object|Array} playerInput - Dados do Pokémon ou equipe do jogador.
+     * @param {Object|Array} enemyInput - Dados do Pokémon ou equipe adversária.
      * @param {number} [maxTurns] - Limite máximo de turnos (padrão 100).
      * @param {Array<Object>} [turnActions] - Lista opcional de ações para cada turno.
      * @returns {{ state: Object, events: Array<Object>, totalTurns: number }}
      */
     function simulateBattle(playerInput, enemyInput, maxTurns = BATTLE_CONFIG.MAX_TURNS_LIMIT, turnActions = null) {
+      if (Array.isArray(playerInput) || Array.isArray(enemyInput)) {
+        return simulateTeamBattle(playerInput, enemyInput, maxTurns, turnActions);
+      }
+
       let state = createBattle(playerInput, enemyInput);
       const allEvents = [
         {
@@ -536,11 +869,90 @@
       };
     }
 
+    /**
+     * Simula uma batalha 3x3 completa até existir um vencedor ou atingir o limite de turnos (PBA-006).
+     * Resolve automaticamente ou por roteiro substituições forçadas e trocas voluntárias.
+     * 
+     * @param {Array<Object>} playerTeamInput - 3 Pokémon do jogador.
+     * @param {Array<Object>} enemyTeamInput - 3 Pokémon do adversário.
+     * @param {number} [maxTurns] - Limite de segurança de turnos (padrão 100).
+     * @param {Array<Object>} [turnActions] - Lista opcional de ações para cada turno.
+     * @param {Array<Object>} [replacementActions] - Lista opcional de substituições forçadas.
+     * @returns {{ state: Object, events: Array<Object>, totalTurns: number }}
+     */
+    function simulateTeamBattle(playerTeamInput, enemyTeamInput, maxTurns = BATTLE_CONFIG.MAX_TURNS_LIMIT, turnActions = null, replacementActions = null) {
+      let state = createTeamBattle(playerTeamInput, enemyTeamInput);
+      const allEvents = [
+        {
+          type: BATTLE_EVENTS.BATTLE_STARTED,
+          player: {
+            activeIndex: state.player.activeIndex,
+            activePokemon: { id: state.player.team[0].id, name: state.player.team[0].name, types: state.player.team[0].types },
+            teamSize: state.player.team.length
+          },
+          enemy: {
+            activeIndex: state.enemy.activeIndex,
+            activePokemon: { id: state.enemy.team[0].id, name: state.enemy.team[0].name, types: state.enemy.team[0].types },
+            teamSize: state.enemy.team.length
+          }
+        }
+      ];
+
+      let safetyCounter = 0;
+      let actionIndex = 0;
+      let replacementIndex = 0;
+
+      while (state.status !== BATTLE_STATUS.PLAYER_WIN && state.status !== BATTLE_STATUS.ENEMY_WIN) {
+        safetyCounter++;
+        if (safetyCounter > maxTurns) {
+          throw new Error(`Limite de segurança de turnos (${maxTurns}) atingido. Simulação 3x3 abortada para evitar loop infinito.`);
+        }
+
+        if (state.status === BATTLE_STATUS.AWAITING_REPLACEMENT) {
+          let replAct = {};
+          if (replacementActions && replacementActions[replacementIndex]) {
+            replAct = { ...replacementActions[replacementIndex] };
+            replacementIndex++;
+          }
+          // Se algum lado precisa de substituição e não foi especificado explicitamente, usa o primeiro Pokémon vivo da reserva
+          if (getActiveCombatant(state, 'player').currentHp === 0 && !replAct.player) {
+            const nextHealthy = state.player.team.find(p => p.currentHp > 0);
+            if (nextHealthy) replAct.player = { targetPokemonId: nextHealthy.id };
+          }
+          if (getActiveCombatant(state, 'enemy').currentHp === 0 && !replAct.enemy) {
+            const nextHealthy = state.enemy.team.find(p => p.currentHp > 0);
+            if (nextHealthy) replAct.enemy = { targetPokemonId: nextHealthy.id };
+          }
+
+          const replResult = resolveReplacement(state, replAct);
+          state = replResult.state;
+          allEvents.push(...replResult.events);
+        } else if (state.status === BATTLE_STATUS.IN_PROGRESS) {
+          const act = (turnActions && turnActions[actionIndex]) ? turnActions[actionIndex] : {};
+          actionIndex++;
+          const turnResult = resolveTurn(state, act);
+          state = turnResult.state;
+          allEvents.push(...turnResult.events);
+        }
+      }
+
+      return {
+        state,
+        events: allEvents,
+        totalTurns: state.turn
+      };
+    }
+
     return {
       createCombatant,
+      validateAndCreateTeam,
+      getActiveCombatant,
       createBattle,
+      createTeamBattle,
       resolveTurn,
-      simulateBattle
+      resolveReplacement,
+      simulateBattle,
+      simulateTeamBattle
     };
   })();
 

@@ -350,17 +350,94 @@ sequenceDiagram
 
 ---
 
-## 8. Decisões Explicitamente Adiadas
+## 8. Arquitetura da Batalha 3x3 e Sistema de Trocas (PBA-006)
+
+A Fase PBA-006 evoluiu o motor matemático de combate de 1x1 para confrontos completos de equipes 3x3 (**3 Pokémon contra 3 Pokémon**), introduzindo:
+
+### 8.1 Battle Team Model e Validação Estrita
+- **Tamanho Fixo**: Exatamente 3 integrantes por lado (`TEAM_SIZE = 3`). Batalhas com 0, 1, 2 ou 4+ Pokémon são rejeitadas com erro explícito (`INVALID_TEAM_SIZE`).
+- **Unicidade de Espécies**: Proibição de Pokémon duplicados na mesma equipe pelo `id`.
+- **Validação Individual**: Cada combatente continua sendo validado pelas regras do *Combatant Model v3* (HP, stats, loadout de 1 a 4 moves válidos).
+- **Líder Inicial**: O Pokémon fornecido no índice 0 (Slot 1 do Team Builder) é preservado rigorosamente como o combatente ativo inicial (`activeIndex: 0`).
+
+### 8.2 Separação de Responsabilidade: Team Builder vs Battle State
+$$\text{team.current (LocalStorage)} \neq \text{Battle Runtime State}$$
+O Team Builder armazena apenas a seleção do usuário (`pokemonIds`). A Battle Engine cria instâncias runtime totalmente desacopladas, com clones profundos independentes para `currentHp`, `currentPp` e flags de estado. A persistência do time nunca é alterada pelo combate.
+
+### 8.3 Battle State v2
+Estrutura determinística, serializável e livre de DOM:
+```json
+{
+  "version": 2,
+  "status": "IN_PROGRESS",
+  "turn": 1,
+  "player": {
+    "activeIndex": 0,
+    "team": [
+      { "id": 4, "name": "charmander", "currentHp": 39, "moves": [...] },
+      { "id": 25, "name": "pikachu", "currentHp": 35, "moves": [...] },
+      { "id": 7, "name": "squirtle", "currentHp": 44, "moves": [...] }
+    ]
+  },
+  "enemy": {
+    "activeIndex": 0,
+    "team": [
+      { "id": 1, "name": "bulbasaur", "currentHp": 45, "moves": [...] },
+      { "id": 74, "name": "geodude", "currentHp": 40, "moves": [...] },
+      { "id": 130, "name": "gyarados", "currentHp": 95, "moves": [...] }
+    ]
+  },
+  "winner": null
+}
+```
+
+### 8.4 Pokémon Ativo vs Banco
+- **Ativo**: Exatamente um Pokémon por lado (`state[side].activeIndex`). Apenas o ativo pode desferir golpes (`MOVE`), receber danos e consumir PP.
+- **Banco**: Membros reservas (`activeIndex !== index`) não atacam, não recebem dano passivo e mantêm seu HP e PP estritamente intactos.
+
+### 8.5 Prioridade da Troca Voluntária (Switch Priority)
+$$\text{SWITCH} > \text{MOVE}$$
+- Quando um treinador seleciona uma ação `SWITCH`, ela possui prioridade estrita de fase e ocorre **antes** de qualquer ataque `MOVE`, ignorando comparações de *Speed*.
+- O novo Pokémon entra em campo imediatamente, tornando-se o novo alvo do golpe adversário no mesmo turno.
+- Em caso de `SWITCH vs SWITCH`, ambas as trocas ocorrem antes de qualquer ação ofensiva, de forma determinística (Player depois Enemy), sem geração de dano.
+
+### 8.6 Persistência Rigorosa de HP e PP no Banco
+- Trocar de Pokémon não restaura HP nem recupera PP (`SWITCH_HP_PERSISTENCE = PASS`, `SWITCH_PP_PERSISTENCE = PASS`).
+- Um Pokémon ferido ou com PP consumido que vai para o banco e posteriormente retorna ao campo preserva exatamente os mesmos valores.
+
+### 8.7 Troca Forçada após Nocaute (Forced Replacement)
+- Se o Pokémon ativo tem seu HP reduzido a 0 e a equipe ainda possui reservas com HP > 0:
+  - A batalha **não termina**;
+  - O estado transita para `AWAITING_REPLACEMENT`;
+  - O motor emite o evento `REPLACEMENT_REQUIRED` contendo o ID do Pokémon nocauteado e os IDs disponíveis na reserva;
+  - A troca forçada é resolvida explicitamente via `BattleEngine.resolveReplacement(state, replacementActions)`, desacoplando a decisão (feita futuramente por UI ou IA) do motor.
+- O substituto entra com o status retornando para `IN_PROGRESS` e o turno é incrementado para o próximo ciclo de decisões. O Pokémon substituto **não** recebe o golpe que já havia sido concluído no turno anterior.
+
+### 8.8 Derrota da Equipe e Fim da Batalha (Team Defeat)
+- Um lado só é considerado derrotado quando **todos os 3 integrantes** estiverem com `currentHp === 0`.
+- Nesse momento, são emitidos em sequência ordenada: `POKEMON_FAINTED`, `TEAM_DEFEATED` e `BATTLE_ENDED`.
+- O status transita para `PLAYER_WIN` ou `ENEMY_WIN`.
+
+### 8.9 Novos Eventos Estruturados
+| Evento | Payload Semântico | Descrição |
+|---|---|---|
+| `SWITCH_STARTED` | `{ side, currentPokemonId, targetPokemonId }` | Início de uma troca voluntária |
+| `POKEMON_SWITCHED` | `{ side, previousPokemonId, newPokemonId, reason }` | Troca concretizada (`reason: 'VOLUNTARY'` ou `'FAINT_REPLACEMENT'`) |
+| `REPLACEMENT_REQUIRED` | `{ side, faintedPokemonId, availablePokemonIds }` | Notificação de necessidade de substituição obrigatória pós-nocaute |
+| `TEAM_DEFEATED` | `{ side, teamSize }` | Notificação de que todos os 3 membros da equipe caíram |
+
+---
+
+## 9. Decisões Explicitamente Adiadas
 
 - **Golpes de Status (Status Moves)**: Reconhecidos na validação, porém com efeitos (Burn, Poison, Paralysis, Sleep, Freeze, Buffs/Debuffs) reservados para fases futuras.
 - **Acertos Críticos (Critical Hits) e Variação de RNG de Dano**: Reservados para uma expansão posterior com semente controlada.
-- **Batalhas 3x3 e Trocas de Pokémon**: Reservado para a Fase PBA-006.
 - **Inteligência Artificial Estratégica**: Reservada para a Fase PBA-007.
 - **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
 
 ---
 
-## 9. Riscos Técnicos e Estratégias de Mitigação
+## 10. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -377,7 +454,7 @@ sequenceDiagram
 
 ---
 
-## 10. Roadmap Técnico Oficial
+## 11. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -385,7 +462,7 @@ sequenceDiagram
 [x] PBA-003 Battle Engine v1 (Estrutura Básica de Combate 1x1) ─ [CONCLUÍDA]
 [x] PBA-004 Type System (Tabela Completa de Tipos e Efetividades) ── [CONCLUÍDA]
 [x] PBA-005 Move System (Sistemas de Golpes, Categorias e PP) ─ [CONCLUÍDA]
-[ ] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon)
+[x] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon) ── [CONCLUÍDA]
 [ ] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários)
 [ ] PBA-008 Battle Presentation Engine (Desacoplamento Visual da Lógica)
 [ ] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais)
