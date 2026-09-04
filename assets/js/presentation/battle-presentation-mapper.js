@@ -185,13 +185,18 @@
               type: PRESENTATION_COMMANDS.MOVE_ANNOUNCEMENT,
               actor: event.actor,
               side: event.actor,
+              target: event.target || (event.actor === 'player' ? 'enemy' : 'player'),
               pokemonId: event.pokemonId,
               pokemonName: event.pokemonName,
               moveId: event.moveId,
               moveName: event.moveName,
               moveType: event.moveType,
               damageClass: event.damageClass,
-              power: event.power
+              power: event.power,
+              isMiss: Boolean(event.isMiss),
+              isImmune: Boolean(event.isImmune),
+              multiplier: event.multiplier !== undefined ? Number(event.multiplier) : 1,
+              classification: event.classification || 'NEUTRAL'
             }
           ];
 
@@ -343,9 +348,30 @@
       }
 
       const commands = [];
-      for (const event of events) {
-        const mapped = mapEvent(event, context);
-        commands.push(...mapped);
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        if (event && event.type === BATTLE_EVENTS.MOVE_USED) {
+          const enrichedEvent = { ...event };
+          for (let j = i + 1; j < events.length; j++) {
+            const next = events[j];
+            if (!next || next.type === BATTLE_EVENTS.ACTION_STARTED || next.type === BATTLE_EVENTS.TURN_STARTED) {
+              break;
+            }
+            if (next.type === BATTLE_EVENTS.MOVE_MISSED) {
+              enrichedEvent.isMiss = true;
+            }
+            if (next.type === BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED) {
+              enrichedEvent.multiplier = Number(next.multiplier);
+              enrichedEvent.classification = next.classification;
+              if (Number(next.multiplier) === 0) {
+                enrichedEvent.isImmune = true;
+              }
+            }
+          }
+          commands.push(...mapEvent(enrichedEvent, context));
+        } else {
+          commands.push(...mapEvent(event, context));
+        }
       }
 
       return commands;

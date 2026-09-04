@@ -177,6 +177,27 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Fronteira estrita respeitada: Move VFX (fogo, água, raio, partículas) NÃO implementados nesta fase (escopo exclusivo da PBA-010);
   - 100% de aprovação nos testes automatizados: 249 testes (36 novos testes AN01 a AN36 + 213 testes de fases anteriores) com 0 falhas e 0 regressões.
 
+- **PBA-010 Move Visual Effects**:
+  - Implementação de subsistema profissional, reutilizável e escalável de efeitos visuais para golpes Pokémon na Battle Arena em `assets/js/vfx/` e `assets/css/move-vfx.css`:
+    - `move-vfx-constants.js`: 18 Type Families (`VFX_TYPE_COUNT = 18`), 8 Effect Archetypes (`PROJECTILE`, `BEAM`, `STREAM`, `BURST`, `SLASH`, `IMPACT`, `WAVE`, `AURA`), thresholds de intensidade (`LOW` <= 50, `MEDIUM` 51..90, `HIGH` > 90), tempos nominais, limites de partículas (`MAX_PARTICLES_PER_EFFECT = 12`), camadas z-index e catálogo de overrides para golpes icônicos;
+    - `move-vfx-resolver.js`: Resolver puro `MoveVfxResolver.resolve(moveData)` mapeando golpes para descritores imutáveis com fallback genérico por tipo, rejeição controlada de golpes inválidos e status moves não suportados;
+    - `move-vfx-registry.js`: Registro de palco e combatentes (`player`, `enemy`) com cálculo de trajetórias dinâmicas e fallback virtual para testes headless em Node.js;
+    - `move-vfx-dom-renderer.js`: Renderizador DOM baseado em CSS custom properties (`--vfx-dir`, `--vfx-scale`, `--vfx-color-*`), transformações aceleradas por GPU (`translate3d`, `scale`, `opacity`), impacto no alvo, dissipação controlada em Miss (`MISS_IMPACT_EFFECT = NO`) e Imunidade (`IMMUNITY_DAMAGE_IMPACT = NO`) e zero vazamento de nós DOM (`VFX_DOM_LEAK = NONE`);
+    - `move-vfx-controller.js`: Controlador assíncrono do ciclo de vida de VFX com política de concorrência `CANCEL_PREVIOUS`, métodos `cancel()`, `reset()`, limpeza automática de nós/timers/listeners e suporte estrito a `reducedMotion`;
+    - `move-vfx.css`: Estilização CSS completa para todos os 8 arquétipos, partículas leves, anéis e bursts com `@media (prefers-reduced-motion: reduce)`;
+    - `composite-battle-dom-adapter.js`: Adaptador composto orquestrando `PokemonAnimationController` (movimento de ataque do atacante) + `MoveVfxController` (trajetória e impacto do VFX) durante `MOVE_ANNOUNCEMENT`, mantendo a reação de dano do defensor sincronizada no comando `HP_TRANSITION`;
+    - `tests/visual/move-vfx-harness.html`: Harness visual completo com suporte a 18 tipos, 8 arquétipos, 3 intensidades, 4 desfechos (Hit, Miss, Immune, Super Effective), 6 presets icônicos e inspeção responsiva;
+  - 100% de separação e conformidade arquitetural:
+    - `POKEMON ANIMATION ≠ MOVE VISUAL EFFECT`
+    - `VFX_DAMAGE_CALCULATION = 0`
+    - `VFX_TYPE_CALCULATION = 0`
+    - `VFX_AI_DECISIONS = 0`
+    - `VFX_BATTLE_RULES = 0`
+    - `VFX_FETCH_CALLS = 0`
+    - `VFX_LOCALSTORAGE = 0`
+    - `VFX_AUDIO_CALLS = 0`
+  - 100% de aprovação nos testes automatizados: 289 testes (40 novos testes VFX01 a VFX40 + 249 testes de fases anteriores) com 0 falhas e 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -274,6 +295,25 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    CAMERA_EFFECTS = NOT_YET
    FINAL_BATTLE_UI = NOT_YET
    ```
+10. **Configurações Oficiais dos Move Visual Effects (PBA-010)**:
+   ```text
+   MOVE_VFX_SYSTEM = YES
+   TYPE_FAMILIES = 18
+   REUSABLE_ARCHETYPES = YES
+   INTENSITY_CLASSIFICATION = YES
+   GENERIC_FALLBACK = YES
+   MISS_VFX = YES
+   IMMUNITY_VFX = YES
+   SUPER_EFFECTIVE_VFX = YES
+   REDUCED_MOTION = YES
+   COMPOSITE_ADAPTER = YES
+   MAX_PARTICLES_PER_EFFECT = 12
+   VFX_DOM_LEAK = NONE
+   VFX_RESOURCE_LEAK = NONE
+   AUDIO = NOT_YET
+   CAMERA_EFFECTS = NOT_YET
+   FINAL_BATTLE_UI = NOT_YET
+   ```
 
 ---
 
@@ -290,15 +330,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-007 = PASS`
   - `PBA-008 = PASS`
   - `PBA-009 = PASS`
-- **Working Tree**: Atualizado com os módulos de animação, CSS e suíte AN01–AN36
+  - `PBA-010 = PASS`
+- **Working Tree**: Atualizado com os subsistemas de Move VFX, Composite Adapter, CSS e suíte VFX01–VFX40
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-010 — Move Visual Effects
+NEXT_PHASE = PBA-011 — Audio System
 ```
 
-*(Atenção: A Fase PBA-010 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-011 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

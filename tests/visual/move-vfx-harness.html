@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Move Visual Effects (VFX) Harness — PBA-010</title>
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/battle-animations.css">
+  <link rel="stylesheet" href="../../assets/css/move-vfx.css">
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #1a1e2e, #0c0f17 90%);
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .harness-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .harness-header h1 {
+      font-size: 1.6rem;
+      color: #38bdf8;
+      margin-bottom: 0.25rem;
+    }
+
+    .harness-header p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .arena-container {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      height: 380px;
+      background: linear-gradient(180deg, #131929 0%, #0d121f 60%, #1e293b 100%);
+      border: 2px solid #334155;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      margin-bottom: 1.25rem;
+    }
+
+    .battle-field {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .combatant-zone {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .combatant-zone.player {
+      left: 15%;
+      bottom: 18%;
+    }
+
+    .combatant-zone.enemy {
+      right: 15%;
+      top: 15%;
+    }
+
+    .combatant-podium {
+      position: absolute;
+      bottom: 0;
+      width: 140px;
+      height: 34px;
+      background: radial-gradient(ellipse at center, #334155 0%, rgba(30, 41, 59, 0.2) 75%, transparent 100%);
+      border-radius: 50%;
+      z-index: 5;
+    }
+
+    .pokemon-sprite-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .pokemon-sprite-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
+    }
+
+    .combatant-label {
+      position: absolute;
+      top: -24px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .combatant-zone.player .combatant-label { color: #38bdf8; }
+    .combatant-zone.enemy .combatant-label { color: #f43f5e; }
+
+    .control-panel {
+      width: 100%;
+      max-width: 860px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.25rem;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-preset {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-weight: 500;
+    }
+
+    .btn-preset:hover {
+      background: #334155;
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .btn-preset.electric { border-left: 4px solid #f8d030; }
+    .btn-preset.fire { border-left: 4px solid #f08030; }
+    .btn-preset.water { border-left: 4px solid #6890f0; }
+    .btn-preset.grass { border-left: 4px solid #78c850; }
+    .btn-preset.rock { border-left: 4px solid #b8a038; }
+    .btn-preset.psychic { border-left: 4px solid #f85888; }
+
+    .custom-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .control-group label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .control-group select {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1rem;
+    }
+
+    .btn-action {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-action:hover {
+      background: #0369a1;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-left: auto;
+      cursor: pointer;
+    }
+
+    .log-panel {
+      margin-top: 1rem;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      min-height: 50px;
+      max-height: 100px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="harness-header">
+    <h1>⚔️ Move Visual Effects (VFX) Harness — PBA-010</h1>
+    <p>Ambiente isolado de validação visual de famílias e arquétipos de golpes</p>
+  </div>
+
+  <div class="arena-container">
+    <div id="vfxStage" class="pba-vfx-stage"></div>
+    <div class="battle-field">
+      <!-- Combatente Player -->
+      <div id="playerCombatant" class="combatant-zone player" data-battle-side="player">
+        <div class="combatant-label">Player (Pikachu)</div>
+        <div class="combatant-podium"></div>
+        <div id="playerSpriteContainer" class="pokemon-sprite-container">
+          <img id="playerSprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu">
+        </div>
+      </div>
+
+      <!-- Combatente Enemy -->
+      <div id="enemyCombatant" class="combatant-zone enemy" data-battle-side="enemy">
+        <div class="combatant-label">Enemy (Bulbasaur)</div>
+        <div class="combatant-podium"></div>
+        <div id="enemySpriteContainer" class="pokemon-sprite-container">
+          <img id="enemySprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="Bulbasaur">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <div class="section-title">Presets de Golpes Icônicos (1-Click Trigger)</div>
+    <div class="preset-buttons">
+      <button class="btn-preset electric" onclick="triggerPreset('thunderbolt')">⚡ Thunderbolt (Electric BEAM)</button>
+      <button class="btn-preset fire" onclick="triggerPreset('flamethrower')">🔥 Flamethrower (Fire STREAM)</button>
+      <button class="btn-preset water" onclick="triggerPreset('water-gun')">💧 Water Gun (Water PROJECTILE)</button>
+      <button class="btn-preset grass" onclick="triggerPreset('vine-whip')">🌿 Vine Whip (Grass SLASH)</button>
+      <button class="btn-preset rock" onclick="triggerPreset('rock-throw')">🪨 Rock Throw (Rock PROJECTILE)</button>
+      <button class="btn-preset psychic" onclick="triggerPreset('psychic')">🔮 Psychic (Psychic AURA)</button>
+    </div>
+
+    <div class="section-title">Controles Customizados</div>
+    <div class="custom-controls">
+      <div class="control-group">
+        <label for="selectAttacker">Atacante</label>
+        <select id="selectAttacker">
+          <option value="player" selected>Player ➔ Enemy</option>
+          <option value="enemy">Enemy ➔ Player</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="selectType">Tipo (18 Tipos)</label>
+        <select id="selectType"></select>
+      </div>
+
+      <div class="control-group">
+        <label for="selectArchetype">Arquétipo</label>
+        <select id="selectArchetype"></select>
+      </div>
+
+      <div class="control-group">
+        <label for="selectIntensity">Intensidade</label>
+        <select id="selectIntensity">
+          <option value="LOW">LOW (≤ 50 power)</option>
+          <option value="MEDIUM" selected>MEDIUM (51–90 power)</option>
+          <option value="HIGH">HIGH (> 90 power)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="selectOutcome">Resultado / Efetividade</label>
+        <select id="selectOutcome">
+          <option value="1" selected>Hit Normal (1x)</option>
+          <option value="2">Super Effective (2x)</option>
+          <option value="4">Double Weakness (4x)</option>
+          <option value="0.5">Resisted (0.5x)</option>
+          <option value="MISS">Miss (Erro)</option>
+          <option value="IMMUNE">Immune (0x)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button id="btnPlayCustom" class="btn-action" onclick="triggerCustomVfx()">▶ Disparar Efeito Visual</button>
+      <button class="btn-secondary" onclick="cancelVfx()">⏹ Cancelar</button>
+      <button class="btn-secondary" onclick="resetStage()">🔄 Reset Palco</button>
+
+      <label class="checkbox-group">
+        <input type="checkbox" id="checkReducedMotion" onchange="toggleReducedMotion(this.checked)">
+        Reduced Motion
+      </label>
+    </div>
+
+    <div id="logArea" class="log-panel">Pronto. Selecione um preset ou configure o efeito acima.</div>
+  </div>
+
+  <!-- Scripts do Motor e Visual Subsystems -->
+  <script src="../../assets/js/battle/battle-constants.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-constants.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-registry.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-controller.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-constants.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-resolver.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-registry.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-dom-renderer.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-controller.js"></script>
+
+  <script>
+    const { VFX_TYPE_FAMILIES, VFX_ARCHETYPES, VFX_INTENSITY, MOVE_OVERRIDES } = window.PBABattleVfx;
+
+    // Inicialização de subsistemas
+    const vfxRegistry = new window.PBABattleVfx.MoveVfxRegistry();
+    vfxRegistry.registerStage('#vfxStage');
+    vfxRegistry.registerTarget('player', '#playerSpriteContainer');
+    vfxRegistry.registerTarget('enemy', '#enemySpriteContainer');
+
+    const vfxRenderer = new window.PBABattleVfx.MoveVfxDomRenderer({ registry: vfxRegistry });
+    const vfxController = new window.PBABattleVfx.MoveVfxController({
+      registry: vfxRegistry,
+      renderer: vfxRenderer
+    });
+
+    const animRegistry = new window.PBABattlePresentation.PokemonAnimationRegistry();
+    animRegistry.registerTarget('player', { target: '#playerCombatant', sprite: '#playerSprite' });
+    animRegistry.registerTarget('enemy', { target: '#enemyCombatant', sprite: '#enemySprite' });
+    const animController = new window.PBABattlePresentation.PokemonAnimationController({ registry: animRegistry });
+
+    // Iniciar idles nos sprites
+    animController.startIdle('player');
+    animController.startIdle('enemy');
+
+    // População dos selects
+    const selectType = document.getElementById('selectType');
+    Object.values(VFX_TYPE_FAMILIES).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t.toUpperCase();
+      selectType.appendChild(opt);
+    });
+
+    const selectArchetype = document.getElementById('selectArchetype');
+    Object.values(VFX_ARCHETYPES).forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a;
+      opt.textContent = a;
+      selectArchetype.appendChild(opt);
+    });
+
+    function log(msg) {
+      const area = document.getElementById('logArea');
+      const time = new Date().toLocaleTimeString();
+      area.textContent = `[${time}] ${msg}\n` + area.textContent;
+    }
+
+    async function triggerPreset(moveKey) {
+      const attacker = document.getElementById('selectAttacker').value;
+      const defender = attacker === 'player' ? 'enemy' : 'player';
+      const outcome = document.getElementById('selectOutcome').value;
+
+      const isMiss = outcome === 'MISS';
+      const isImmune = outcome === 'IMMUNE';
+      const multiplier = (isMiss || isImmune) ? 0 : Number(outcome);
+
+      const override = MOVE_OVERRIDES[moveKey];
+      const descriptor = window.PBABattleVfx.MoveVfxResolver.resolve({
+        moveName: moveKey,
+        moveType: override ? override.type : 'normal',
+        power: 80
+      });
+
+      log(`▶ Disparando preset "${moveKey.toUpperCase()}" (${descriptor.archetype}) | Atacante: ${attacker.toUpperCase()} | Mult: ${multiplier}x`);
+
+      // Paralelismo coordenado: ataque corporal + efeito de golpe
+      animController.playAttack(attacker);
+      await vfxController.playMoveVfx(descriptor, {
+        attackerSide: attacker,
+        defenderSide: defender,
+        isMiss,
+        isImmune,
+        multiplier
+      });
+
+      // Se foi dano real, simula reação de recoil do defensor
+      if (!isMiss && !isImmune && multiplier > 0) {
+        animController.playDamageReaction(defender);
+      }
+
+      log(`✔ Concluído "${moveKey.toUpperCase()}"`);
+    }
+
+    async function triggerCustomVfx() {
+      const attacker = document.getElementById('selectAttacker').value;
+      const defender = attacker === 'player' ? 'enemy' : 'player';
+      const type = document.getElementById('selectType').value;
+      const archetype = document.getElementById('selectArchetype').value;
+      const intensity = document.getElementById('selectIntensity').value;
+      const outcome = document.getElementById('selectOutcome').value;
+
+      const isMiss = outcome === 'MISS';
+      const isImmune = outcome === 'IMMUNE';
+      const multiplier = (isMiss || isImmune) ? 0 : Number(outcome);
+
+      const power = intensity === 'LOW' ? 40 : (intensity === 'HIGH' ? 120 : 80);
+
+      const descriptor = window.PBABattleVfx.MoveVfxResolver.resolve({
+        moveName: 'custom-move',
+        moveType: type,
+        power
+      });
+
+      // Permite forçar o arquétipo escolhido no select
+      const customDescriptor = {
+        ...descriptor,
+        archetype
+      };
+
+      log(`▶ Disparando Custom VFX [${type.toUpperCase()}/${archetype}] | Atacante: ${attacker.toUpperCase()} | Intensidade: ${intensity}`);
+
+      animController.playAttack(attacker);
+      await vfxController.playMoveVfx(customDescriptor, {
+        attackerSide: attacker,
+        defenderSide: defender,
+        isMiss,
+        isImmune,
+        multiplier
+      });
+
+      if (!isMiss && !isImmune && multiplier > 0) {
+        animController.playDamageReaction(defender);
+      }
+
+      log(`✔ Concluído Custom VFX`);
+    }
+
+    function cancelVfx() {
+      vfxController.cancel();
+      animController.cancel('player');
+      animController.cancel('enemy');
+      animController.startIdle('player');
+      animController.startIdle('enemy');
+      log(`⏹ Animações e efeitos cancelados.`);
+    }
+
+    function resetStage() {
+      vfxController.reset();
+      animController.reset();
+      vfxRegistry.registerStage('#vfxStage');
+      vfxRegistry.registerTarget('player', '#playerSpriteContainer');
+      vfxRegistry.registerTarget('enemy', '#enemySpriteContainer');
+      animController.startIdle('player');
+      animController.startIdle('enemy');
+      log(`🔄 Palco de batalha resetado.`);
+    }
+
+    function toggleReducedMotion(enabled) {
+      vfxController.setReducedMotion(enabled);
+      animController.setReducedMotion(enabled);
+      const stage = document.querySelector('.arena-container');
+      if (enabled) {
+        stage.classList.add('pba-reduced-motion');
+      } else {
+        stage.classList.remove('pba-reduced-motion');
+      }
+      log(`⚙️ Reduced Motion: ${enabled ? 'ATIVADO' : 'DESATIVADO'}`);
+    }
+  </script>
+</body>
+</html>

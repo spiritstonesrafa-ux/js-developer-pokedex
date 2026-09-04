@@ -1,0 +1,433 @@
+/**
+ * ====================================================================
+ * FOLHA DE ESTILOS: EFEITOS VISUAIS DE GOLPES (move-vfx.css)
+ * ====================================================================
+ * Estilização GPU-accelerated de projéteis, feixes, torrentes, cortes e
+ * impactos da Fase PBA-010.
+ *
+ * Princípios de Performance:
+ * - Uso exclusivo de transform (translate3d, scale, rotate) e opacity;
+ * - Sem layout thrashing contínuo;
+ * - Limpeza total e estrita de nós ao final das transições;
+ * - Suporte a prefers-reduced-motion e classes .pba-reduced-motion.
+ */
+
+/* Contêiner de camadas de efeitos visuais */
+.pba-vfx-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 20;
+}
+
+/* 1. ARQUÉTIPO: PROJECTILE (Projétil em deslocamento balístico) */
+.pba-vfx-projectile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(24px, 4vw, 36px);
+  height: clamp(24px, 4vw, 36px);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 10%, var(--vfx-color-secondary, #f8d030) 40%, var(--vfx-color-primary, #f08030) 80%);
+  box-shadow: 0 0 16px var(--vfx-color-glow, rgba(240, 128, 48, 0.8));
+  will-change: transform, opacity;
+  animation: pba-projectile-travel var(--vfx-duration, 400ms) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes pba-projectile-travel {
+  0% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) scale(0.6);
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1);
+    opacity: 0.9;
+  }
+}
+
+/* 2. ARQUÉTIPO: BEAM (Raio de energia de alta velocidade) */
+.pba-vfx-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: clamp(8px, 1.8vw, 16px);
+  width: var(--vfx-length, 300px);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, transparent 0%, #ffffff 20%, var(--vfx-color-secondary, #f8f878) 50%, var(--vfx-color-primary, #f8d030) 85%, #ffffff 100%);
+  box-shadow: 0 0 18px var(--vfx-color-glow, rgba(248, 208, 48, 0.9));
+  border-radius: 8px;
+  will-change: transform, opacity;
+  animation: pba-beam-pulse var(--vfx-duration, 350ms) ease-out forwards;
+}
+
+@keyframes pba-beam-pulse {
+  0% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleY(0.2);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleY(1.4);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleY(0.1);
+  }
+}
+
+/* 3. ARQUÉTIPO: STREAM (Torrente contínua de elemento) */
+.pba-vfx-stream {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: clamp(18px, 3vw, 28px);
+  width: var(--vfx-length, 300px);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, var(--vfx-color-secondary, #f8d030) 40%, var(--vfx-color-primary, #f08030) 80%, transparent 100%);
+  border-radius: 14px;
+  filter: blur(1px);
+  box-shadow: 0 0 20px var(--vfx-color-glow, rgba(240, 128, 48, 0.8));
+  will-change: transform, opacity;
+  animation: pba-stream-flow var(--vfx-duration, 450ms) ease-in-out forwards;
+}
+
+@keyframes pba-stream-flow {
+  0% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleX(0.1) scaleY(0.5);
+    opacity: 0.3;
+  }
+  40% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleX(1) scaleY(1.2);
+    opacity: 1;
+  }
+  80% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleX(1) scaleY(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) rotate(var(--vfx-angle, 0deg)) scaleX(1.1) scaleY(0.3);
+    opacity: 0;
+  }
+}
+
+/* 4. ARQUÉTIPO: BURST (Explosão concentrada no defensor) */
+.pba-vfx-burst {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(50px, 8vw, 80px);
+  height: clamp(50px, 8vw, 80px);
+  margin-left: calc(-1 * clamp(25px, 4vw, 40px));
+  margin-top: calc(-1 * clamp(25px, 4vw, 40px));
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 15%, var(--vfx-color-secondary, #fff) 45%, var(--vfx-color-primary, #f08030) 75%, transparent 100%);
+  box-shadow: 0 0 24px var(--vfx-color-glow, rgba(240, 128, 48, 0.9));
+  will-change: transform, opacity;
+  animation: pba-burst-expand var(--vfx-duration, 350ms) ease-out forwards;
+}
+
+@keyframes pba-burst-expand {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.2);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.3);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 5. ARQUÉTIPO: SLASH (Lâminas e chicotadas de energia cortante) */
+.pba-vfx-slash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(45px, 7vw, 70px);
+  height: clamp(8px, 1.5vw, 14px);
+  margin-left: calc(-1 * clamp(22px, 3.5vw, 35px));
+  margin-top: calc(-1 * clamp(4px, 0.75vw, 7px));
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, #ffffff 40%, var(--vfx-color-primary, #78c850) 80%, transparent);
+  box-shadow: 0 0 16px var(--vfx-color-glow, rgba(120, 200, 80, 0.9));
+  will-change: transform, opacity;
+  animation: pba-slash-slice var(--vfx-duration, 300ms) ease-out forwards;
+}
+
+@keyframes pba-slash-slice {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) rotate(calc(var(--vfx-dir, 1) * -35deg)) scaleX(0.2);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) rotate(calc(var(--vfx-dir, 1) * 20deg)) scaleX(1.4);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) rotate(calc(var(--vfx-dir, 1) * 45deg)) scaleX(0.8);
+    opacity: 0;
+  }
+}
+
+/* 6. ARQUÉTIPO: IMPACT (Onda de choque e golpe cinético) */
+.pba-vfx-impact {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(40px, 6vw, 65px);
+  height: clamp(40px, 6vw, 65px);
+  margin-left: calc(-1 * clamp(20px, 3vw, 32px));
+  margin-top: calc(-1 * clamp(20px, 3vw, 32px));
+  border-radius: 50%;
+  border: 3px solid var(--vfx-color-primary, #c03028);
+  box-shadow: 0 0 18px var(--vfx-color-glow, rgba(192, 48, 40, 0.8));
+  will-change: transform, opacity;
+  animation: pba-impact-ring var(--vfx-duration, 300ms) cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes pba-impact-ring {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.3);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.8;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.3);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 7. ARQUÉTIPO: WAVE (Onda rolante ao longo do solo) */
+.pba-vfx-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(35px, 6vw, 55px);
+  height: clamp(35px, 6vw, 55px);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  background: radial-gradient(circle, #ffffff 10%, var(--vfx-color-secondary, #98d8d8) 40%, var(--vfx-color-primary, #6890f0) 80%);
+  box-shadow: 0 0 16px var(--vfx-color-glow, rgba(104, 144, 240, 0.8));
+  will-change: transform, opacity;
+  animation: pba-wave-roll var(--vfx-duration, 400ms) cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+@keyframes pba-wave-roll {
+  0% {
+    transform: translate3d(var(--vfx-start-x, 0px), var(--vfx-start-y, 0px), 0) scale(0.4);
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(calc(var(--vfx-start-x, 0px) + (var(--vfx-target-x, 0px) - var(--vfx-start-x, 0px)) * 0.3), var(--vfx-start-y, 0px), 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.3);
+    opacity: 0.8;
+  }
+}
+
+/* 8. ARQUÉTIPO: AURA (Esfera mística de energia cósmica/espiritual) */
+.pba-vfx-aura {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(60px, 10vw, 95px);
+  height: clamp(60px, 10vw, 95px);
+  margin-left: calc(-1 * clamp(30px, 5vw, 47px));
+  margin-top: calc(-1 * clamp(30px, 5vw, 47px));
+  border-radius: 50%;
+  border: 2px dashed var(--vfx-color-secondary, #ffb8d0);
+  background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, var(--vfx-color-primary, #f85888) 60%, transparent 80%);
+  box-shadow: 0 0 22px var(--vfx-color-glow, rgba(248, 88, 136, 0.8));
+  will-change: transform, opacity;
+  animation: pba-aura-pulse var(--vfx-duration, 400ms) ease-in-out forwards;
+}
+
+@keyframes pba-aura-pulse {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.3) rotate(0deg);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.2) rotate(90deg);
+  }
+  80% {
+    opacity: 0.8;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.05) rotate(180deg);
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.3) rotate(270deg);
+    opacity: 0;
+  }
+}
+
+/* IMPACT EFFECT: Flash de impacto no defensor */
+.pba-vfx-hit-impact {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(45px, 7vw, 70px);
+  height: clamp(45px, 7vw, 70px);
+  margin-left: calc(-1 * clamp(22px, 3.5vw, 35px));
+  margin-top: calc(-1 * clamp(22px, 3.5vw, 35px));
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 20%, var(--vfx-color-primary, #fff) 60%, transparent 85%);
+  box-shadow: 0 0 20px var(--vfx-color-glow, rgba(255, 255, 255, 0.9));
+  will-change: transform, opacity;
+  animation: pba-hit-impact-anim var(--vfx-duration, 250ms) cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes pba-hit-impact-anim {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.4);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(var(--vfx-scale, 1.2));
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(calc(var(--vfx-scale, 1.2) * 1.3));
+    opacity: 0;
+  }
+}
+
+/* PARTICLES: Fragmentos leves de dispersão (máximo de 12) */
+.pba-vfx-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(4px, 0.8vw, 7px);
+  height: clamp(4px, 0.8vw, 7px);
+  border-radius: 50%;
+  background-color: var(--vfx-color-primary, #ffffff);
+  box-shadow: 0 0 8px var(--vfx-color-primary, #ffffff);
+  will-change: transform, opacity;
+  animation: pba-particle-disperse var(--vfx-duration, 250ms) cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes pba-particle-disperse {
+  0% {
+    transform: translate3d(var(--vfx-origin-x, 0px), var(--vfx-origin-y, 0px), 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(calc(var(--vfx-origin-x, 0px) + var(--vfx-dest-x, 0px)), calc(var(--vfx-origin-y, 0px) + var(--vfx-dest-y, 0px)), 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* DISSIPATE MISS: O golpe erra e desvanece sem atingir o alvo */
+.pba-vfx-dissipate-miss {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(20px, 3.5vw, 32px);
+  height: clamp(20px, 3.5vw, 32px);
+  margin-left: calc(-1 * clamp(10px, 1.75vw, 16px));
+  margin-top: calc(-1 * clamp(10px, 1.75vw, 16px));
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(200,200,200,0.2) 60%, transparent 100%);
+  will-change: transform, opacity;
+  animation: pba-dissipate-miss-anim 200ms ease-out forwards;
+}
+
+@keyframes pba-dissipate-miss-anim {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(calc(var(--vfx-target-x, 0px) + 20px), calc(var(--vfx-target-y, 0px) - 20px), 0) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* DISSIPATE IMMUNE: O golpe atinge o defensor mas se desfaz suavemente sem choque */
+.pba-vfx-dissipate-immune {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(35px, 5.5vw, 55px);
+  height: clamp(35px, 5.5vw, 55px);
+  margin-left: calc(-1 * clamp(17px, 2.75vw, 27px));
+  margin-top: calc(-1 * clamp(17px, 2.75vw, 27px));
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  will-change: transform, opacity;
+  animation: pba-dissipate-immune-anim 200ms ease-out forwards;
+}
+
+@keyframes pba-dissipate-immune-anim {
+  0% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(var(--vfx-target-x, 0px), var(--vfx-target-y, 0px), 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* REDUCED MOTION (Acessibilidade) */
+@media (prefers-reduced-motion: reduce) {
+  .pba-vfx-projectile,
+  .pba-vfx-beam,
+  .pba-vfx-stream,
+  .pba-vfx-burst,
+  .pba-vfx-slash,
+  .pba-vfx-impact,
+  .pba-vfx-wave,
+  .pba-vfx-aura,
+  .pba-vfx-hit-impact,
+  .pba-vfx-dissipate-miss,
+  .pba-vfx-dissipate-immune {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .pba-vfx-particle {
+    display: none !important;
+  }
+}
+
+.pba-reduced-motion .pba-vfx-projectile,
+.pba-reduced-motion .pba-vfx-beam,
+.pba-reduced-motion .pba-vfx-stream,
+.pba-reduced-motion .pba-vfx-burst,
+.pba-reduced-motion .pba-vfx-slash,
+.pba-reduced-motion .pba-vfx-impact,
+.pba-reduced-motion .pba-vfx-wave,
+.pba-reduced-motion .pba-vfx-aura,
+.pba-reduced-motion .pba-vfx-hit-impact,
+.pba-reduced-motion .pba-vfx-dissipate-miss,
+.pba-reduced-motion .pba-vfx-dissipate-immune {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.pba-reduced-motion .pba-vfx-particle {
+  display: none !important;
+}

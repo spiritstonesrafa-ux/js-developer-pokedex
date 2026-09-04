@@ -632,20 +632,92 @@ $$\text{PRESENTATION ENGINE} \neq \text{ANIMATION IMPLEMENTATION}$$
 
 ### 11.4 Fronteira Estrita de Escopo
 - O sistema de animação da PBA-009 cuida **apenas do corpo/sprite do Pokémon**.
-- **Move Visual Effects (VFX)** como partículas de fogo, água, raios elétricos e projéteis pertencem exclusivamente à **Fase PBA-010**.
+## 12. Move Visual Effects Subsystem (Fase PBA-010)
+
+A Fase PBA-010 implementou o sistema de efeitos visuais de golpes da Battle Arena, conectando a intenção de ataque do combatente ao defensor sem gerar centenas de animações isoladas.
+O subsistema segue rigorosamente a regra de desacoplamento:
+$$\text{POKEMON ANIMATION} \neq \text{MOVE VISUAL EFFECT}$$
+- **Pokemon Animation Controller**: Executa a investida corporal do atacante e a reação/recoil defensivo do alvo;
+- **Move VFX System**: Resolve a família elemental, o arquétipo visual, a intensidade e o impacto gráfico entre as coordenadas de origem e destino no palco.
+
+```text
+       ┌───────────────────────────────┐
+       │         Battle Engine         │
+       └──────────────┬────────────────┘
+                      │ MOVE_USED, DAMAGE_APPLIED, etc.
+                      ▼
+       ┌───────────────────────────────┐
+       │      Presentation Mapper      │  (Enriquece MOVE_ANNOUNCEMENT)
+       └──────────────┬────────────────┘
+                      │
+                      ▼
+       ┌───────────────────────────────┐
+       │   CompositeBattleDomAdapter   │  (Coordena paralelismo visual)
+       └───────┬───────────────┬───────┘
+               │               │
+               ▼               ▼
+      ┌────────────────┐ ┌────────────────┐
+      │ Pokemon        │ │ Move VFX       │
+      │ Animation      │ │ Controller     │
+      │ Controller     │ │ (Resolver,     │
+      │ (PBA-009)      │ │  Registry,     │
+      │                │ │  Renderer)     │
+      └────────────────┘ └───────┬────────┘
+                                 │
+                                 ▼
+                         ┌────────────────┐
+                         │ CSS Hardware   │
+                         │ GPU Keyframes  │
+                         │ & Particles    │
+                         └────────────────┘
+```
+
+### 12.1 Famílias de Tipos (18/18) e Arquétipos Reutilizáveis
+1. **18 Type Families**: Suporte visual nativo para todos os 18 tipos Pokémon (`normal`, `fire`, `water`, `electric`, `grass`, `ice`, `fighting`, `poison`, `ground`, `flying`, `psychic`, `bug`, `rock`, `ghost`, `dragon`, `dark`, `steel`, `fairy`), cada um com paleta própria (primária, secundária e brilho).
+2. **8 Effect Archetypes**:
+   - `PROJECTILE`: Projétil balístico do atacante ao defensor (ex: *Water Gun*, *Rock Throw*, *Sludge Bomb*);
+   - `BEAM`: Feixe de alta velocidade conectando atacante e alvo (ex: *Thunderbolt*, *Ice Beam*, *Hyper Beam*);
+   - `STREAM`: Torrente contínua de elemento (ex: *Flamethrower*, *Hydro Pump*, *Dragon Breath*);
+   - `BURST`: Explosão elemental concentrada sobre o alvo (ex: *Fire Blast*, *Explosion*);
+   - `SLASH`: Lâminas de corte em arco diagonal (ex: *Vine Whip*, *Air Slash*, *Scratch*);
+   - `IMPACT`: Choque cinético contundente no alvo (ex: *Tackle*, *Close Combat*, *Iron Head*);
+   - `WAVE`: Onda sísmica ou de choque rolante pelo piso (ex: *Earthquake*, *Dark Pulse*);
+   - `AURA`: Esfera mística pulsante envolvendo o alvo (ex: *Psychic*, *Moonblast*).
+
+### 12.2 Resolutor Puro e Escalonamento de Intensidade
+- **`MoveVfxResolver.resolve(moveData)`**: Função pura que mapeia metadados de golpe (`moveName`, `moveType`, `damageClass`, `power`) para um descritor imutável;
+- **Fallback Genérico**: Qualquer golpe sem override específico adota automaticamente o arquétipo padrão daquele tipo elementar (`TYPE_DEFAULT_ARCHETYPES`), garantindo que nenhum golpe válido quebre a visualização;
+- **Overrides Canônicos**: Mapeamento direto de golpes icônicos (*Thunderbolt*, *Flamethrower*, *Water Gun*, *Vine Whip*, *Rock Throw*, *Psychic*);
+- **Intensidade Visual**:
+  - `LOW`: Poder $\le 50$;
+  - `MEDIUM`: $51 \le \text{Poder} \le 90$;
+  - `HIGH`: Poder $> 90$.
+  *Nota*: A intensidade afeta unicamente a escala gráfica e a densidade de partículas, jamais alterando o dano matemático.
+
+### 12.3 Tratamento de Desfechos (Hit, Miss, Imunidade e Efetividade)
+- **Hit Normal ($1\times$)**: Projétil/feixe atinge o defensor, gerando flash de impacto e dispersão de partículas controladas;
+- **Super Efetivo ($\ge 2\times$ e $4\times$)**: Impacto com escala aumentada ($1.4\times$ para $2\times$ e $1.8\times$ para $4\times$) e brilho ampliado;
+- **Resistido ($\le 0.5\times$)**: Impacto reduzido proporcionalmente ($0.75\times$), sem apagar o golpe;
+- **Miss (Erro)**: O golpe desvanece suavemente ao atingir a coordenada do defensor, sem impact damage (`MISS_IMPACT_EFFECT = NO`);
+- **Imunidade ($0\times$)**: O golpe se dissipa suavemente em contato com o defensor sem impacto de dano ou recoil (`IMMUNITY_DAMAGE_IMPACT = NO`).
+
+### 12.4 Performance, Acessibilidade e Limpeza
+- **GPU Exclusivo**: Todas as trajetórias e flashes utilizam `transform: translate3d(...)` e `opacity`;
+- **Teto de Partículas**: Limitado estritamente a `MAX_PARTICLES_PER_EFFECT = 12` para prevenir degradação em mobile;
+- **Zero Vazamentos**: Remoção total de nós DOM e limpeza de timers pós-animação (`VFX_DOM_LEAK = NONE`);
+- **Reduced Motion**: Colapsa durações para $0\text{ms}$ e desativa partículas, mantendo a sincronia da timeline.
 
 ---
 
-## 12. Decisões Explicitamente Adiadas
+## 13. Decisões Explicitamente Adiadas
 
-- **Efeitos Visuais de Golpes (Move VFX)**: Partículas elementais de fogo, água, eletricidade, etc. (Fase PBA-010).
 - **Sistema de Áudio**: Efeitos sonoros de impacto, cries e músicas de batalha (Fase PBA-011).
 - **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
 - **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
 
 ---
 
-## 13. Riscos Técnicos e Estratégias de Mitigação
+## 14. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -662,7 +734,7 @@ $$\text{PRESENTATION ENGINE} \neq \text{ANIMATION IMPLEMENTATION}$$
 
 ---
 
-## 14. Roadmap Técnico Oficial
+## 15. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -674,7 +746,7 @@ $$\text{PRESENTATION ENGINE} \neq \text{ANIMATION IMPLEMENTATION}$$
 [x] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários) ── [CONCLUÍDA]
 [x] PBA-008 Battle Presentation Engine (Orquestrador de Apresentação) ── [CONCLUÍDA]
 [x] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais) ─ [CONCLUÍDA]
-[ ] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.)
+[x] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.) ── [CONCLUÍDA]
 [ ] PBA-011 Audio System (Músicas de Fundo, Golpes e Controles de Som)
 [ ] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos)
 [ ] PBA-013 Final Battle UI (Interface Polida e Responsiva de Combate)
