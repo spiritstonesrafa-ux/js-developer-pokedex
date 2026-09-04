@@ -119,6 +119,12 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── battle-engine.js        # Motor 1x1 e 3x3 com Battle State v2, turnos e eventos
 │       │   ├── battle-evaluator.js     # Avaliador puro de dano esperado, STAB e matchups
 │       │   └── battle-ai.js            # Inteligência artificial determinística (SIMPLE e SMART)
+│       ├── presentation/
+│       │   ├── battle-presentation-constants.js # Catálogo de comandos, status e durações padrão
+│       │   ├── battle-presentation-adapter.js   # Interface assíncrona, NullAdapter e RecordingAdapter
+│       │   ├── battle-presentation-scheduler.js # Agendador de delays (ImmediateScheduler e TimerScheduler)
+│       │   ├── battle-presentation-mapper.js    # Mapeamento puro determinístico dos eventos da Engine
+│       │   └── battle-presentation-engine.js    # Orquestrador de timeline sequencial e cancelamento
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
@@ -128,14 +134,16 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   ├── move-fixtures.js         # Catálogo estático de golpes para testes unitários
 │   │   ├── team-fixtures.js         # Fixtures de equipes 3x3 para simulações e trocas
 │   │   └── type-chart-reference.js  # Referência canônica independente para hardening (18x18)
-│   └── battle/
-│       ├── battle-ai.test.js            # Suíte de testes da Battle AI (AI-01-AI-43)
-│       ├── team-battle.test.js          # Suíte de testes 3x3 e trocas voluntárias/forçadas (B3-01-B3-35)
-│       ├── move-system.test.js          # Suíte de testes do Move System (MV01-MV43)
-│       ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
-│       ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
-│       ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
-│       └── turn-manager.test.js         # Testes unitários de ordem de iniciativa
+│   ├── battle/
+│   │   ├── battle-ai.test.js            # Suíte de testes da Battle AI (AI-01-AI-43)
+│   │   ├── team-battle.test.js          # Suíte de testes 3x3 e trocas voluntárias/forçadas (B3-01-B3-35)
+│   │   ├── move-system.test.js          # Suíte de testes do Move System (MV01-MV43)
+│   │   ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
+│   │   ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
+│   │   ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
+│   │   └── turn-manager.test.js         # Testes unitários de ordem de iniciativa
+│   └── presentation/
+│       └── battle-presentation.test.js  # Suíte de testes da Presentation Engine (PR01-PR40)
 ├── index.html               # Estrutura principal da página
 ├── progress.md              # Registro contínuo de status e fases para agentes
 └── README.md                # Documentação oficial do projeto
@@ -154,8 +162,7 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-005 Move System** *(Fase Concluída)*: O Battle Engine agora utiliza golpes normalizados com Power real, Type, Accuracy determinística, PP (Power Points) e categorias Physical/Special. Introdução de STAB (1.5x), seleção de golpes no turno, eventos estruturados de HIT/MISS e hardening do Type Chart contra referência canônica independente.
 - [x] **PBA-006 Battle 3x3** *(Fase Concluída)*: Suporte a batalhas de equipes (3 vs 3) com Battle State v2, Pokémon ativo vs banco, trocas voluntárias com prioridade sobre ataques (`SWITCH > MOVE`), trocas forçadas após nocaute (`AWAITING_REPLACEMENT` / `REPLACEMENT_REQUIRED`), preservação estrita de HP e PP no banco e condição de vitória por aniquilação completa da equipe adversária (`TEAM_DEFEATED`).
 - [x] **PBA-007 Battle AI** *(Fase Concluída)*: Inteligência artificial adversária desacoplada e 100% determinística com estratégias `SIMPLE` e `SMART`. Avalia dano esperado ponderado por precisão, STAB, fraquezas/resistências, categorias físicas/especiais, administração de PP, descarte de imunidades, trocas voluntárias estratégicas e seleção inteligente de substituto pós-nocaute.
-- [ ] **PBA-008 Battle Presentation Engine**: Desacoplamento assíncrono entre eventos da engine e camada visual.
-- [ ] **PBA-008 Battle Presentation Engine**: Desacoplamento assíncrono entre eventos da engine e camada visual.
+- [x] **PBA-008 Battle Presentation Engine** *(Fase Concluída)*: O projeto agora possui uma Battle Presentation Engine responsável por transformar eventos do motor de batalha em timelines estruturadas e assíncronas de apresentação. Orquestrador sequencial com suporte a cancelamento, agendador desacoplado (`ImmediateScheduler` e `TimerScheduler`), adaptadores assíncronos (`NullAdapter` e `RecordingAdapter`), proteção contra concorrência e preparação para acessibilidade (`reducedMotion`). 100% de cobertura de eventos do Battle Engine e zero regras de combate na camada visual.
 - [ ] **PBA-009 Pokemon Animations**: Sprites animados, efeitos de entrada, ataque e recuo.
 - [ ] **PBA-010 Move Visual Effects**: Partículas elementais (fogo, água, trovão, etc.).
 - [ ] **PBA-011 Audio System**: Gerenciamento de trilha sonora, efeitos de impacto e controle de volume.

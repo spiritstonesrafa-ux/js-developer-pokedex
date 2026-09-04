@@ -139,6 +139,24 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - Zero RNG Interno (`AI_MATH_RANDOM_CALLS = 0`, `AI_CRYPTO_RANDOM_CALLS = 0`): determinismo e reprodutibilidade 100% comprovados por testes;
   - 100% de aprovação nos testes automatizados: 173 testes (43 novos testes AI-01 a AI-43 + 130 testes anteriores) sem nenhuma falha ou regressão.
 
+- **PBA-008 Battle Presentation Engine**:
+  - Implementação do orquestrador de apresentação desacoplado em `assets/js/presentation/`:
+    - `battle-presentation-constants.js`: Catálogo de 16 comandos de apresentação (`BATTLE_INTRO`, `TURN_INDICATOR`, `ACTION_FOCUS`, `MOVE_FOCUS`, `MOVE_ANNOUNCEMENT`, `PP_TRANSITION`, `MOVE_MISS_FEEDBACK`, `STAB_METADATA`, `EFFECTIVENESS_FEEDBACK`, `HP_TRANSITION`, `FAINT_SEQUENCE`, `SWITCH_OUT_SEQUENCE`, `SWITCH_IN_SEQUENCE`, `REPLACEMENT_PROMPT`, `TEAM_DEFEAT_SEQUENCE`, `BATTLE_RESULT`), estados e durações padrão;
+    - `battle-presentation-adapter.js`: Interface abstrata `BattlePresentationAdapter`, com `NullAdapter` (no-op para headless) e `RecordingAdapter` (gravação ordenada de comandos para testes);
+    - `battle-presentation-scheduler.js`: Agendador temporal desacoplado com `ImmediateScheduler` (0ms para testes) e `TimerScheduler` (com suporte a cancelamento de timers);
+    - `battle-presentation-mapper.js`: Mapeamento puro e determinístico de 100% dos eventos da Battle Engine para comandos de apresentação, com validação estrita de payload (`UNKNOWN_ENGINE_EVENT` e `INVALID_EVENT_PAYLOAD` são rejeitados);
+    - `battle-presentation-engine.js`: Motor de orquestração de timeline com execução estritamente sequencial (`MAX_CONCURRENT_COMMANDS = 1`), proteção contra execuções concorrentes (`CONCURRENT_PLAYBACK_REJECTED`), cancelamento limpo (`cancel()`), reset de ciclo de vida (`reset()`) e barreira de contenção de erros (falhas no adapter não corrompem o estado da batalha);
+  - 100% de separação de responsabilidades e ausência de regras de jogo na apresentação:
+    - `PRESENTATION_DAMAGE_CALCULATION = 0`
+    - `PRESENTATION_TYPE_CALCULATION = 0`
+    - `PRESENTATION_AI_DECISIONS = 0`
+    - `PRESENTATION_BATTLE_RULES = 0`
+    - `PRESENTATION_FETCH_CALLS = 0`
+    - `PRESENTATION_LOCALSTORAGE = 0`
+    - `PRESENTATION_AUDIO_CALLS = 0`
+  - Preparação para acessibilidade: suporte injetável a `reducedMotion: true` e `skipAnimations: true` zerando durações sem acessar DOM diretamente;
+  - 100% de aprovação nos testes automatizados: 213 testes (40 novos testes PR01 a PR40 + 173 testes de fases anteriores) com 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -146,10 +164,10 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
 1. **Stack Tecnológica**: JavaScript Vanilla ES6+, CSS3 modular e HTML5 semântico, sem migração forçada para frameworks (React/Vue/Svelte) ou empacotadores pesados antes da necessidade técnica real.
 2. **Compatibilidade com GitHub Pages e Local**: Execução garantida via protocolo `file://`, servidores de desenvolvimento locais e GitHub Pages.
 3. **Namespaces de Armazenamento**:
-   - `pokedex_favorites`: IDs favoritos (preservado);
-   - `pokedex_theme`: tema visual `'dark'` ou `'light'` (preservado);
-   - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
-   - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
+    - `pokedex_favorites`: IDs favoritos (preservado);
+    - `pokedex_theme`: tema visual `'dark'` ou `'light'` (preservado);
+    - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
+    - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
 4. **Resiliência de Rede**: Dados de Pokémon do time são buscados sob demanda com cache em memória, apresentando estado localizado de erro caso a PokéAPI esteja indisponível sem quebrar a aplicação.
 5. **Configurações Oficiais do Move System (PBA-005)**:
    ```text
@@ -187,6 +205,33 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    AI_INTERNAL_RNG = NO
    AI_CHEATING = NO
    ```
+8. **Configurações Oficiais da Battle Presentation Engine (PBA-008)**:
+   ```text
+   PRESENTATION_ENGINE = YES
+   EVENT_TO_COMMAND_MAPPING = YES
+   ENGINE_EVENT_COVERAGE = 100%
+   SEQUENTIAL_TIMELINE = YES
+   MAX_CONCURRENT_COMMANDS = 1
+   ASYNC_ADAPTER = YES
+   RECORDING_ADAPTER = YES
+   NULL_ADAPTER = YES
+   CANCELLATION = YES
+   RESET_AFTER_CANCEL = YES
+   REDUCED_MOTION_READY = YES
+   SKIP_PRESENTATION_READY = YES
+   CONCURRENT_PLAYBACK_PROTECTION = YES
+   PRESENTATION_DAMAGE_CALCULATION = 0
+   PRESENTATION_TYPE_CALCULATION = 0
+   PRESENTATION_AI_DECISIONS = 0
+   PRESENTATION_BATTLE_RULES = 0
+   PRESENTATION_FETCH_CALLS = 0
+   PRESENTATION_LOCALSTORAGE = 0
+   PRESENTATION_AUDIO_CALLS = 0
+   REAL_POKEMON_ANIMATIONS = NOT_YET
+   REAL_MOVE_EFFECTS = NOT_YET
+   AUDIO = NOT_YET
+   FINAL_BATTLE_UI = NOT_YET
+   ```
 
 ---
 
@@ -201,15 +246,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-005 = PASS`
   - `PBA-006 = PASS`
   - `PBA-007 = PASS`
-- **Working Tree**: Limpo (pré-commit da fase PBA-007)
+  - `PBA-008 = PASS`
+- **Working Tree**: Atualizado com os módulos de apresentação e suíte PR01–PR40
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-008 — Battle Presentation Engine
+NEXT_PHASE = PBA-009 — Pokémon Animations
 ```
 
-*(Atenção: A Fase PBA-008 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-009 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

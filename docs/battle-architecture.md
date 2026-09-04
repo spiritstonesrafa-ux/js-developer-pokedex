@@ -474,15 +474,99 @@ $$\text{BATTLE ENGINE} \neq \text{BATTLE AI}$$
 
 ---
 
-## 10. Decisões Explicitamente Adiadas
+## 10. Battle Presentation Engine (Fase PBA-008)
 
-- **Golpes de Status (Status Moves)**: Reconhecidos na validação, porém com efeitos (Burn, Poison, Paralysis, Sleep, Freeze, Buffs/Debuffs) reservados para fases futuras.
-- **Acertos Críticos (Critical Hits) e Variação de RNG de Dano**: Reservados para uma expansão posterior com semente controlada.
-- **Camada Visual e Sonora da Arena**: Reservada para as fases PBA-008 a PBA-013.
+A **Battle Presentation Engine** atua como o orquestrador desacoplado entre os eventos matemáticos emitidos pela Battle Engine e as futuras camadas de animação, áudio e interface visual.
+
+```text
+       ┌───────────────────────────────┐
+       │         Battle Engine         │  (Emite BATTLE_EVENTS determinísticos)
+       └──────────────┬────────────────┘
+                      │ Batches de Eventos
+                      ▼
+       ┌───────────────────────────────┐
+       │      Presentation Mapper      │  (Validação estrita e mapeamento puro)
+       └──────────────┬────────────────┘
+                      │ Ordered Presentation Commands
+                      ▼
+       ┌───────────────────────────────┐
+       │  Battle Presentation Engine   │  (Timeline sequencial e cancelamento)
+       └───────┬───────────────┬───────┘
+               │               │
+               ▼               ▼
+      ┌────────────────┐ ┌────────────────┐
+      │   Scheduler    │ │    Adapter     │
+      │(Immediate/Timer│ │ (Recording/    │
+      │ reducedMotion) │ │  Null/DOM)     │
+      └────────────────┘ └────────────────┘
+```
+
+### 10.1 Princípios Arquiteturais Centrais
+- **GAME ENGINE ≠ PRESENTATION ENGINE**: A Presentation Engine não recalcula dano, não consulta tabela de tipos, não avalia heurísticas de IA e não decide vencedores.
+- **Isolamento Total de Efeitos Colaterais**:
+  - `PRESENTATION_DAMAGE_CALCULATION = 0`
+  - `PRESENTATION_TYPE_CALCULATION = 0`
+  - `PRESENTATION_AI_DECISIONS = 0`
+  - `PRESENTATION_FETCH_CALLS = 0`
+  - `PRESENTATION_LOCALSTORAGE = 0`
+  - `PRESENTATION_AUDIO_CALLS = 0`
+- **Zero Mutação de Estado**: Eventos e objetos de contexto passados para a camada de apresentação permanecem estritamente imutáveis.
+- **Comandos Serializáveis**: Comandos de apresentação são objetos planos (`Plain Old JavaScript Objects`), sem referências de DOM nem funções em seus payloads.
+
+### 10.2 Catálogo de Eventos do Engine vs Comandos de Apresentação (Cobertura de 100%)
+
+| # | Evento da Battle Engine (`BATTLE_EVENTS`) | Comando de Apresentação (`PRESENTATION_COMMANDS`) | Papel Semântico |
+|---|---|---|---|
+| 1 | `BATTLE_STARTED` | `BATTLE_INTRO` | Apresentação inicial dos combatentes e equipes |
+| 2 | `TURN_STARTED` | `TURN_INDICATOR` | Atualização visual do contador de turnos |
+| 3 | `ACTION_STARTED` | `ACTION_FOCUS` | Destaque do combatente que tomou a iniciativa |
+| 4 | `MOVE_SELECTED` | `MOVE_FOCUS` | Foco do golpe selecionado no loadout |
+| 5 | `MOVE_USED` | `MOVE_ANNOUNCEMENT` | Anúncio do ataque desferido |
+| 6 | `PP_CHANGED` | `PP_TRANSITION` | Atualização visual de contadores de PP |
+| 7 | `MOVE_MISSED` | `MOVE_MISS_FEEDBACK` | Feedback de erro do ataque (sem afetar HP) |
+| 8 | `STAB_RESOLVED` | `STAB_METADATA` | Metadados de bônus de mesmo tipo |
+| 9 | `TYPE_EFFECTIVENESS_RESOLVED` | `EFFECTIVENESS_FEEDBACK` | Feedback de fraqueza, resistência ou imunidade |
+| 10 | `DAMAGE_APPLIED` | `HP_TRANSITION` | Transição animada de barra e numerais de HP |
+| 11 | `POKEMON_FAINTED` | `FAINT_SEQUENCE` | Sequência de derrota/nocaute do Pokémon |
+| 12 | `SWITCH_STARTED` | `SWITCH_OUT_SEQUENCE` | Retirada do combatente que sai de campo |
+| 13 | `POKEMON_SWITCHED` | `SWITCH_IN_SEQUENCE` | Entrada do novo combatente ativo (com `reason`) |
+| 14 | `REPLACEMENT_REQUIRED` | `REPLACEMENT_PROMPT` | Prompt de substituição forçada pós-nocaute |
+| 15 | `TEAM_DEFEATED` | `TEAM_DEFEAT_SEQUENCE` | Celebração de derrota da equipe inteira |
+| 16 | `BATTLE_ENDED` | `BATTLE_RESULT` | Resultado final de combate (vitória/derrota) |
+
+### 10.3 Componentes do Subsistema
+1. **`PresentationMapper` (`battle-presentation-mapper.js`)**:
+   - Função pura `mapEvent(event, context)` e `mapEvents(events, context)`;
+   - Valida campos obrigatórios (`validateEvent`);
+   - Rejeita eventos desconhecidos (`UNKNOWN_ENGINE_EVENT`) e payloads corrompidos (`INVALID_EVENT_PAYLOAD`).
+2. **`BattlePresentationAdapter` (`battle-presentation-adapter.js`)**:
+   - Interface assíncrona base `execute(command, context) -> Promise<void>`;
+   - `NullAdapter`: No-op para execuções headless;
+   - `RecordingAdapter`: Registra a fila de execução, garantindo asserções de ordem e determinismo em testes.
+3. **`PresentationScheduler` (`battle-presentation-scheduler.js`)**:
+   - `ImmediateScheduler`: Durações zeradas para testes instantâneos;
+   - `TimerScheduler`: Gerenciamento assíncrono com suporte a timers e cancelamento;
+   - Suporte nativo a acessibilidade: `reducedMotion = true` e `skipAnimations = true` colapsam durações para $0$.
+4. **`BattlePresentationEngine` (`battle-presentation-engine.js`)**:
+   - `play(events, context)`: Executa comandos em ordem sequencial estrita (`MAX_CONCURRENT_COMMANDS = 1`);
+   - Proteção de concorrência: Rejeita execuções paralelas concorrentes (`CONCURRENT_PLAYBACK_REJECTED`);
+   - `cancel()`: Interrompe a timeline em reprodução, cancela comandos pendentes e transita para status `CANCELLED`;
+   - `reset()`: Limpa timers e estados internos, permitindo reaproveitamento da mesma instância;
+   - Isolamento de erros: Falhas do Adapter abortam a timeline com status `ERROR` sem corromper o estado da batalha.
 
 ---
 
-## 11. Riscos Técnicos e Estratégias de Mitigação
+## 11. Decisões Explicitamente Adiadas
+
+- **Animações Gráficas de Sprites**: Idle, ataque físico/especial, dano e desmaio (Fase PBA-009).
+- **Efeitos Visuais de Golpes (VFX)**: Partículas elementais de fogo, água, eletricidade, etc. (Fase PBA-010).
+- **Sistema de Áudio**: Efeitos sonoros de impacto, cries e músicas de batalha (Fase PBA-011).
+- **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
+- **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
+
+---
+
+## 12. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -499,7 +583,7 @@ $$\text{BATTLE ENGINE} \neq \text{BATTLE AI}$$
 
 ---
 
-## 12. Roadmap Técnico Oficial
+## 13. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -509,7 +593,7 @@ $$\text{BATTLE ENGINE} \neq \text{BATTLE AI}$$
 [x] PBA-005 Move System (Sistemas de Golpes, Categorias e PP) ─ [CONCLUÍDA]
 [x] PBA-006 Battle 3x3 (Batalha em Equipe com Trocas de Pokémon) ── [CONCLUÍDA]
 [x] PBA-007 Battle AI (Algoritmos e Heurísticas de Adversários) ── [CONCLUÍDA]
-[ ] PBA-008 Battle Presentation Engine (Desacoplamento Visual da Lógica)
+[x] PBA-008 Battle Presentation Engine (Orquestrador de Apresentação) ── [CONCLUÍDA]
 [ ] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais)
 [ ] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.)
 [ ] PBA-011 Audio System (Músicas de Fundo, Golpes e Controles de Som)
