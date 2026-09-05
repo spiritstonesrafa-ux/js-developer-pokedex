@@ -395,15 +395,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    CAMPAIGN = NOT_YET
    ```
 
-- **PBA-014 Trainer Profile (Perfil do Treinador) & Hardening**:
+- **PBA-014 Trainer Profile (Perfil do Treinador) & Final Compliance**:
   - Implementação modular completa em `assets/js/trainer/`:
-    - `trainer-store.js`: Armazenamento sob o namespace `trainer.profile` com schema versionado, ID estável gerado (`crypto.randomUUID()`), zero-state no primeiro acesso (0 batalhas, 0 vitórias/derrotas, histórico vazio), migração transparente de seeds demonstrativos antigos e proteção contra corrupção;
-    - `trainer-manager.js`: Regras de negócio estritas com idempotência total por `battleId` (duplicações bloqueadas), cálculo determinístico de `winRate` (`wins / battlesPlayed`), gestão de `currentWinStreak` e `bestWinStreak`, limite rigoroso de 10 batalhas no histórico (`MAX_RECENT_BATTLES = 10`, mais recente primeiro), validação e invalidação segura de Pokémon Companheiro fora do time (`COMPANION_INVALIDATION_SAFE`), e reset isolado de estatísticas preservando identidade, time e favoritos;
-    - `trainer-ui.js`: Renderização moderna em glassmorphism do passaporte do treinador (`displayName: "Treinador"`), vitrine animada do companheiro com tipos, grid de 6 estatísticas de combate (zero-state limpo), visualização do time ativo e histórico das últimas batalhas;
+    - `trainer-store.js`: Armazenamento sob o namespace `trainer.profile` com schema versionado, ID estável gerado (`crypto.randomUUID()`), zero-state no primeiro acesso (0 batalhas, 0 vitórias/derrotas, histórico vazio), catálogo de 7 presets de avatar em CSS próprio (`default`, `ember`, `ocean`, `forest`, `electric`, `psychic`, `shadow`), recuperação segura de preset desconhecido para `'default'`, validação estrita de displayName (2..24 caracteres após trim), migração transparente de seeds demonstrativos antigos e proteção contra corrupção;
+    - `trainer-manager.js`: Regras de negócio estritas com contrato de displayName (2..24 chars), seleção e persistência de avatar preset, idempotência total por `battleId` (duplicações bloqueadas), cálculo determinístico de `winRate` (`wins / battlesPlayed`), gestão de `currentWinStreak` e `bestWinStreak`, limite rigoroso de 10 batalhas no histórico (`MAX_RECENT_BATTLES = 10`, mais recente primeiro), validação e invalidação segura de Pokémon Companheiro fora do time (`COMPANION_INVALIDATION_SAFE`), e reset isolado de estatísticas preservando identidade, time e favoritos;
+    - `trainer-ui.js`: Renderização moderna em glassmorphism do passaporte do treinador (`displayName: "Treinador"`), modal interativo de edição de perfil com seletor visual dos 7 presets de avatar e input validado de 2..24 caracteres, vitrine animada do companheiro com tipos, grid de 6 estatísticas de combate (zero-state limpo), visualização do time ativo e histórico das últimas batalhas;
   - Folha de estilo dedicada `assets/css/trainer-profile.css` com suporte responsivo a mobile (360x700, 390x844) e desktop (768x1024, 1366x768), compatível com tema Dark/Light;
-  - Integração em tempo real com a Battle Arena: ao concluir combate (`VICTORY` ou `DEFEAT`), `BattleSessionController` gera `battleId` exclusivo e registra o desfecho, turnos, líder e oponente automaticamente no histórico e estatísticas; batalhas abandonadas/canceladas NÃO contam;
+  - Geração robusta de battleId: `generateCryptoBattleId()` utilizando `crypto.randomUUID()` e `crypto.getRandomValues()`, eliminando `Math.random()` do navegador na geração de chaves de batalha (`BATTLE_ID_USES_MATH_RANDOM_IN_BROWSER = NO`); Battle Engine totalmente desacoplado da responsabilidade de ID (`ENGINE_BATTLE_ID_RESPONSIBILITY = NO`);
+  - Integração em tempo real com a Battle Arena: ao concluir combate (`VICTORY` ou `DEFEAT`), `BattleSessionController` gera `battleId` exclusivo criptográfico e registra o desfecho, turnos, líder e oponente automaticamente no histórico e estatísticas; batalhas abandonadas/canceladas NÃO contam;
   - Navegação fluida de 4 abas no cabeçalho: `Pokédex` | `Meu Time` | `Batalhar` | `Perfil`;
-  - 100% de testes automatizados TP01–TP40 aprovados (455 testes totais passando, zero falhas).
+  - 100% de testes automatizados TP01–TP40 aprovados (463 testes totais passando, zero falhas).
 
 ---
 
@@ -426,23 +427,42 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-013 = PASS`
   - `PBA_013_FINAL_ACCEPTANCE = PASS`
   - `PBA_013_SPRITE_FIX = PASS`
-  - `PBA-014 = PASS`
+  - `PBA_014 = PASS`
+  - `PBA_014_FINAL_COMPLIANCE = PASS`
   - `DEFAULT_PROFILE_ZERO_STATS = PASS`
+  - `DISPLAY_NAME_CONTRACT = 2..24`
+  - `DISPLAY_NAME_MIN = 2`
+  - `DISPLAY_NAME_MAX = 24`
+  - `DISPLAY_NAME_TRIM = YES`
+  - `PROFILE_DISPLAY_NAME_XSS = BLOCKED`
+  - `AVATAR_PRESETS = YES`
+  - `AVATAR_PRESET_COUNT = 7`
+  - `AVATAR_SELECTION = PASS`
+  - `AVATAR_PERSISTENCE = PASS`
+  - `INVALID_AVATAR_RECOVERY = PASS`
   - `TRAINER_ID_GENERATED = YES`
-  - `BATTLE_STATS_REAL_ONLY = YES`
+  - `TRAINER_ID_STABLE = YES`
+  - `BATTLE_ID_CRYPTO_SOURCE = YES`
+  - `BATTLE_ID_USES_MATH_RANDOM_IN_BROWSER = NO`
+  - `BATTLE_ID_NEW_PER_BATTLE = YES`
+  - `BATTLE_ID_NEW_PER_REMATCH = YES`
   - `BATTLE_RESULT_IDEMPOTENCY = PASS`
+  - `DUPLICATE_BATTLE_STAT_RECORD = NO`
   - `RECENT_BATTLES_MAX = 10`
   - `ABANDONED_BATTLE_COUNTED = NO`
+  - `PUBLIC_BATTLE_STATS_UPDATE = PASS`
+  - `PUBLIC_PROFILE_PERSISTENCE_AFTER_BATTLE = PASS`
+  - `PUBLIC_REFRESH_DUPLICATE_RECORD = NO`
   - `TRAINER_PROFILE = PASS`
 
-- **Working Tree**: Homologado com Perfil do Treinador endurecido, zero-state garantido, idempotência por battleId, limite estrito de 10 batalhas e 455 testes automatizados 100% passando.
+- **Working Tree**: Homologado com Perfil do Treinador em total conformidade com os contratos oficiais, presets de avatar CSS, crypto battleId, idempotência estrita e 463 testes automatizados 100% passando.
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-015 — Campaign Mode / Gym Leaders / Audio FX Expansion
+NEXT_PHASE = PBA-015 — Campaign Mode
 ```
 
 *(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*

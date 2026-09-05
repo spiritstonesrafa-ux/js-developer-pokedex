@@ -4,7 +4,7 @@
  * ====================================================================
  * Gerencia a persistência dos dados do Perfil do Treinador no LocalStorage
  * sob a chave 'trainer.profile', com schema versionado, ID estável único,
- * inicialização limpa (zero-state) e migração segura de dados legados.
+ * catálogo de avatares CSS, inicialização limpa (zero-state) e migração segura.
  */
 
 (function(root) {
@@ -12,6 +12,71 @@
 
   const STORAGE_KEY = 'trainer.profile';
   const CURRENT_VERSION = 1;
+
+  const MIN_DISPLAY_NAME_LENGTH = 2;
+  const MAX_DISPLAY_NAME_LENGTH = 24;
+
+  /**
+   * Catálogo oficial de Presets de Avatar em CSS próprio (sem artes de terceiros).
+   */
+  const AVATAR_PRESETS = {
+    default: {
+      id: 'default',
+      label: 'Astronauta Clássico',
+      icon: 'fa-solid fa-user-astronaut',
+      gradient: 'linear-gradient(135deg, #ee1515, #ff6b6b)',
+      borderColor: '#ffffff',
+      glowColor: 'rgba(238, 21, 21, 0.4)'
+    },
+    ember: {
+      id: 'ember',
+      label: 'Chama Escarlate',
+      icon: 'fa-solid fa-fire',
+      gradient: 'linear-gradient(135deg, #f12711, #f5af19)',
+      borderColor: '#ffdd59',
+      glowColor: 'rgba(245, 175, 25, 0.4)'
+    },
+    ocean: {
+      id: 'ocean',
+      label: 'Maré Profunda',
+      icon: 'fa-solid fa-water',
+      gradient: 'linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc)',
+      borderColor: '#a0c4ff',
+      glowColor: 'rgba(67, 100, 247, 0.4)'
+    },
+    forest: {
+      id: 'forest',
+      label: 'Guardião Verde',
+      icon: 'fa-solid fa-leaf',
+      gradient: 'linear-gradient(135deg, #11998e, #38ef7d)',
+      borderColor: '#70e000',
+      glowColor: 'rgba(56, 239, 125, 0.4)'
+    },
+    electric: {
+      id: 'electric',
+      label: 'Relâmpago Dourado',
+      icon: 'fa-solid fa-bolt',
+      gradient: 'linear-gradient(135deg, #f7971e, #ffd200)',
+      borderColor: '#ffffff',
+      glowColor: 'rgba(255, 210, 0, 0.4)'
+    },
+    psychic: {
+      id: 'psychic',
+      label: 'Aura Mística',
+      icon: 'fa-solid fa-eye',
+      gradient: 'linear-gradient(135deg, #b92b27, #1565c0)',
+      borderColor: '#f72585',
+      glowColor: 'rgba(247, 37, 133, 0.4)'
+    },
+    shadow: {
+      id: 'shadow',
+      label: 'Espectro Noturno',
+      icon: 'fa-solid fa-ghost',
+      gradient: 'linear-gradient(135deg, #4b1248, #f0c27b)',
+      borderColor: '#c77dff',
+      glowColor: 'rgba(200, 125, 255, 0.4)'
+    }
+  };
 
   /**
    * Gera um ID de treinador local, estável e seguro.
@@ -61,7 +126,6 @@
    */
   function isLegacyDemoSeed(data) {
     if (!data || typeof data !== 'object') return false;
-    // Assinatura inequívoca do seed fake da versão anterior
     const hasLegacyName = data.name === 'Rafael' || data.displayName === 'Rafael';
     const hasLegacyTag = data.tag === '#A7F291';
     const hasLegacyStats = data.stats?.totalBattles === 12 && data.stats?.victories === 8 && data.stats?.defeats === 4;
@@ -73,6 +137,9 @@
   const TrainerStore = {
     STORAGE_KEY,
     CURRENT_VERSION,
+    MIN_DISPLAY_NAME_LENGTH,
+    MAX_DISPLAY_NAME_LENGTH,
+    AVATAR_PRESETS,
 
     /**
      * Retorna uma nova instância do perfil padrão limpo.
@@ -120,15 +187,24 @@
           ? parsed.trainerId.trim()
           : generateTrainerId();
 
-        const displayName = (typeof parsed.displayName === 'string' && parsed.displayName.trim())
+        // Validação de displayName (2..24 chars após trim)
+        let displayName = 'Treinador';
+        const rawName = typeof parsed.displayName === 'string'
           ? parsed.displayName.trim()
-          : (typeof parsed.name === 'string' && parsed.name.trim() && parsed.name !== 'Rafael')
-            ? parsed.name.trim()
-            : 'Treinador';
+          : (typeof parsed.name === 'string' ? parsed.name.trim() : '');
+
+        if (rawName.length >= MIN_DISPLAY_NAME_LENGTH && rawName.length <= MAX_DISPLAY_NAME_LENGTH && rawName !== 'Rafael') {
+          displayName = rawName;
+        }
+
+        // Validação de avatarPreset com fallback seguro para 'default'
+        const avatarPreset = (typeof parsed.avatarPreset === 'string' && AVATAR_PRESETS[parsed.avatarPreset])
+          ? parsed.avatarPreset
+          : 'default';
 
         const companionPokemonId = Number.isInteger(Number(parsed.companionPokemonId)) && Number(parsed.companionPokemonId) > 0
           ? Number(parsed.companionPokemonId)
-          : (parsed.companion?.id && Number.isInteger(Number(parsed.companion.id)) && parsed.companion.id !== 6 ? Number(parsed.companion.id) : null);
+          : null;
 
         const rawStats = parsed.stats || {};
         const battlesPlayed = Number.isFinite(rawStats.battlesPlayed)
@@ -177,7 +253,7 @@
           version: CURRENT_VERSION,
           trainerId,
           displayName,
-          avatarPreset: parsed.avatarPreset || 'default',
+          avatarPreset,
           companionPokemonId,
           stats: {
             battlesPlayed,

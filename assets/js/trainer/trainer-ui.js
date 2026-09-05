@@ -2,8 +2,9 @@
  * ====================================================================
  * INTERFACE DO PERFIL DO TREINADOR: TRAINER UI (trainer-ui.js)
  * ====================================================================
- * Renderiza o passaporte do treinador, vitrine do companheiro com validação
- * de time ativo, grid de estatísticas com zero-state, time ativo e histórico.
+ * Renderiza o passaporte do treinador com presets de avatar dinâmicos,
+ * modal de edição com validação de 2..24 caracteres, vitrine de companheiro,
+ * grid de estatísticas com zero-state, time ativo e histórico.
  */
 
 (function(root) {
@@ -15,6 +16,7 @@
       this.teamMgr = teamMgr;
       this.containerId = 'profileView';
       this.initialized = false;
+      this.selectedPresetTemp = null;
     }
 
     /**
@@ -38,7 +40,6 @@
 
       if (this.teamMgr) {
         this.teamMgr.onChange(() => {
-          // Invalida companheiro se tiver saído do time
           if (this.manager) {
             this.manager.validateCompanionAgainstTeam(this.teamMgr.getTeamIds());
           }
@@ -70,7 +71,6 @@
         return;
       }
 
-      // Validação prévia de integridade do companheiro com o time ativo
       const teamIds = this.teamMgr ? this.teamMgr.getTeamIds() : [];
       this.manager.validateCompanionAgainstTeam(teamIds);
 
@@ -79,20 +79,26 @@
       const companion = this.manager.getCompanion();
       const stats = this.manager.getStats();
       const recentBattles = this.manager.getRecentBattles(10);
+      const avatarDetails = this.manager.getAvatarDetails ? this.manager.getAvatarDetails() : {
+        icon: 'fa-solid fa-user-astronaut',
+        gradient: 'linear-gradient(135deg, #ee1515, #ff6b6b)',
+        borderColor: '#ffffff',
+        glowColor: 'rgba(238, 21, 21, 0.4)'
+      };
 
       container.innerHTML = `
         <div class="profile-container">
           <!-- 1. CARTÃO PRINCIPAL DO TREINADOR -->
           <section class="trainer-card" aria-label="Cartão de Treinador">
             <div class="trainer-header">
-              <div class="trainer-avatar-wrapper">
-                <i class="fa-solid fa-user-astronaut trainer-avatar-icon"></i>
+              <div class="trainer-avatar-wrapper" id="avatarWrapperClickable" style="background: ${avatarDetails.gradient}; border-color: ${avatarDetails.borderColor}; box-shadow: 0 8px 24px ${avatarDetails.glowColor}; cursor: pointer;" title="Clique para trocar de avatar">
+                <i class="${avatarDetails.icon} trainer-avatar-icon"></i>
               </div>
               <div class="trainer-identity">
                 <div class="trainer-name-row">
                   <h2 class="trainer-name">${this.escapeHtml(displayName)}</h2>
                   <span class="trainer-tag-badge">Trainer ${this.escapeHtml(tag)}</span>
-                  <button class="trainer-edit-btn" id="editTrainerNameBtn" title="Editar Nome" aria-label="Editar Nome">
+                  <button class="trainer-edit-btn" id="editTrainerNameBtn" title="Editar Perfil (Nome e Avatar)" aria-label="Editar Perfil">
                     <i class="fa-solid fa-pen"></i>
                   </button>
                 </div>
@@ -170,10 +176,52 @@
             </h3>
             ${this.renderRecentBattles(recentBattles)}
           </section>
+
+          <!-- MODAL DE EDIÇÃO DE PERFIL (Nome e Avatar Presets) -->
+          <div id="trainerEditModal" class="trainer-modal-overlay" style="display: none;">
+            <div class="trainer-modal-card">
+              <div class="trainer-modal-header">
+                <h3><i class="fa-solid fa-user-pen"></i> Editar Perfil</h3>
+                <button class="trainer-modal-close-btn" id="closeTrainerModalBtn">&times;</button>
+              </div>
+              <div class="trainer-modal-body">
+                <label for="editTrainerNameInput" class="trainer-input-label">Nome de Treinador (2 a 24 caracteres):</label>
+                <input type="text" id="editTrainerNameInput" class="trainer-text-input" maxlength="24" minlength="2" value="${this.escapeHtml(displayName)}">
+                <div id="nameValidationMsg" style="display: none; color: #ff6b6b; font-size: 0.8rem; margin-top: 4px;"></div>
+                
+                <label class="trainer-input-label" style="margin-top: 1.25rem;">Escolha seu Avatar:</label>
+                <div class="avatar-presets-grid" id="avatarPresetsGrid">
+                  ${this.renderAvatarPresets()}
+                </div>
+              </div>
+              <div class="trainer-modal-footer">
+                <button class="companion-action-btn" id="cancelEditProfileBtn">Cancelar</button>
+                <button class="companion-action-btn" id="saveEditProfileBtn" style="background: #48bb78; border-color: #48bb78; color: #fff;">Salvar Perfil</button>
+              </div>
+            </div>
+          </div>
         </div>
       `;
 
       this.attachEventListeners();
+    }
+
+    /**
+     * Renderiza o catálogo de botões de avatar presets.
+     * @private
+     */
+    renderAvatarPresets() {
+      const presets = this.manager.getAvatarPresets ? this.manager.getAvatarPresets() : {};
+      const activePreset = this.selectedPresetTemp || this.manager.getAvatarPreset();
+
+      return Object.values(presets).map(p => {
+        const isActive = p.id === activePreset;
+        return `
+          <button type="button" class="avatar-preset-btn ${isActive ? 'active' : ''}" data-preset-id="${p.id}" style="background: ${p.gradient}; border-color: ${isActive ? p.borderColor : 'transparent'};" title="${this.escapeHtml(p.label)}">
+            <i class="${p.icon}"></i>
+          </button>
+        `;
+      }).join('');
     }
 
     /**
@@ -187,7 +235,7 @@
             <div class="companion-info">
               <div class="companion-details">
                 <div class="companion-label"><i class="fa-solid fa-heart"></i> Pokémon Companheiro</div>
-                <h3>Nenhum companheiro selecionado</h3>
+                <h3>Nenhum Companheiro Selecionado</h3>
                 <p style="font-size: 0.85rem; opacity: 0.7; margin: 0.25rem 0 0;">Escolha um integrante do seu time para acompanhar sua jornada.</p>
               </div>
             </div>
@@ -314,16 +362,75 @@
      */
     attachEventListeners() {
       const editBtn = document.getElementById('editTrainerNameBtn');
-      if (editBtn) {
-        editBtn.addEventListener('click', () => {
-          const current = this.manager.getDisplayName();
-          const newName = window.prompt('Digite seu novo nome de Treinador:', current);
-          if (newName && newName.trim()) {
-            this.manager.setDisplayName(newName.trim());
+      const avatarWrapper = document.getElementById('avatarWrapperClickable');
+
+      const openModal = () => {
+        this.selectedPresetTemp = this.manager.getAvatarPreset();
+        const modal = document.getElementById('trainerEditModal');
+        if (modal) {
+          modal.style.display = 'flex';
+          const input = document.getElementById('editTrainerNameInput');
+          if (input) {
+            input.value = this.manager.getDisplayName();
+            input.focus();
           }
+          const valMsg = document.getElementById('nameValidationMsg');
+          if (valMsg) valMsg.style.display = 'none';
+        }
+      };
+
+      if (editBtn) editBtn.addEventListener('click', openModal);
+      if (avatarWrapper) avatarWrapper.addEventListener('click', openModal);
+
+      const closeModal = () => {
+        const modal = document.getElementById('trainerEditModal');
+        if (modal) modal.style.display = 'none';
+      };
+
+      const closeBtn = document.getElementById('closeTrainerModalBtn');
+      const cancelBtn = document.getElementById('cancelEditProfileBtn');
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+      // Presets de avatar
+      const presetButtons = document.querySelectorAll('.avatar-preset-btn');
+      presetButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const presetId = btn.dataset.presetId;
+          this.selectedPresetTemp = presetId;
+          presetButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // Salvar Perfil
+      const saveBtn = document.getElementById('saveEditProfileBtn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+          const input = document.getElementById('editTrainerNameInput');
+          const valMsg = document.getElementById('nameValidationMsg');
+          const trimmed = input ? input.value.trim() : '';
+
+          if (trimmed.length < 2 || trimmed.length > 24) {
+            if (valMsg) {
+              valMsg.textContent = 'O nome deve conter entre 2 e 24 caracteres.';
+              valMsg.style.display = 'block';
+            }
+            if (input) input.focus();
+            return;
+          }
+
+          this.manager.setDisplayName(trimmed);
+          if (this.selectedPresetTemp) {
+            this.manager.setAvatarPreset(this.selectedPresetTemp);
+          }
+
+          closeModal();
+          this.render();
         });
       }
 
+      // Companheiro
       const companionBtn = document.getElementById('changeCompanionBtn') || document.getElementById('selectCompanionBtn');
       if (companionBtn) {
         companionBtn.addEventListener('click', () => {
@@ -331,6 +438,7 @@
         });
       }
 
+      // Reset
       const resetBtn = document.getElementById('resetStatsBtn');
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
@@ -343,7 +451,7 @@
     }
 
     /**
-     * Apresenta diálogo/opções para selecionar Pokémon Companheiro a partir do time ativo.
+     * Apresenta diálogo para selecionar Pokémon Companheiro do time.
      * @private
      */
     promptCompanionSelection() {

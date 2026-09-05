@@ -3,6 +3,8 @@
  * GERENCIADOR DE REGRAS DE NEGÓCIO: TRAINER MANAGER (trainer-manager.js)
  * ====================================================================
  * Gerencia as regras de negócio e cálculo determinístico do Perfil do Treinador:
+ * - Contrato estrito de displayName (2..24 caracteres após trim);
+ * - Gestão e persistência de Avatar Presets em CSS próprio;
  * - Estatísticas reais de carreira (batalhas, vitórias, derrotas, win rate, sequências);
  * - Idempotência estrita por battleId (evita duplicação de estatísticas);
  * - Histórico limitado estritamente às últimas 10 batalhas (ordem decrescente);
@@ -14,6 +16,8 @@
   'use strict';
 
   const MAX_RECENT_BATTLES = 10;
+  const MIN_DISPLAY_NAME_LENGTH = 2;
+  const MAX_DISPLAY_NAME_LENGTH = 24;
 
   class TrainerManager {
     /**
@@ -99,14 +103,16 @@
     }
 
     /**
-     * Atualiza o nome do treinador.
+     * Atualiza o nome do treinador seguindo o contrato estrito (2..24 chars após trim).
      * @param {string} newName
-     * @returns {boolean}
+     * @returns {boolean} True se válido e atualizado, false caso contrário.
      */
     setDisplayName(newName) {
       if (typeof newName !== 'string') return false;
       const trimmed = newName.trim();
-      if (!trimmed || trimmed.length > 30) return false;
+      if (trimmed.length < MIN_DISPLAY_NAME_LENGTH || trimmed.length > MAX_DISPLAY_NAME_LENGTH) {
+        return false;
+      }
 
       this.data.displayName = trimmed;
       this.persist();
@@ -141,6 +147,55 @@
     }
 
     /**
+     * Retorna o preset de avatar atualmente ativo.
+     * @returns {string}
+     */
+    getAvatarPreset() {
+      const presets = this.getAvatarPresets();
+      const current = this.data.avatarPreset;
+      return (current && presets[current]) ? current : 'default';
+    }
+
+    /**
+     * Retorna os detalhes visuais do preset de avatar atual.
+     * @returns {Object}
+     */
+    getAvatarDetails() {
+      const presets = this.getAvatarPresets();
+      const activeKey = this.getAvatarPreset();
+      return presets[activeKey] || presets.default;
+    }
+
+    /**
+     * Retorna o catálogo completo de presets disponíveis.
+     * @returns {Object}
+     */
+    getAvatarPresets() {
+      if (this.store && this.store.AVATAR_PRESETS) {
+        return this.store.AVATAR_PRESETS;
+      }
+      return {
+        default: { id: 'default', label: 'Astronauta Clássico', icon: 'fa-solid fa-user-astronaut' }
+      };
+    }
+
+    /**
+     * Atualiza o preset de avatar do treinador.
+     * @param {string} presetId - Chave do preset (ex: 'ember', 'ocean', etc.)
+     * @returns {boolean}
+     */
+    setAvatarPreset(presetId) {
+      if (typeof presetId !== 'string') return false;
+      const presets = this.getAvatarPresets();
+      if (!presets[presetId]) return false;
+
+      this.data.avatarPreset = presetId;
+      this.persist();
+      this.notify('AVATAR_UPDATED', { avatarPreset: presetId });
+      return true;
+    }
+
+    /**
      * Retorna o ID do Pokémon Companheiro selecionado.
      * @returns {number|null}
      */
@@ -156,7 +211,6 @@
       const id = this.getCompanionPokemonId();
       if (!id) return null;
 
-      // Tenta recuperar do cache global ou constrói representação padrão
       const cached = (typeof window !== 'undefined' && window.allLoadedPokemons)
         ? window.allLoadedPokemons.find(p => p.number === id)
         : null;
@@ -403,6 +457,8 @@
         displayName: this.getDisplayName(),
         trainerId: this.getTrainerId(),
         tag: this.getTag(),
+        avatarPreset: this.getAvatarPreset(),
+        avatarDetails: this.getAvatarDetails(),
         companion: this.getCompanion(),
         companionPokemonId: this.getCompanionPokemonId(),
         stats: this.getStats(),

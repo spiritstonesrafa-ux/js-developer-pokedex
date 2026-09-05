@@ -74,6 +74,31 @@
     SESSION_CONFIG: { TEAM_SIZE: 3 }
   };
 
+  /**
+   * Gera um battleId criptograficamente seguro e exclusivo.
+   * Prioriza crypto.randomUUID() e crypto.getRandomValues().
+   * Não utiliza Math.random() no navegador.
+   * @returns {string} Identificador único prefixado com 'btl_'
+   */
+  function generateCryptoBattleId() {
+    if (typeof crypto !== 'undefined') {
+      if (typeof crypto.randomUUID === 'function') {
+        return 'btl_' + crypto.randomUUID();
+      }
+      if (typeof crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        let hex = '';
+        for (let i = 0; i < bytes.length; i++) {
+          hex += bytes[i].toString(16).padStart(2, '0');
+        }
+        return 'btl_' + hex;
+      }
+    }
+    // Fallback estritamente isolado para ambientes de teste headless sem crypto global
+    return 'btl_headless_' + Date.now();
+  }
+
   class BattleSessionController {
     /**
      * @param {Object} [options]
@@ -201,7 +226,7 @@
       }
 
       this.notifyState(BATTLE_UI_STATES.PREPARING);
-      this.currentBattleId = 'btl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+      this.currentBattleId = generateCryptoBattleId();
 
       try {
         // 1. Hidrata o time do jogador
@@ -525,7 +550,8 @@
 
   const exportsObj = {
     BattleSessionController,
-    createBattleSessionController: (opts) => new BattleSessionController(opts)
+    createBattleSessionController: (opts) => new BattleSessionController(opts),
+    generateCryptoBattleId
   };
 
   if (typeof module !== 'undefined' && module.exports) {

@@ -20,6 +20,8 @@ const assert = require('node:assert');
 const TrainerStore = require('../../assets/js/trainer/trainer-store.js');
 const TrainerManager = require('../../assets/js/trainer/trainer-manager.js');
 const TrainerUI = require('../../assets/js/trainer/trainer-ui.js');
+const { generateCryptoBattleId, BattleSessionController } = require('../../assets/js/battle-session/battle-session-controller.js');
+const BattleEngine = require('../../assets/js/battle/battle-engine.js');
 
 // Mock em memória do LocalStorage
 function createMockLocalStorage() {
@@ -296,5 +298,168 @@ describe('PHASE PBA-014 — GATES TP01–TP40 (TRAINER PROFILE HARDENING)', () =
     const escaped = ui.escapeHtml('<img src=x onerror=alert(1)>');
     assert.strictEqual(escaped.includes('<img'), false);
     assert.strictEqual(escaped.includes('&lt;img'), true);
+  });
+
+  // --- DISPLAY NAME CONTRACT (2..24 CHARS) ---
+  it('TP-NAME-01 / TP07 — Display Name Contract: 2..24 caracteres após trim', () => {
+    // 1 char -> inválido
+    assert.strictEqual(manager.setDisplayName('A'), false);
+    assert.strictEqual(manager.getDisplayName(), 'Treinador');
+
+    // 1 char após trim -> inválido
+    assert.strictEqual(manager.setDisplayName(' A '), false);
+    assert.strictEqual(manager.getDisplayName(), 'Treinador');
+
+    // Vazio ou só espaços -> inválido
+    assert.strictEqual(manager.setDisplayName(''), false);
+    assert.strictEqual(manager.setDisplayName('    '), false);
+    assert.strictEqual(manager.getDisplayName(), 'Treinador');
+
+    // 2 caracteres -> válido
+    assert.strictEqual(manager.setDisplayName('Ra'), true);
+    assert.strictEqual(manager.getDisplayName(), 'Ra');
+
+    // 24 caracteres -> válido
+    const valid24 = 'A'.repeat(24);
+    assert.strictEqual(manager.setDisplayName(valid24), true);
+    assert.strictEqual(manager.getDisplayName(), valid24);
+
+    // 25 caracteres -> inválido
+    const invalid25 = 'A'.repeat(25);
+    assert.strictEqual(manager.setDisplayName(invalid25), false);
+    assert.strictEqual(manager.getDisplayName(), valid24); // Permanece inalterado
+  });
+
+  // --- AVATAR PRESETS (TP08) ---
+  it('TP-AVATAR-01 / TP08 — Avatar Presets Catalog: Mínimo 6 presets distintos com stable IDs e CSS próprio', () => {
+    const presets = manager.getAvatarPresets();
+    const presetKeys = Object.keys(presets);
+    assert.strictEqual(presetKeys.length >= 6, true, 'Deve conter ao menos 6 presets');
+    assert.strictEqual(presetKeys.length, 7);
+
+    presetKeys.forEach(key => {
+      const preset = presets[key];
+      assert.strictEqual(typeof preset.id, 'string');
+      assert.strictEqual(typeof preset.label, 'string');
+      assert.strictEqual(typeof preset.icon, 'string');
+      assert.strictEqual(typeof preset.gradient, 'string');
+      assert.strictEqual(preset.id, key);
+    });
+  });
+
+  it('TP-AVATAR-02 / TP08 — Avatar Selection and Persistence: Permite selecionar e persistir preset', () => {
+    assert.strictEqual(manager.getAvatarPreset(), 'default');
+
+    const selected = manager.setAvatarPreset('ember');
+    assert.strictEqual(selected, true);
+    assert.strictEqual(manager.getAvatarPreset(), 'ember');
+
+    const details = manager.getAvatarDetails();
+    assert.strictEqual(details.id, 'ember');
+    assert.strictEqual(details.label, 'Chama Escarlate');
+
+    // Nova instância do manager recarregando do mesmo store persistido
+    const freshManager = new TrainerManager(store);
+    assert.strictEqual(freshManager.getAvatarPreset(), 'ember');
+
+    // Rejeição de preset inválido
+    const invalid = manager.setAvatarPreset('preset_inexistente');
+    assert.strictEqual(invalid, false);
+    assert.strictEqual(manager.getAvatarPreset(), 'ember');
+  });
+
+  it('TP-AVATAR-03 / TP08 — Invalid Stored Avatar Recovery: Valor desconhecido no LocalStorage recupera para default', () => {
+    mockStorage.setItem(TrainerStore.STORAGE_KEY, JSON.stringify({
+      trainerId: 'test-id-1234',
+      displayName: 'Ash',
+      avatarPreset: 'unknown-broken-avatar-preset',
+      stats: { battlesPlayed: 0 }
+    }));
+
+    const loaded = store.load();
+    assert.strictEqual(loaded.avatarPreset, 'default');
+
+    const recoveredMgr = new TrainerManager(store);
+    assert.strictEqual(recoveredMgr.getAvatarPreset(), 'default');
+  });
+
+  // --- BATTLE ID HARDENING ---
+  it('TP-BATTLEID-01 — Battle ID Crypto Source: Gera ID com prefixo btl_ usando crypto e não-vazio', () => {
+    const id = generateCryptoBattleId();
+    assert.strictEqual(typeof id, 'string');
+    assert.strictEqual(id.startsWith('btl_'), true);
+    assert.strictEqual(id.length > 8, true);
+  });
+
+  it('TP-BATTLEID-02 — Battle ID New Per Battle: Duas chamadas consecutivas geram IDs diferentes', () => {
+    const id1 = generateCryptoBattleId();
+    const id2 = generateCryptoBattleId();
+    assert.notStrictEqual(id1, id2);
+  });
+
+  it('TP-BATTLEID-03 — Engine Battle ID Responsibility: Battle Engine não cria nem requer battleId', () => {
+    assert.strictEqual(typeof BattleEngine.createTeamBattle, 'function');
+    assert.strictEqual('battleId' in BattleEngine, false);
+
+    const mockMoves = [{ id: 33, name: 'Tackle', power: 40, accuracy: 100, type: 'normal', pp: 35, damageClass: 'physical' }];
+    const rawPokemon = {
+      id: 25,
+      name: 'Pikachu',
+      hp: 100,
+      attack: 50,
+      defense: 50,
+      specialAttack: 50,
+      specialDefense: 50,
+      speed: 90,
+      types: ['electric'],
+      moves: mockMoves
+    };
+    const state = BattleEngine.createBattle(rawPokemon, rawPokemon);
+    assert.strictEqual('battleId' in state, false);
+  });
+
+  it('TP-BATTLEID-04 — Controller prepareBattle and rematch generate new battleId', async () => {
+    const makeCombatant = (id) => ({
+      id,
+      name: `Poke-${id}`,
+      hp: 100,
+      currentHp: 100,
+      maxHp: 100,
+      attack: 50,
+      defense: 50,
+      specialAttack: 50,
+      specialDefense: 50,
+      speed: 50,
+      types: ['normal'],
+      moves: [{ id: 33, name: 'Tackle', power: 40, accuracy: 100, type: 'normal', pp: 35, maxPp: 35, damageClass: 'physical' }]
+    });
+
+    const mockHydrator = {
+      hydrateTeam: async (ids) => ids.map(makeCombatant)
+    };
+    const mockOpponentFactory = {
+      createOpponentTeam: async () => [makeCombatant(99), makeCombatant(98), makeCombatant(97)]
+    };
+    const mockTeamManager = {
+      getTeamIds: () => [1, 2, 3]
+    };
+
+    const ctrl = new BattleSessionController({
+      teamManager: mockTeamManager,
+      hydrator: mockHydrator,
+      opponentFactory: mockOpponentFactory,
+      engine: BattleEngine
+    });
+
+    await ctrl.prepareBattle();
+    const battleId1 = ctrl.currentBattleId;
+    assert.strictEqual(typeof battleId1, 'string');
+    assert.strictEqual(battleId1.startsWith('btl_'), true);
+
+    await ctrl.prepareBattle();
+    const battleId2 = ctrl.currentBattleId;
+    assert.strictEqual(typeof battleId2, 'string');
+    assert.strictEqual(battleId2.startsWith('btl_'), true);
+    assert.notStrictEqual(battleId1, battleId2);
   });
 });
