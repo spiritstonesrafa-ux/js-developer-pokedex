@@ -22,11 +22,27 @@
     ERROR: 'ERROR'
   });
 
+  const MOVESET_LOADOUT_SOURCE = Object.freeze({
+    API_MOVESET: 'API_MOVESET',
+    LIMITED_API_MOVESET: 'LIMITED_API_MOVESET',
+    NETWORK_FALLBACK_MOVESET: 'NETWORK_FALLBACK_MOVESET'
+  });
+
+  const MOVESET_LIMIT_REASON = Object.freeze({
+    NONE: 'NONE',
+    ENGINE_CAPABILITY_LIMIT: 'ENGINE_CAPABILITY_LIMIT',
+    NETWORK_FALLBACK: 'NETWORK_FALLBACK'
+  });
+
   const SESSION_CONFIG = Object.freeze({
     TEAM_SIZE: 3,
     MOVE_LOADOUT_MIN: 1,
     MOVE_LOADOUT_MAX: 4,
-    MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON: 8,
+    MOVE_LOADOUT_TARGET: 4,
+    MOVE_DISCOVERY_WINDOW_SIZE: 8,
+    MOVE_DISCOVERY_INITIAL_BUDGET: 24,
+    MOVE_CANDIDATE_POOL_TARGET: 8,
+    MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON: 8, // Mantido para compatibilidade regressiva de testes legados
     // Pool balanceada de espécies da 1ª Geração (Kanto #1–151) com diversidade elemental
     KANTO_OPPONENT_POOL: Object.freeze([
       3,   // Venusaur (Grass/Poison)
@@ -47,7 +63,9 @@
 
   const constants = {
     BATTLE_UI_STATES,
-    SESSION_CONFIG
+    SESSION_CONFIG,
+    MOVESET_LOADOUT_SOURCE,
+    MOVESET_LIMIT_REASON
   };
 
   if (typeof module !== 'undefined' && module.exports) {

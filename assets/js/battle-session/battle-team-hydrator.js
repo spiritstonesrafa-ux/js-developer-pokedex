@@ -40,12 +40,30 @@
     BattleStatNormalizer = window.PBABattle ? window.PBABattle.BattleStatNormalizer : null;
   }
 
-  const { SESSION_CONFIG } = sessionConstants || {
+  const {
+    SESSION_CONFIG,
+    MOVESET_LOADOUT_SOURCE,
+    MOVESET_LIMIT_REASON
+  } = sessionConstants || {
     SESSION_CONFIG: {
       TEAM_SIZE: 3,
       MOVE_LOADOUT_MIN: 1,
       MOVE_LOADOUT_MAX: 4,
+      MOVE_LOADOUT_TARGET: 4,
+      MOVE_DISCOVERY_WINDOW_SIZE: 8,
+      MOVE_DISCOVERY_INITIAL_BUDGET: 24,
+      MOVE_CANDIDATE_POOL_TARGET: 8,
       MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON: 8
+    },
+    MOVESET_LOADOUT_SOURCE: {
+      API_MOVESET: 'API_MOVESET',
+      LIMITED_API_MOVESET: 'LIMITED_API_MOVESET',
+      NETWORK_FALLBACK_MOVESET: 'NETWORK_FALLBACK_MOVESET'
+    },
+    MOVESET_LIMIT_REASON: {
+      NONE: 'NONE',
+      ENGINE_CAPABILITY_LIMIT: 'ENGINE_CAPABILITY_LIMIT',
+      NETWORK_FALLBACK: 'NETWORK_FALLBACK'
     }
   };
 
@@ -123,7 +141,7 @@
      * @param {number} [options.maxMoveRequests] - Teto de requisições por Pokémon.
      */
     constructor(options = {}) {
-      this.api = options.api || pokeApiService || (typeof window !== 'undefined' ? window.pokeApi : null);
+      this.api = options.api || (typeof window !== 'undefined' ? window.pokeApi : null) || pokeApiService || (typeof pokeApi !== 'undefined' ? pokeApi : null);
       this.maxMoveRequests = options.maxMoveRequests || SESSION_CONFIG.MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON;
     }
 
@@ -208,9 +226,12 @@
         speed
       };
 
-      // Resolve loadout de golpes determinístico
+      // Resolve loadout de golpes determinístico com descoberta progressiva e qualidade
       const candidateMoves = Array.isArray(pokeData.moves) ? pokeData.moves : [];
-      const moves = await this.selectDeterministicLoadout(candidateMoves, types, stats);
+      const loadoutResult = await this.selectDeterministicLoadout(candidateMoves, types, stats);
+      const moves = loadoutResult.moves || [];
+      const moveLoadoutSource = loadoutResult.source || MOVESET_LOADOUT_SOURCE.API_MOVESET;
+      const moveLoadoutReason = loadoutResult.reason || MOVESET_LIMIT_REASON.NONE;
 
       return {
         id,
@@ -227,6 +248,8 @@
         stats,
         baseStats: normalized.baseStats || baseStats,
         moves,
+        moveLoadoutSource,
+        moveLoadoutReason,
         photo: pokeData.photo || '',
         animatedPhoto: pokeData.animatedPhoto || pokeData.photo || '',
         cry: pokeData.cry || ''
@@ -234,37 +257,99 @@
     }
 
     /**
-     * Seleciona determinística e ordenadamente até 4 golpes suportados válidos.
+     * Prioriza os candidatos disponíveis da espécie de forma estável e agnóstica de versão,
+     * priorizando golpes com aprendizado por level-up para maximizar STABs naturais e clássicos
+     * antes de TMs/tutores/outros, minimizando requisições de rede.
+     *
+     * @param {Array<Object>} candidates
+     * @returns {Array<Object>}
+     */
+    prioritizeCandidates(candidates) {
+      if (!Array.isArray(candidates) || candidates.length === 0) return [];
+      const levelUp = [];
+      const other = [];
+
+      for (const cand of candidates) {
+        if (!cand) continue;
+        const vgDetails = cand.versionGroupDetails || cand.version_group_details;
+        const isLevelUp = Array.isArray(vgDetails) && vgDetails.some((vg) => {
+          const method = (vg && (vg.moveLearnMethod || vg.move_learn_method)) || '';
+          const methodName = typeof method === 'object' ? method.name : method;
+          return String(methodName).toLowerCase() === 'level-up';
+        });
+
+        if (isLevelUp) {
+          levelUp.push(cand);
+        } else {
+          other.push(cand);
+        }
+      }
+
+      return [...levelUp, ...other];
+    }
+
+    /**
+     * Seleciona determinística e ordenadamente até 4 golpes suportados válidos,
+     * com descoberta progressiva por janelas, parada antecipada, resgate exaustivo
+     * e heurística de qualidade (STAB, afinidade ofensiva, cobertura e acurácia).
+     *
      * @param {Array<{ name: string, url: string }|Object>} candidates - Lista de candidatos da PokéAPI.
      * @param {string[]} types - Tipos do Pokémon (para pontuação STAB).
      * @param {Object} stats - Stats do Pokémon (para priorização físico/especial).
-     * @returns {Promise<Object[]>} Array de 1 a 4 golpes normalizados.
+     * @returns {Promise<{ moves: Object[], source: string, reason: string }|Object[]>} Objeto com moves ou array de 1 a 4 golpes normalizados.
      */
     async selectDeterministicLoadout(candidates, types, stats) {
-      const validMoves = [];
+      const normalizedTypes = (Array.isArray(types) ? types : ['normal']).map((t) => String(t || '').toLowerCase());
+      const candidateList = Array.isArray(candidates) ? candidates : [];
+
+      if (candidateList.length === 0) {
+        return this.createNetworkFallback(normalizedTypes);
+      }
+
+      // Reordena os candidatos dando prioridade a level-up moves (mais propensos a STAB e identidade)
+      const prioritizedCandidates = this.prioritizeCandidates(candidateList);
+
+      const validPool = [];
       const seenMoveIds = new Set();
       const seenMoveNames = new Set();
 
-      // Limita a busca a uma shortlist determinística para evitar explosão de requisições
-      const shortlist = candidates.slice(0, this.maxMoveRequests);
+      const windowSize = Math.max(1, Number(SESSION_CONFIG.MOVE_DISCOVERY_WINDOW_SIZE || 8));
+      const poolTarget = Math.max(4, Number(SESSION_CONFIG.MOVE_CANDIDATE_POOL_TARGET || 8));
+      const initialBudget = Math.max(windowSize, Number(SESSION_CONFIG.MOVE_DISCOVERY_INITIAL_BUDGET || 24));
+      const maxLoadoutTarget = Number(SESSION_CONFIG.MOVE_LOADOUT_TARGET || 4);
 
-      for (const cand of shortlist) {
-        if (validMoves.length >= SESSION_CONFIG.MOVE_LOADOUT_MAX) break;
+      // Descoberta progressiva em janelas
+      let currentIndex = 0;
+      const totalCandidates = prioritizedCandidates.length;
 
-        try {
-          let moveDetail;
-          if (cand.power !== undefined && cand.damageClass !== undefined) {
-            moveDetail = cand;
-          } else if (this.api && typeof this.api.getMoveDetail === 'function') {
-            moveDetail = await this.api.getMoveDetail(cand);
-          } else {
-            continue;
+      while (currentIndex < totalCandidates) {
+        // Define o lote da janela atual
+        const windowChunk = prioritizedCandidates.slice(currentIndex, currentIndex + windowSize);
+        currentIndex += windowSize;
+
+        // Processa a janela em paralelo
+        const detailPromises = windowChunk.map(async (cand) => {
+          try {
+            if (cand.power !== undefined && cand.damageClass !== undefined) {
+              return cand;
+            }
+            if (this.api && typeof this.api.getMoveDetail === 'function') {
+              return await this.api.getMoveDetail(cand);
+            }
+            return null;
+          } catch {
+            // Falhas de rede individuais são toleradas (MQ12)
+            return null;
           }
+        });
 
+        const details = await Promise.all(detailPromises);
+
+        for (const moveDetail of details) {
           if (!moveDetail) continue;
 
-          // Validações estritas de suporte (PBA-005):
-          // Descarta status moves e moves sem poder base positivo
+          // Validações estritas de suporte (PBA-005 / MQ06 / MQ07):
+          // Descarta status moves e moves sem power base positivo
           const dmgClass = String(moveDetail.damageClass || '').toLowerCase();
           const power = Number(moveDetail.power);
 
@@ -275,9 +360,6 @@
           if (!Number.isInteger(moveId) || moveId <= 0) {
             if (moveDetail.url) {
               const match = String(moveDetail.url).match(/\/move\/(\d+)\/?/);
-              if (match) moveId = parseInt(match[1], 10);
-            } else if (cand && cand.url) {
-              const match = String(cand.url).match(/\/move\/(\d+)\/?/);
               if (match) moveId = parseInt(match[1], 10);
             }
           }
@@ -293,7 +375,7 @@
           seenMoveNames.add(moveName);
 
           const pp = Math.max(1, Number(moveDetail.pp || 15));
-          validMoves.push({
+          validPool.push({
             id: moveId,
             name: moveName,
             type: String(moveDetail.type || 'normal').toLowerCase(),
@@ -304,55 +386,170 @@
             currentPp: pp,
             damageClass: dmgClass
           });
-        } catch {
-          // Ignora falhas de golpe individual e prossegue
-          continue;
+        }
+
+        // Critério de Parada Antecipada (MQ10):
+        // Se a pool atingiu o poolTarget E já temos ao menos um STAB (ou se já consumimos o initialBudget)
+        const hasStab = validPool.some((m) => normalizedTypes.includes(m.type));
+        if (validPool.length >= poolTarget && (hasStab || currentIndex >= initialBudget)) {
+          break;
+        }
+
+        // Resgate Exaustivo (MQ09):
+        // Se após initialBudget tivermos menos de 4 golpes válidos, o loop continua automaticamente
+        // até atingir 4 golpes ou esgotar totalCandidates.
+        if (currentIndex >= initialBudget && validPool.length >= maxLoadoutTarget) {
+          break;
         }
       }
 
-      // Se não encontrou golpes suficientes pela API, adiciona fallbacks determinísticos de segurança
-      if (validMoves.length === 0) {
-        const primaryType = (types[0] || 'normal').toLowerCase();
-        const primaryFallback = FALLBACK_MOVES_BY_TYPE[primaryType] || FALLBACK_MOVES_BY_TYPE.normal;
-        const tackleFallback = FALLBACK_MOVES_BY_TYPE.normal;
+      // Se nenhum golpe suportado foi encontrado após a busca
+      if (validPool.length === 0) {
+        return this.createNetworkFallback(normalizedTypes);
+      }
 
-        validMoves.push({
+      // Aplica Seletor de Qualidade Heurístico Determinístico (STAB, afinidade, cobertura, acurácia)
+      const selectedMoves = this.selectQualityLoadout(validPool, normalizedTypes, stats, maxLoadoutTarget);
+
+      const isTrulyLimited = selectedMoves.length < maxLoadoutTarget;
+      const source = isTrulyLimited
+        ? MOVESET_LOADOUT_SOURCE.LIMITED_API_MOVESET
+        : MOVESET_LOADOUT_SOURCE.API_MOVESET;
+      const reason = isTrulyLimited
+        ? MOVESET_LIMIT_REASON.ENGINE_CAPABILITY_LIMIT
+        : MOVESET_LIMIT_REASON.NONE;
+
+      // Compatibilidade regressiva: adiciona propriedades ao array caso código legado espere Array puro
+      selectedMoves.source = source;
+      selectedMoves.reason = reason;
+      selectedMoves.moves = selectedMoves;
+
+      return selectedMoves;
+    }
+
+    /**
+     * Heurística determinística de montagem de loadout ótimo.
+     * Considera:
+     * 1. STAB (+50 pontos)
+     * 2. Afinidade física / especial (+20 pontos)
+     * 3. Acurácia esperada (fator de confiabilidade)
+     * 4. Cobertura elemental diversificada
+     * 5. Ordenação final estável e decrescente por score -> power -> accuracy -> nome
+     */
+    selectQualityLoadout(validPool, types, stats, targetCount) {
+      const isPhysicalAttacker = Number(stats.attack || 50) >= Number(stats.specialAttack || 50);
+
+      // Calcula a pontuação individual de cada golpe candidato
+      const scoredCandidates = validPool.map((move) => {
+        let score = move.power;
+
+        // 1. Bônus de STAB (Same-Type Attack Bonus)
+        const isStab = types.includes(move.type);
+        if (isStab) score += 50;
+
+        // 2. Afinidade com atributo de ataque dominante
+        if (isPhysicalAttacker && move.damageClass === 'physical') {
+          score += 20;
+        } else if (!isPhysicalAttacker && move.damageClass === 'special') {
+          score += 20;
+        }
+
+        // 3. Fator de acurácia (evita que golpes com acurácia muito baixa dominem cegamente)
+        const acc = (move.accuracy !== null && move.accuracy !== undefined) ? Number(move.accuracy) : 100;
+        score += (acc - 80) * 0.2;
+
+        return {
+          move,
+          score,
+          isStab
+        };
+      });
+
+      // Ordenação primária determinística dos candidatos pontuados
+      scoredCandidates.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.move.power !== a.move.power) return b.move.power - a.move.power;
+        const accA = a.move.accuracy !== null ? a.move.accuracy : 100;
+        const accB = b.move.accuracy !== null ? b.move.accuracy : 100;
+        if (accB !== accA) return accB - accA;
+        return a.move.name.localeCompare(b.move.name);
+      });
+
+      const selected = [];
+      const seenTypes = new Set();
+
+      // PASSO 1: Garantir pelo menos um STAB quando disponível (MQ19)
+      const bestStabCandidate = scoredCandidates.find((c) => c.isStab);
+      if (bestStabCandidate) {
+        selected.push(bestStabCandidate.move);
+        seenTypes.add(bestStabCandidate.move.type);
+      }
+
+      // PASSO 2: Priorizar diversidade de cobertura elemental (MQ21)
+      for (const item of scoredCandidates) {
+        if (selected.length >= targetCount) break;
+        if (selected.some((m) => m.name === item.move.name)) continue;
+
+        if (!seenTypes.has(item.move.type)) {
+          selected.push(item.move);
+          seenTypes.add(item.move.type);
+        }
+      }
+
+      // PASSO 3: Preencher vagas restantes até atingir targetCount com os melhores golpes restantes
+      for (const item of scoredCandidates) {
+        if (selected.length >= targetCount) break;
+        if (!selected.some((m) => m.name === item.move.name)) {
+          selected.push(item.move);
+        }
+      }
+
+      // Ordenação final estável do loadout para UI/AI (MQ26)
+      selected.sort((a, b) => {
+        const itemA = scoredCandidates.find((c) => c.move.name === a.name);
+        const itemB = scoredCandidates.find((c) => c.move.name === b.name);
+        const scoreA = itemA ? itemA.score : a.power;
+        const scoreB = itemB ? itemB.score : b.power;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        if (b.power !== a.power) return b.power - a.power;
+        const accA = a.accuracy !== null ? a.accuracy : 100;
+        const accB = b.accuracy !== null ? b.accuracy : 100;
+        if (accB !== accA) return accB - accA;
+        return a.name.localeCompare(b.name);
+      });
+
+      return selected;
+    }
+
+    /**
+     * Fallback determinístico de contingência estritamente reservado para falhas de rede.
+     */
+    createNetworkFallback(types) {
+      const primaryType = (types[0] || 'normal').toLowerCase();
+      const primaryFallback = FALLBACK_MOVES_BY_TYPE[primaryType] || FALLBACK_MOVES_BY_TYPE.normal;
+      const tackleFallback = FALLBACK_MOVES_BY_TYPE.normal;
+
+      const fallbackList = [
+        {
           ...primaryFallback,
           maxPp: primaryFallback.pp,
           currentPp: primaryFallback.pp
-        });
-
-        if (primaryType !== 'normal') {
-          validMoves.push({
-            ...tackleFallback,
-            maxPp: tackleFallback.pp,
-            currentPp: tackleFallback.pp
-          });
         }
+      ];
+
+      if (primaryType !== 'normal') {
+        fallbackList.push({
+          ...tackleFallback,
+          maxPp: tackleFallback.pp,
+          currentPp: tackleFallback.pp
+        });
       }
 
-      // Ordenação heurística determinística:
-      // 1. STAB (+50 pontos)
-      // 2. Afinidade com melhor atributo ofensivo (+20 pontos)
-      // 3. Maior poder base
-      const isPhysicalAttacker = stats.attack >= stats.specialAttack;
-      validMoves.sort((a, b) => {
-        let scoreA = a.power;
-        let scoreB = b.power;
+      fallbackList.source = MOVESET_LOADOUT_SOURCE.NETWORK_FALLBACK_MOVESET;
+      fallbackList.reason = MOVESET_LIMIT_REASON.NETWORK_FALLBACK;
+      fallbackList.moves = fallbackList;
 
-        if (types.includes(a.type)) scoreA += 50;
-        if (types.includes(b.type)) scoreB += 50;
-
-        if (isPhysicalAttacker && a.damageClass === 'physical') scoreA += 20;
-        else if (!isPhysicalAttacker && a.damageClass === 'special') scoreA += 20;
-
-        if (isPhysicalAttacker && b.damageClass === 'physical') scoreB += 20;
-        else if (!isPhysicalAttacker && b.damageClass === 'special') scoreB += 20;
-
-        return scoreB - scoreA;
-      });
-
-      return validMoves.slice(0, SESSION_CONFIG.MOVE_LOADOUT_MAX);
+      return fallbackList;
     }
   }
 

@@ -506,10 +506,18 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `NEUTRAL_OHKO_RATE_AFTER = 0.0%`
   - `AVERAGE_NEUTRAL_HITS_TO_KO_BEFORE = 2.89`
   - `AVERAGE_NEUTRAL_HITS_TO_KO_AFTER = 4.67`
-  - `HUMAN_BALANCE_ACCEPTANCE = PENDING`
+  - `HUMAN_BALANCE_ACCEPTANCE = PASS`
+  - `PBA_014C_TECHNICAL = PASS`
+  - `MOVESET_TARGET = 4`
+  - `FIRST_8_TRUNCATION_FIXED = YES`
+  - `FULL_CANDIDATE_DISCOVERY = PASS`
+  - `ELIGIBLE_SPECIES_4_MOVE_RATE = 100%`
+  - `SPECIAL_LIMITED_SPECIES_SUPPORTED = YES`
+  - `STATUS_MOVES = NOT_YET`
+  - `MOVESET_HUMAN_ACCEPTANCE = PENDING`
   - `PBA_015 = NOT_STARTED`
 
-- **Working Tree**: Homologado tecnicamente com normalização Level 50 de combate, variância de dano 85..100, cohort representativo auditado, gates BAL01–BAL40 aprovados e 495 testes automatizados 100% passando.
+- **Working Tree**: Homologado tecnicamente com descoberta progressiva de golpes da PokéAPI, eliminação do truncamento dos primeiros 8, preservação de metadados ricos (version_group_details), heurística de qualidade de movesets (STAB, afinidade de ataque, diversidade de tipos, acurácia), gates MQ01–MQ40 aprovados e 512 testes automatizados 100% passando.
 
 ---
 
@@ -520,4 +528,5 @@ NEXT_PHASE = PBA-015 — Campaign Mode
 ```
 
 *(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar validação humana de jogabilidade e solicitação explícita do usuário).*
+
 

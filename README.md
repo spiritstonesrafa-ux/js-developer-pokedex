@@ -49,7 +49,7 @@ Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
 
 - 🎮 **Batalhas 3x3 Reais em Tempo Real**: Selecione sua equipe de 3 Pokémon no Team Builder e entre diretamente na arena de combate oficial.
 - 🤖 **Adversário Controlado por SMART AI**: Enfrente equipes de Kanto selecionadas dinamicamente sem espécies duplicadas, com inteligência artificial que calcula fraquezas, resistências, STAB, dano esperado e trocas táticas.
-- 🥊 **Seleção Tática de Golpes**: Painel com até 4 golpes legais normalizados por Pokémon, com exibição de Power, Categoria (Physical/Special), Tipo elemental e contador de PP (Power Points) em tempo real (golpes sem PP são desabilitados).
+- 🥊 **Seleção Tática de Golpes (PBA-014C)**: Descoberta progressiva com até 4 golpes ofensivos da PokéAPI por Pokémon, priorizando STAB, afinidade físico/especial, diversidade de tipos elementais e acurácia, com exibição de Power, Categoria, Tipo e PP.
 - 🔄 **Troca Voluntária de Pokémon**: Troque de Pokémon estrategicamente a qualquer turno; a ação de troca tem prioridade sobre ataques normais e preserva o estado exato de HP/PP do combatente recolhido.
 - ⚠️ **Substituição Forçada após Nocaute**: Quando um Pokémon é nocauteado, o modal de substituição força a escolha imediata de um membro vivo do banco para continuar o combate.
 - 💚 **Barras de Vida Animadas e Coloridas**: Transições suaves de HP integradas à Presentation Engine com classes visuais de saúde (`healthy`, `warning`, `danger`) e atributos acessíveis `role="progressbar"`.

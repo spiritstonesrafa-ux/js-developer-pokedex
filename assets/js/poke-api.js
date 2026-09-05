@@ -43,11 +43,18 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
   // Extrai apenas os nomes das habilidades
   pokemon.abilities = pokeDetail.abilities.map((abilitySlot) => abilitySlot.ability.name);
 
-  // Mapeia lista de golpes candidatos disponíveis
+  // Mapeia lista de golpes candidatos disponíveis preservando metadata de version_group_details
   pokemon.moves = Array.isArray(pokeDetail.moves)
     ? pokeDetail.moves.map((slot) => ({
         name: slot.move ? slot.move.name : '',
-        url: slot.move ? slot.move.url : ''
+        url: slot.move ? slot.move.url : '',
+        versionGroupDetails: Array.isArray(slot.version_group_details)
+          ? slot.version_group_details.map((vg) => ({
+              levelLearnedAt: Number(vg.level_learned_at || 0),
+              moveLearnMethod: vg.move_learn_method ? String(vg.move_learn_method.name || '') : '',
+              versionGroup: vg.version_group ? String(vg.version_group.name || '') : ''
+            }))
+          : []
       }))
     : [];
 
@@ -252,4 +259,14 @@ pokeApi.getMoveDetail = async (moveOrIdOrUrl) => {
 pokeApi.clearMoveCache = () => {
   moveDetailCache.clear();
 };
+
+pokeApi.getMoveCache = () => moveDetailCache;
+
+if (typeof window !== 'undefined') {
+  window.pokeApi = pokeApi;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = pokeApi;
+}
 
