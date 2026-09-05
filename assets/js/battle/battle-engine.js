@@ -213,7 +213,7 @@
         });
       }
 
-      return {
+      const combatant = {
         id,
         name: raw.name.trim().toLowerCase(),
         types: normalizedTypes,
@@ -226,6 +226,13 @@
         speed: Math.floor(speed),
         moves: normalizedMoves
       };
+
+      // Metadados visuais e sonoros passivos (preservação limpa sem acoplamento de DOM, fetch ou resolução de imagem)
+      if (raw.photo && typeof raw.photo === 'string') combatant.photo = raw.photo;
+      if (raw.animatedPhoto && typeof raw.animatedPhoto === 'string') combatant.animatedPhoto = raw.animatedPhoto;
+      if (raw.cry && typeof raw.cry === 'string') combatant.cry = raw.cry;
+
+      return combatant;
     }
 
     /**

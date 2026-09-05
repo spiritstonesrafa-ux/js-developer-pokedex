@@ -414,7 +414,15 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-011 = PASS`
   - `PBA-012 = PASS`
   - `PBA-013 = PASS`
-- **Working Tree**: Atualizado com a interface de batalha jogável (Battle Session Layer, Team Hydrator, Opponent Factory, Battle View, Battle UI Adapter, CSS Arena), Composite Adapter quíntuplo e suíte UI01–UI50
+  - `PBA_013_FINAL_ACCEPTANCE = PASS`
+  - `PBA_013_SPRITE_FIX = PASS`
+  - `BATTLE_ARENA_SPRITES = PASS`
+  - `PUBLIC_GITHUB_PAGES_SPRITES = PASS`
+  - `BATTLE_COMING_SOON_BADGE = REMOVED`
+
+> **BROKEN_SPRITE_ROOT_CAUSE**: Os metadados visuais (`photo`, `animatedPhoto`, `cry`) gerados pelo `BattleTeamHydrator` eram omitidos durante a instanciação em `BattleEngine.createCombatant`. Como consequência, `battleState.player.team` e `enemy.team` continham propriedades indefinidas, gerando `src="undefined"` no template HTML e disparando requisições 404 para imagens no navegador. O contrato visual unificado com cadeia de fallback resolvida via CDN da PokéAPI sanou integralmente a falha.
+
+- **Working Tree**: Homologado e endurecido com renderização robusta de sprites na Battle Arena, resolução de fallback em 3 níveis (Showdown GIF -> Official Artwork -> Static Sprite), remoção do badge "Em breve" da aba Batalhar e 436 testes automatizados 100% passando.
 
 ---
 

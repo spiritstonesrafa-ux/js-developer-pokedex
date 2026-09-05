@@ -664,3 +664,158 @@ describe('PHASE PBA-013 — GATES UI01–UI50 (BATTLE UI & EXPERIENCE)', () => {
     assert.strictEqual(controller.battleState.player.activeIndex, 1);
   });
 });
+
+describe('PHASE PBA-013-SPRITE-FIX — GATES SPR01–SPR20 (SPRITE RENDERING & BADGE)', () => {
+  let mockContainer;
+
+  beforeEach(() => {
+    mockContainer = { innerHTML: '' };
+  });
+
+  it('SPR01/SPR02/SPR04 — Player Initial Sprite: Valid non-empty URL string, never undefined or null', () => {
+    const view = new BattleView({ container: mockContainer });
+    const battleState = {
+      turn: 1,
+      player: { activeIndex: 0, team: [{ id: 6, name: 'charizard', maxHp: 78, currentHp: 78, types: ['fire'], moves: [] }] },
+      enemy: { activeIndex: 0, team: [{ id: 25, name: 'pikachu', maxHp: 35, currentHp: 35, types: ['electric'], moves: [] }] }
+    };
+    view.renderActiveBattleView(battleState, 'AWAITING_PLAYER_ACTION');
+
+    const html = mockContainer.innerHTML;
+    assert.ok(html.includes('id="playerSpriteImg"'), 'Player sprite img must exist');
+    assert.ok(!html.includes('id="playerSpriteImg" class="combatant-sprite-img " src="undefined"'), 'Must never have src="undefined"');
+    assert.ok(!html.includes('id="playerSpriteImg" class="combatant-sprite-img " src="null"'), 'Must never have src="null"');
+    assert.ok(!html.includes('id="playerSpriteImg" class="combatant-sprite-img " src=""'), 'Must never have empty src');
+    assert.ok(html.includes('src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif"'), 'Must contain showdown gif url');
+  });
+
+  it('SPR03/SPR05 — Enemy Initial Sprite: Valid non-empty URL string, never undefined or null', () => {
+    const view = new BattleView({ container: mockContainer });
+    const battleState = {
+      turn: 1,
+      player: { activeIndex: 0, team: [{ id: 6, name: 'charizard', maxHp: 78, currentHp: 78, types: ['fire'], moves: [] }] },
+      enemy: { activeIndex: 0, team: [{ id: 25, name: 'pikachu', maxHp: 35, currentHp: 35, types: ['electric'], moves: [] }] }
+    };
+    view.renderActiveBattleView(battleState, 'AWAITING_PLAYER_ACTION');
+
+    const html = mockContainer.innerHTML;
+    assert.ok(html.includes('id="enemySpriteImg"'), 'Enemy sprite img must exist');
+    assert.ok(!html.includes('id="enemySpriteImg" class="combatant-sprite-img " src="undefined"'), 'Must never have src="undefined"');
+    assert.ok(html.includes('src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif"'), 'Must contain enemy showdown gif url');
+  });
+
+  it('SPR06/SPR07/SPR08 — Visual Contract: resolveCombatantVisual filters corrupt strings and produces valid contract', () => {
+    const view = new BattleView({ container: mockContainer });
+    const visual = view.resolveCombatantVisual({
+      id: 4,
+      name: 'charmander',
+      photo: 'undefined',
+      animatedPhoto: 'null',
+      cry: ''
+    });
+
+    assert.strictEqual(visual.id, 4);
+    assert.strictEqual(visual.name, 'charmander');
+    assert.notStrictEqual(visual.spriteUrl, 'undefined');
+    assert.notStrictEqual(visual.spriteUrl, 'null');
+    assert.notStrictEqual(visual.artworkUrl, 'undefined');
+    assert.ok(visual.spriteUrl.startsWith('https://'), 'spriteUrl must be a valid URL');
+    assert.ok(visual.artworkUrl.startsWith('https://'), 'artworkUrl must be a valid URL');
+    assert.ok(visual.staticSprite.startsWith('https://'), 'staticSprite must be a valid URL');
+    assert.ok(visual.cry.startsWith('https://'), 'cry must be a valid URL');
+  });
+
+  it('SPR09/SPR10 — Fallback Works & No Loop: Fallback attributes present and loop prevention in place', () => {
+    const view = new BattleView({ container: mockContainer });
+    const battleState = {
+      turn: 1,
+      player: { activeIndex: 0, team: [{ id: 1, name: 'bulbasaur', maxHp: 45, currentHp: 45, types: ['grass'], moves: [] }] },
+      enemy: { activeIndex: 0, team: [{ id: 9, name: 'blastoise', maxHp: 79, currentHp: 79, types: ['water'], moves: [] }] }
+    };
+    view.renderActiveBattleView(battleState, 'AWAITING_PLAYER_ACTION');
+
+    const html = mockContainer.innerHTML;
+    assert.ok(html.includes('data-fallback-src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"'));
+    assert.ok(html.includes('data-static-src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"'));
+    assert.ok(html.includes('this.onerror = null'), 'onerror handler must clear itself to avoid infinite loop');
+  });
+
+  it('SPR11 — Voluntary Switch Sprite: Modal renders valid non-undefined sprites for bench Pokémon', () => {
+    const view = new BattleView({ container: mockContainer });
+    view.sessionController = {
+      battleState: {
+        player: {
+          activeIndex: 0,
+          team: [
+            { id: 1, name: 'bulbasaur', currentHp: 45, maxHp: 45 },
+            { id: 4, name: 'charmander', currentHp: 39, maxHp: 39 }
+          ]
+        }
+      }
+    };
+    view.openSwitchModal();
+
+    const html = mockContainer.innerHTML;
+    assert.ok(html.includes('switch-item-sprite'), 'Switch item sprite must exist');
+    assert.ok(!html.includes('src="undefined"'), 'Switch sprite must not be undefined');
+    assert.ok(html.includes('showdown/4.gif') || html.includes('official-artwork/4.png'));
+  });
+
+  it('SPR12 — Player Forced Replacement Sprite: Replacement modal renders valid non-undefined sprites', () => {
+    const view = new BattleView({ container: mockContainer });
+    const battleState = {
+      player: {
+        activeIndex: 0,
+        team: [
+          { id: 1, name: 'bulbasaur', currentHp: 0, maxHp: 45 },
+          { id: 7, name: 'squirtle', currentHp: 44, maxHp: 44 }
+        ]
+      }
+    };
+    view.openReplacementModal(battleState);
+
+    const html = mockContainer.innerHTML;
+    assert.ok(html.includes('switch-item-sprite'), 'Replacement item sprite must exist');
+    assert.ok(!html.includes('src="undefined"'), 'Replacement sprite must not be undefined');
+    assert.ok(html.includes('showdown/7.gif') || html.includes('official-artwork/7.png'));
+  });
+
+  it('SPR15 — Rematch Sprites: Rematch preserves valid visual metadata on fresh state', async () => {
+    const mockApi = createMockPokeApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+    const opponentFactory = new BattleOpponentFactory({ hydrator, pool: [7, 4, 143] });
+    const controller = new BattleSessionController({
+      teamStore: { load: () => [25, 4, 1] },
+      hydrator,
+      opponentFactory
+    });
+
+    await controller.prepareBattle();
+    const p0 = controller.battleState.player.team[0];
+    const e0 = controller.battleState.enemy.team[0];
+
+    assert.ok(p0.photo, 'Player combatant must have photo');
+    assert.ok(p0.animatedPhoto, 'Player combatant must have animatedPhoto');
+    assert.ok(e0.photo, 'Enemy combatant must have photo');
+    assert.ok(e0.animatedPhoto, 'Enemy combatant must have animatedPhoto');
+
+    // Executa rematch
+    await controller.rematch();
+    const p0Rematch = controller.battleState.player.team[0];
+    assert.ok(p0Rematch.photo, 'Rematch combatant must have photo');
+    assert.ok(p0Rematch.animatedPhoto, 'Rematch combatant must have animatedPhoto');
+  });
+
+  it('SPR20 — Battle "EM BREVE" Badge Removed: index.html navigation does not contain Em breve on Batalhar', () => {
+    const fs = require('node:fs');
+    const indexHtml = fs.readFileSync('d:/GamePokemon/index.html', 'utf-8');
+
+    // Extrai o botão navBattleBtn
+    const match = indexHtml.match(/<button id="navBattleBtn"[\s\S]*?<\/button>/);
+    assert.ok(match, 'navBattleBtn must exist in index.html');
+    const navBtnHtml = match[0];
+
+    assert.ok(navBtnHtml.includes('<span>Batalhar</span>'), 'Button must have Batalhar label');
+    assert.ok(!navBtnHtml.toLowerCase().includes('em breve'), 'Button must NOT contain Em breve badge');
+  });
+});

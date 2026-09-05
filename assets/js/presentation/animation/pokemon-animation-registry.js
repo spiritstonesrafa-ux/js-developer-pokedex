@@ -63,13 +63,15 @@
         container.setAttribute('data-battle-side', side);
       }
 
-      // Configuração de fallback seguro de imagem
+      // Configuração de fallback seguro de imagem (evita loop infinito com onerror = null)
       if (sprite && typeof sprite.addEventListener === 'function') {
-        const fallbackUrl = metadata.fallbackUrl || metadata.spriteUrl || metadata.photo || '';
+        const fallbackUrl = metadata.fallbackUrl || metadata.artworkUrl || metadata.photo || metadata.spriteUrl || '';
         if (fallbackUrl) {
           sprite.onerror = () => {
             if (sprite.src !== fallbackUrl) {
               sprite.src = fallbackUrl;
+            } else {
+              sprite.onerror = null;
             }
           };
         }
@@ -124,8 +126,8 @@
       const sprite = target.sprite;
       if (!sprite) return;
 
-      const primaryUrl = pokemonData.animatedUrl || pokemonData.spriteUrl || pokemonData.photo || '';
-      const fallbackUrl = pokemonData.fallbackUrl || pokemonData.spriteUrl || pokemonData.photo || '';
+      const primaryUrl = pokemonData.animatedUrl || pokemonData.animatedPhoto || pokemonData.spriteUrl || pokemonData.photo || '';
+      const fallbackUrl = pokemonData.fallbackUrl || pokemonData.artworkUrl || pokemonData.photo || pokemonData.spriteUrl || '';
 
       if (sprite.setAttribute) {
         sprite.setAttribute('alt', pokemonData.name ? String(pokemonData.name) : `${side} Pokémon`);
@@ -139,6 +141,8 @@
         sprite.onerror = () => {
           if (sprite.src !== fallbackUrl) {
             sprite.src = fallbackUrl;
+          } else {
+            sprite.onerror = null;
           }
         };
       }

@@ -212,6 +212,25 @@
         // 3. Cria a batalha 3x3 no Battle Engine
         this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam);
 
+        // 4. Sincroniza metadados visuais e sonoros nos combatentes do estado de batalha
+        if (this.battleState && this.battleState.player && Array.isArray(this.battleState.player.team)) {
+          this.battleState.player.team.forEach((combatant, idx) => {
+            const source = (this.playerTeam && this.playerTeam[idx]) || {};
+            if (!combatant.photo && source.photo) combatant.photo = source.photo;
+            if (!combatant.animatedPhoto && source.animatedPhoto) combatant.animatedPhoto = source.animatedPhoto;
+            if (!combatant.cry && source.cry) combatant.cry = source.cry;
+          });
+        }
+
+        if (this.battleState && this.battleState.enemy && Array.isArray(this.battleState.enemy.team)) {
+          this.battleState.enemy.team.forEach((combatant, idx) => {
+            const source = (this.enemyTeam && this.enemyTeam[idx]) || {};
+            if (!combatant.photo && source.photo) combatant.photo = source.photo;
+            if (!combatant.animatedPhoto && source.animatedPhoto) combatant.animatedPhoto = source.animatedPhoto;
+            if (!combatant.cry && source.cry) combatant.cry = source.cry;
+          });
+        }
+
         this.notifyState(BATTLE_UI_STATES.READY, {
           prepared: true,
           playerTeam: this.playerTeam,

@@ -90,6 +90,88 @@
     }
 
     /**
+     * Resolve o contrato unificado de metadados visuais para qualquer combatente ou membro de equipe.
+     * Prioridade estrita de renderização:
+     * 1. Showdown animated GIF (se string válida e não vazia)
+     * 2. Official Artwork PNG (se string válida e não vazia)
+     * 3. Static Front Sprite PNG (PokéAPI)
+     * 4. Defaults determinísticos baseados no ID oficial
+     *
+     * NUNCA retorna 'undefined', 'null' ou string vazia.
+     *
+     * @param {Object} combatant
+     * @param {'player'|'enemy'} [side='player']
+     * @returns {{ id: number, name: string, spriteUrl: string, artworkUrl: string, fallbackUrl: string, staticSprite: string, photo: string, animatedPhoto: string, cry: string }}
+     */
+    resolveCombatantVisual(combatant, side = 'player') {
+      const defaultId = side === 'player' ? 25 : 1;
+      if (!combatant || typeof combatant !== 'object') {
+        const fallbackName = side === 'player' ? 'pikachu' : 'bulbasaur';
+        return {
+          id: defaultId,
+          name: fallbackName,
+          spriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${defaultId}.gif`,
+          artworkUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${defaultId}.png`,
+          fallbackUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${defaultId}.png`,
+          staticSprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${defaultId}.png`,
+          photo: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${defaultId}.png`,
+          animatedPhoto: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${defaultId}.gif`,
+          cry: `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${defaultId}.ogg`
+        };
+      }
+
+      const id = Number(combatant.id || combatant.number) || defaultId;
+      const name = String(combatant.name || `Pokémon #${id}`).trim().toLowerCase();
+
+      // URLs padrão canônicas da PokéAPI baseadas no ID
+      const cdnAnimated = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`;
+      const cdnArtwork = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+      const cdnStatic = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      const cdnCry = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;
+
+      const isValidUrl = (val) => typeof val === 'string' && val.trim().length > 0 && val !== 'undefined' && val !== 'null';
+
+      // Se o controlador de sessão possuir dados hidratados originais para o ID, recupera como fonte primária
+      let sessionMatch = null;
+      if (this.sessionController) {
+        const teamPool = side === 'player' ? this.sessionController.playerTeam : this.sessionController.enemyTeam;
+        if (Array.isArray(teamPool)) {
+          sessionMatch = teamPool.find(m => Number(m.id || m.number) === id) || null;
+        }
+      }
+
+      const animatedCandidate = (isValidUrl(combatant.animatedPhoto) && combatant.animatedPhoto) ||
+        (isValidUrl(combatant.animatedUrl) && combatant.animatedUrl) ||
+        (sessionMatch && isValidUrl(sessionMatch.animatedPhoto) && sessionMatch.animatedPhoto) ||
+        cdnAnimated;
+
+      const artworkCandidate = (isValidUrl(combatant.photo) && combatant.photo) ||
+        (isValidUrl(combatant.artworkUrl) && combatant.artworkUrl) ||
+        (sessionMatch && isValidUrl(sessionMatch.photo) && sessionMatch.photo) ||
+        cdnArtwork;
+
+      const staticCandidate = (isValidUrl(combatant.spriteUrl) && combatant.spriteUrl) ||
+        (isValidUrl(combatant.staticSprite) && combatant.staticSprite) ||
+        cdnStatic;
+
+      const cryCandidate = (isValidUrl(combatant.cry) && combatant.cry) ||
+        (sessionMatch && isValidUrl(sessionMatch.cry) && sessionMatch.cry) ||
+        cdnCry;
+
+      return {
+        id,
+        name,
+        spriteUrl: animatedCandidate,
+        artworkUrl: artworkCandidate,
+        fallbackUrl: artworkCandidate,
+        staticSprite: staticCandidate,
+        photo: artworkCandidate,
+        animatedPhoto: animatedCandidate,
+        cry: cryCandidate
+      };
+    }
+
+    /**
      * Estado: Time incompleto (< 3 Pokémon).
      */
     renderNoTeamView(data = {}) {
@@ -121,20 +203,36 @@
       let playerRosterHtml = '';
 
       if (playerTeam && Array.isArray(playerTeam)) {
-        playerRosterHtml = playerTeam.map((p, idx) => `
+        playerRosterHtml = playerTeam.map((p, idx) => {
+          const visual = this.resolveCombatantVisual(p, 'player');
+          return `
           <div class="prebattle-mini-card">
-            <img src="${p.photo || p.animatedPhoto}" alt="${p.name}">
-            <span>${idx === 0 ? '👑 ' : ''}${p.name}</span>
+            <img
+              src="${visual.artworkUrl}"
+              data-fallback-src="${visual.staticSprite}"
+              alt="${visual.name}"
+              onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else { this.onerror = null; }"
+            >
+            <span>${idx === 0 ? '👑 ' : ''}${visual.name}</span>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } else {
         const teamIds = data.teamIds || (this.sessionController ? this.sessionController.getPlayerTeamIds() : [1, 4, 7]);
-        playerRosterHtml = teamIds.map((id, idx) => `
+        playerRosterHtml = teamIds.map((id, idx) => {
+          const visual = this.resolveCombatantVisual({ id }, 'player');
+          return `
           <div class="prebattle-mini-card">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png" alt="Pokémon #${id}">
+            <img
+              src="${visual.artworkUrl}"
+              data-fallback-src="${visual.staticSprite}"
+              alt="Pokémon #${id}"
+              onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else { this.onerror = null; }"
+            >
             <span>${idx === 0 ? '👑 Líder' : `Slot #${idx + 1}`}</span>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       this.container.innerHTML = `
@@ -213,6 +311,9 @@
 
       const playerActive = player.team[player.activeIndex] || player.team[0];
       const enemyActive = enemy.team[enemy.activeIndex] || enemy.team[0];
+
+      const playerVisual = this.resolveCombatantVisual(playerActive, 'player');
+      const enemyVisual = this.resolveCombatantVisual(enemyActive, 'enemy');
 
       const isResolving = uiState === 'RESOLVING';
 
@@ -312,8 +413,12 @@
                   <img
                     id="playerSpriteImg"
                     class="combatant-sprite-img ${playerActive.currentHp === 0 ? 'fainted' : ''}"
-                    src="${playerActive.animatedPhoto || playerActive.photo}"
-                    alt="${playerActive.name}"
+                    src="${playerVisual.spriteUrl}"
+                    data-primary-src="${playerVisual.spriteUrl}"
+                    data-fallback-src="${playerVisual.artworkUrl}"
+                    data-static-src="${playerVisual.staticSprite}"
+                    alt="${playerVisual.name}"
+                    onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else if(this.dataset.staticSrc && this.src !== this.dataset.staticSrc){ this.src = this.dataset.staticSrc; } else { this.onerror = null; }"
                   >
                 </div>
 
@@ -322,8 +427,12 @@
                   <img
                     id="enemySpriteImg"
                     class="combatant-sprite-img ${enemyActive.currentHp === 0 ? 'fainted' : ''}"
-                    src="${enemyActive.animatedPhoto || enemyActive.photo}"
-                    alt="${enemyActive.name}"
+                    src="${enemyVisual.spriteUrl}"
+                    data-primary-src="${enemyVisual.spriteUrl}"
+                    data-fallback-src="${enemyVisual.artworkUrl}"
+                    data-static-src="${enemyVisual.staticSprite}"
+                    alt="${enemyVisual.name}"
+                    onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else if(this.dataset.staticSrc && this.src !== this.dataset.staticSrc){ this.src = this.dataset.staticSrc; } else { this.onerror = null; }"
                   >
                 </div>
 
@@ -409,8 +518,14 @@
         // 1. Registro de Animação
         if (compositeAdapter.pokemonController && compositeAdapter.pokemonController.registry) {
           const animReg = compositeAdapter.pokemonController.registry;
-          if (playerTarget && playerImg) animReg.register('player', { container: playerTarget, sprite: playerImg });
-          if (enemyTarget && enemyImg) animReg.register('enemy', { container: enemyTarget, sprite: enemyImg });
+          const battleState = this.sessionController && this.sessionController.battleState;
+          const playerActive = battleState && battleState.player && battleState.player.team ? (battleState.player.team[battleState.player.activeIndex] || battleState.player.team[0]) : null;
+          const enemyActive = battleState && battleState.enemy && battleState.enemy.team ? (battleState.enemy.team[battleState.enemy.activeIndex] || battleState.enemy.team[0]) : null;
+          const playerVisual = this.resolveCombatantVisual(playerActive, 'player');
+          const enemyVisual = this.resolveCombatantVisual(enemyActive, 'enemy');
+
+          if (playerTarget && playerImg) animReg.register('player', { container: playerTarget, sprite: playerImg, metadata: playerVisual });
+          if (enemyTarget && enemyImg) animReg.register('enemy', { container: enemyTarget, sprite: enemyImg, metadata: enemyVisual });
         }
 
         // 2. Registro de VFX
@@ -442,6 +557,7 @@
       const activeIdx = player.activeIndex;
 
       const itemsHtml = player.team.map((p, idx) => {
+        const visual = this.resolveCombatantVisual(p, 'player');
         const isActive = idx === activeIdx;
         const isFainted = p.currentHp === 0;
         const isDisabled = isActive || isFainted;
@@ -457,9 +573,16 @@
             onclick="if(window.battleView){ window.battleView.closeModal(); } if(window.battleSessionController){ window.battleSessionController.submitPlayerSwitch(${p.id}); }"
           >
             <div class="switch-item-info">
-              <img class="switch-item-sprite" src="${p.photo}" alt="${p.name}">
+              <img
+                class="switch-item-sprite"
+                src="${visual.spriteUrl}"
+                data-fallback-src="${visual.artworkUrl}"
+                data-static-src="${visual.staticSprite}"
+                alt="${visual.name}"
+                onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else if(this.dataset.staticSrc && this.src !== this.dataset.staticSrc){ this.src = this.dataset.staticSrc; } else { this.onerror = null; }"
+              >
               <div class="switch-item-text">
-                <span class="switch-item-name">${p.name}</span>
+                <span class="switch-item-name">${visual.name}</span>
                 <span class="switch-item-hp-bar">HP ${p.currentHp}/${p.maxHp}</span>
               </div>
             </div>
@@ -481,6 +604,7 @@
       const activeIdx = player.activeIndex;
 
       const itemsHtml = player.team.map((p, idx) => {
+        const visual = this.resolveCombatantVisual(p, 'player');
         const isActive = idx === activeIdx;
         const isFainted = p.currentHp === 0;
         const isDisabled = isActive || isFainted;
@@ -499,9 +623,16 @@
             onclick="if(!${isDisabled}) { if(window.battleView){ window.battleView.closeModal(); } if(window.battleSessionController){ window.battleSessionController.submitPlayerReplacement(${p.id}); } }"
           >
             <div class="switch-item-info">
-              <img class="switch-item-sprite" src="${p.photo}" alt="${p.name}">
+              <img
+                class="switch-item-sprite"
+                src="${visual.spriteUrl}"
+                data-fallback-src="${visual.artworkUrl}"
+                data-static-src="${visual.staticSprite}"
+                alt="${visual.name}"
+                onerror="if(this.dataset.fallbackSrc && this.src !== this.dataset.fallbackSrc){ this.src = this.dataset.fallbackSrc; } else if(this.dataset.staticSrc && this.src !== this.dataset.staticSrc){ this.src = this.dataset.staticSrc; } else { this.onerror = null; }"
+              >
               <div class="switch-item-text">
-                <span class="switch-item-name">${p.name}</span>
+                <span class="switch-item-name">${visual.name}</span>
                 <span class="switch-item-hp-bar">HP ${p.currentHp}/${p.maxHp}</span>
               </div>
             </div>
@@ -518,6 +649,13 @@
      */
     renderModal(title, contentHtml, canClose = true) {
       this.closeModal();
+
+      if (typeof document === 'undefined') {
+        if (this.container) {
+          this.container.innerHTML += `<div class="battle-modal-backdrop" id="battleActiveModal"><div class="switch-pokemon-list">${contentHtml}</div></div>`;
+        }
+        return;
+      }
 
       const modalDiv = document.createElement('div');
       modalDiv.className = 'battle-modal-backdrop';

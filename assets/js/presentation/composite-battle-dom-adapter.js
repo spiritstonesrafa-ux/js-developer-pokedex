@@ -257,7 +257,17 @@
             if (context && context[side] && context[side].team) {
               const activeMon = context[side].team.find(p => p.id === command.newPokemonId);
               if (activeMon) {
-                pokemonData = activeMon;
+                const monId = Number(activeMon.id) || Number(command.newPokemonId) || 1;
+                pokemonData = {
+                  ...activeMon,
+                  id: monId,
+                  name: activeMon.name || command.pokemonName || `Pokémon #${monId}`,
+                  spriteUrl: activeMon.animatedPhoto || activeMon.photo || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${monId}.gif`,
+                  animatedUrl: activeMon.animatedPhoto || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${monId}.gif`,
+                  fallbackUrl: activeMon.photo || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${monId}.png`,
+                  artworkUrl: activeMon.photo || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${monId}.png`,
+                  cry: activeMon.cry || command.cry || `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${monId}.ogg`
+                };
               }
             }
             if (this.pokemonController) {

@@ -352,8 +352,8 @@ class TeamUI {
             <p>Sua equipe está pronta para as futuras batalhas na Battle Arena.</p>
           </div>
           <div class="banner-actions">
-            <button class="team-action-btn battle-disabled" disabled title="A Battle Arena será implementada na Fase PBA-003">
-              <i class="fa-solid fa-khanda"></i> Batalhar (Fase PBA-003 — Em breve)
+            <button class="team-action-btn primary" onclick="if(window.switchAppTab) window.switchAppTab('battle');" title="Ir para a Battle Arena">
+              <i class="fa-solid fa-khanda"></i> Batalhar na Arena
             </button>
           </div>
         </div>
