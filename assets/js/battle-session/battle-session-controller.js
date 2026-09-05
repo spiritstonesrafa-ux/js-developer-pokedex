@@ -430,7 +430,24 @@
 
       if (status === 'BATTLE_ENDED' || status === 'PLAYER_WIN' || status === 'ENEMY_WIN') {
         const winner = this.battleState.winner || (status === 'PLAYER_WIN' ? 'player' : 'enemy');
-        if (winner === 'player' || status === 'PLAYER_WIN') {
+        const isVictory = winner === 'player' || status === 'PLAYER_WIN';
+
+        // Registro de estatística no Perfil do Treinador (PBA-014)
+        try {
+          const tm = (typeof window !== 'undefined' && window.trainerManager) ? window.trainerManager : (typeof globalThis !== 'undefined' ? globalThis.trainerManager : null);
+          if (tm && typeof tm.recordBattle === 'function') {
+            const oppName = this.enemyTeam && this.enemyTeam[0] ? `Treinador Rival (${this.enemyTeam[0].name})` : 'Desafiante da Arena';
+            tm.recordBattle({
+              result: isVictory ? 'VICTORY' : 'DEFEAT',
+              turns: this.battleState && this.battleState.turn ? this.battleState.turn : 1,
+              opponentName: oppName
+            });
+          }
+        } catch (err) {
+          console.warn('Não foi possível registrar a batalha no Perfil do Treinador:', err);
+        }
+
+        if (isVictory) {
           this.notifyState(BATTLE_UI_STATES.VICTORY, { winner: 'player', battleState: this.battleState });
         } else {
           this.notifyState(BATTLE_UI_STATES.DEFEAT, { winner: 'enemy', battleState: this.battleState });

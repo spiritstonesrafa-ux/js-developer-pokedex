@@ -1,0 +1,507 @@
+/**
+ * ====================================================================
+ * ESTILOS DO PERFIL DO TREINADOR: TRAINER PROFILE (trainer-profile.css)
+ * ====================================================================
+ * Design moderno em Glassmorphism, cartão holográfico de treinador,
+ * vitrine do Pokémon companheiro, estatísticas dinâmicas e histórico.
+ */
+
+.profile-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* 1. CARTÃO PRINCIPAL DO TREINADOR (TRAINER PASSPORT) */
+.trainer-card {
+  position: relative;
+  background: var(--card-bg, rgba(30, 30, 45, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trainer-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(238, 21, 21, 0.12), transparent 45%),
+              radial-gradient(circle at 80% 80%, rgba(99, 144, 240, 0.12), transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.trainer-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.trainer-avatar-wrapper {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ee1515, #ff6b6b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(238, 21, 21, 0.35);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+}
+
+.trainer-avatar-icon {
+  font-size: 2.75rem;
+  color: #ffffff;
+}
+
+.trainer-identity {
+  flex: 1;
+  min-width: 220px;
+}
+
+.trainer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.trainer-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.trainer-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(238, 21, 21, 0.18);
+  color: #ff6b6b;
+  border: 1px solid rgba(238, 21, 21, 0.4);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.trainer-title-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  margin: 0.35rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trainer-edit-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary, #ffffff);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  margin-left: 0.25rem;
+}
+
+.trainer-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* 2. POKÉMON COMPANHEIRO */
+.companion-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.companion-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ff9800;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.companion-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.companion-sprite-container {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.companion-sprite {
+  max-width: 80px;
+  max-height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+  animation: companionFloat 3s ease-in-out infinite;
+}
+
+@keyframes companionFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.companion-details h3 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--text-primary, #ffffff);
+}
+
+.companion-details .companion-types {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.companion-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary, #ffffff);
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.companion-action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* 3. GRID DE ESTATÍSTICAS DE CARREIRA */
+.section-heading {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.stat-box {
+  background: var(--card-bg, rgba(30, 30, 45, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stat-icon {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-icon.battles { color: #6390f0; }
+.stat-icon.victories { color: #48bb78; }
+.stat-icon.defeats { color: #f56565; }
+.stat-icon.winrate { color: #ecc94b; }
+.stat-icon.streak { color: #ed8936; }
+.stat-icon.best-streak { color: #9f7aea; }
+
+.stat-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.65));
+  font-weight: 600;
+}
+
+/* 4. TIME ATUAL */
+.team-preview-container {
+  background: var(--card-bg, rgba(30, 30, 45, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.team-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.team-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.team-member-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.team-member-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.team-member-slot-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.8));
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.team-member-slot-badge.lead {
+  background: rgba(238, 21, 21, 0.25);
+  color: #ff6b6b;
+  border: 1px solid rgba(238, 21, 21, 0.4);
+}
+
+.team-member-sprite {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0.5rem 0;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.team-member-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 0.4rem;
+}
+
+.team-empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+}
+
+.team-empty-state i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+/* 5. ÚLTIMAS BATALHAS */
+.battles-history-container {
+  background: var(--card-bg, rgba(30, 30, 45, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.battles-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.battle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.battle-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.battle-outcome-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.battle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.battle-badge.victory {
+  background: rgba(72, 187, 120, 0.18);
+  color: #48bb78;
+  border: 1px solid rgba(72, 187, 120, 0.4);
+}
+
+.battle-badge.defeat {
+  background: rgba(245, 101, 101, 0.18);
+  color: #f56565;
+  border: 1px solid rgba(245, 101, 101, 0.4);
+}
+
+.battle-turns-info {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.battle-meta-info {
+  font-size: 0.85rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem 0.75rem 2.5rem;
+    gap: 1.25rem;
+  }
+
+  .trainer-card {
+    padding: 1.25rem;
+  }
+
+  .trainer-avatar-wrapper {
+    width: 72px;
+    height: 72px;
+  }
+
+  .trainer-avatar-icon {
+    font-size: 2.2rem;
+  }
+
+  .trainer-name {
+    font-size: 1.6rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .team-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-member-card {
+    flex-direction: row;
+    text-align: left;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .team-member-sprite {
+    margin: 0;
+  }
+}

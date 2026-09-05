@@ -800,6 +800,7 @@ window.switchAppTab = function(tabName) {
   });
 
   const teamView = document.getElementById('teamView');
+  const profileView = document.getElementById('profileView');
 
   if (tabName === 'pokedex') {
     if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
@@ -808,6 +809,7 @@ window.switchAppTab = function(tabName) {
     if (pokedexView) pokedexView.style.display = 'block';
     if (teamView) teamView.style.display = 'none';
     if (futureModuleView) futureModuleView.style.display = 'none';
+    if (profileView) profileView.style.display = 'none';
   } else if (tabName === 'team') {
     if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
       window.battleSessionController.leaveBattle();
@@ -818,10 +820,12 @@ window.switchAppTab = function(tabName) {
       if (window.teamUI) window.teamUI.render();
     }
     if (futureModuleView) futureModuleView.style.display = 'none';
+    if (profileView) profileView.style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (tabName === 'battle') {
     if (pokedexView) pokedexView.style.display = 'none';
     if (teamView) teamView.style.display = 'none';
+    if (profileView) profileView.style.display = 'none';
     if (futureModuleView) {
       futureModuleView.style.display = 'block';
       if (window.battleView) {
@@ -829,6 +833,18 @@ window.switchAppTab = function(tabName) {
       } else {
         renderFutureModule('battle');
       }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (tabName === 'profile') {
+    if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
+      window.battleSessionController.leaveBattle();
+    }
+    if (pokedexView) pokedexView.style.display = 'none';
+    if (teamView) teamView.style.display = 'none';
+    if (futureModuleView) futureModuleView.style.display = 'none';
+    if (profileView) {
+      profileView.style.display = 'block';
+      if (window.trainerUI) window.trainerUI.render();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -876,6 +892,11 @@ if (typeof window !== 'undefined') {
       sessionController: window.battleSessionController
     });
     window.battleView.init();
+  }
+
+  // Inicializa o Perfil do Treinador (PBA-014)
+  if (window.trainerUI) {
+    window.trainerUI.init();
   }
 }
 

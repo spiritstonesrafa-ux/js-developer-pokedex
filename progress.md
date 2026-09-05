@@ -391,9 +391,19 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    KEYBOARD_ACCESSIBILITY = YES
    ARIA_HP = YES
    ARIA_BATTLE_MESSAGES = YES
-   TRAINER_PROFILE = NOT_YET
+   TRAINER_PROFILE = YES
    CAMPAIGN = NOT_YET
    ```
+
+- **PBA-014 Trainer Profile (Perfil do Treinador)**:
+  - Implementação modular completa em `assets/js/trainer/`:
+    - `trainer-store.js`: Armazenamento sob o namespace `trainer.profile` com seed determinístico, recuperação contra falhas e sanitização;
+    - `trainer-manager.js`: Regras de negócio determinísticas, cálculo exato de win rate formatado (`66,7%`), gestão de sequência atual (`currentStreak`) e melhor sequência (`bestStreak`), limite de 20 confrontos recentes e gestão do Pokémon Companheiro;
+    - `trainer-ui.js`: Renderização moderna em glassmorphism do passaporte do treinador, vitrine do companheiro animado, grid de 6 estatísticas de combate, visualização do time ativo e histórico das últimas batalhas;
+  - Folha de estilo dedicada `assets/css/trainer-profile.css` com suporte responsivo a mobile (390x844) e desktop (1366x768), compatível com tema Dark/Light;
+  - Integração em tempo real com a Battle Arena: ao concluir combate (`VICTORY` ou `DEFEAT`), `BattleSessionController` registra o resultado, turnos e oponente automaticamente no histórico e estatísticas;
+  - Navegação fluida de 4 abas no cabeçalho: `Pokédex` | `Meu Time` | `Batalhar` | `Perfil`;
+  - 100% de testes automatizados TR01–TR15 aprovados (451 testes totais passando, zero falhas).
 
 ---
 
@@ -416,21 +426,18 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-013 = PASS`
   - `PBA_013_FINAL_ACCEPTANCE = PASS`
   - `PBA_013_SPRITE_FIX = PASS`
-  - `BATTLE_ARENA_SPRITES = PASS`
-  - `PUBLIC_GITHUB_PAGES_SPRITES = PASS`
-  - `BATTLE_COMING_SOON_BADGE = REMOVED`
+  - `PBA-014 = PASS`
+  - `TRAINER_PROFILE = PASS`
 
-> **BROKEN_SPRITE_ROOT_CAUSE**: Os metadados visuais (`photo`, `animatedPhoto`, `cry`) gerados pelo `BattleTeamHydrator` eram omitidos durante a instanciação em `BattleEngine.createCombatant`. Como consequência, `battleState.player.team` e `enemy.team` continham propriedades indefinidas, gerando `src="undefined"` no template HTML e disparando requisições 404 para imagens no navegador. O contrato visual unificado com cadeia de fallback resolvida via CDN da PokéAPI sanou integralmente a falha.
-
-- **Working Tree**: Homologado e endurecido com renderização robusta de sprites na Battle Arena, resolução de fallback em 3 níveis (Showdown GIF -> Official Artwork -> Static Sprite), remoção do badge "Em breve" da aba Batalhar e 436 testes automatizados 100% passando.
+- **Working Tree**: Homologado com Perfil do Treinador completo, sincronizado com LocalStorage, Battle Arena e Team Manager, com 451 testes automatizados 100% passando.
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-014 — Trainer Profile
+NEXT_PHASE = PBA-015 — Campaign Mode / Gym Leaders / Audio FX Expansion
 ```
 
-*(Atenção: A Fase PBA-014 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 
