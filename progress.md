@@ -421,8 +421,8 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-013 — Final Battle UI
+NEXT_PHASE = PBA-014 — Trainer Profile
 ```
 
-*(Atenção: A Fase PBA-013 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-014 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

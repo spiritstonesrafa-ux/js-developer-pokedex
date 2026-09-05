@@ -256,4 +256,27 @@ describe('PHASE PBA-013 — BATTLE SESSION LAYER', () => {
     assert.strictEqual(controller.battleState.player.activeIndex, 0); // Líder ativo inicial
     assert.strictEqual(controller.battleState.enemy.activeIndex, 0);
   });
+
+  it('SES09 — Session Controller: transitions to VICTORY or DEFEAT when PLAYER_WIN or ENEMY_WIN reached', async () => {
+    const mockApi = createMockPokeApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+    const controller = new BattleSessionController({
+      teamStore: { load: () => [25, 4, 1] },
+      hydrator,
+      opponentFactory: new BattleOpponentFactory({ hydrator, pool: [7, 4, 143] })
+    });
+    await controller.prepareBattle();
+
+    // Simula PLAYER_WIN
+    controller.battleState.status = 'PLAYER_WIN';
+    controller.battleState.winner = 'player';
+    await controller.handlePostResolutionState();
+    assert.strictEqual(controller.uiState, BATTLE_UI_STATES.VICTORY);
+
+    // Simula ENEMY_WIN
+    controller.battleState.status = 'ENEMY_WIN';
+    controller.battleState.winner = 'enemy';
+    await controller.handlePostResolutionState();
+    assert.strictEqual(controller.uiState, BATTLE_UI_STATES.DEFEAT);
+  });
 });

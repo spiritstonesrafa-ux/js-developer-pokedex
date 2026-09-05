@@ -480,25 +480,35 @@
       const player = battleState.player;
       const activeIdx = player.activeIndex;
 
-      const livingReserves = player.team
-        .map((p, idx) => ({ p, idx }))
-        .filter(item => item.idx !== activeIdx && item.p.currentHp > 0);
+      const itemsHtml = player.team.map((p, idx) => {
+        const isActive = idx === activeIdx;
+        const isFainted = p.currentHp === 0;
+        const isDisabled = isActive || isFainted;
 
-      const itemsHtml = livingReserves.map(({ p }) => `
-        <button
-          class="switch-pokemon-item"
-          onclick="if(window.battleView){ window.battleView.closeModal(); } if(window.battleSessionController){ window.battleSessionController.submitPlayerReplacement(${p.id}); }"
-        >
-          <div class="switch-item-info">
-            <img class="switch-item-sprite" src="${p.photo}" alt="${p.name}">
-            <div class="switch-item-text">
-              <span class="switch-item-name">${p.name}</span>
-              <span class="switch-item-hp-bar">HP ${p.currentHp}/${p.maxHp}</span>
+        let badge = '';
+        if (isActive || isFainted) {
+          badge = '<span class="switch-item-status-tag fainted">NOCAUTEADO</span>';
+        } else {
+          badge = '<span class="switch-item-status-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">ESCOLHER</span>';
+        }
+
+        return `
+          <button
+            class="switch-pokemon-item"
+            ${isDisabled ? 'disabled' : ''}
+            onclick="if(!${isDisabled}) { if(window.battleView){ window.battleView.closeModal(); } if(window.battleSessionController){ window.battleSessionController.submitPlayerReplacement(${p.id}); } }"
+          >
+            <div class="switch-item-info">
+              <img class="switch-item-sprite" src="${p.photo}" alt="${p.name}">
+              <div class="switch-item-text">
+                <span class="switch-item-name">${p.name}</span>
+                <span class="switch-item-hp-bar">HP ${p.currentHp}/${p.maxHp}</span>
+              </div>
             </div>
-          </div>
-          <span class="switch-item-status-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">ESCOLHER</span>
-        </button>
-      `).join('');
+            ${badge}
+          </button>
+        `;
+      }).join('');
 
       this.renderModal('Escolha o Substituto!', itemsHtml, false);
     }

@@ -409,12 +409,12 @@
     async handlePostResolutionState() {
       const status = this.battleState.status;
 
-      if (status === 'BATTLE_ENDED') {
-        const winner = this.battleState.winner;
-        if (winner === 'player') {
-          this.notifyState(BATTLE_UI_STATES.VICTORY, { winner, battleState: this.battleState });
+      if (status === 'BATTLE_ENDED' || status === 'PLAYER_WIN' || status === 'ENEMY_WIN') {
+        const winner = this.battleState.winner || (status === 'PLAYER_WIN' ? 'player' : 'enemy');
+        if (winner === 'player' || status === 'PLAYER_WIN') {
+          this.notifyState(BATTLE_UI_STATES.VICTORY, { winner: 'player', battleState: this.battleState });
         } else {
-          this.notifyState(BATTLE_UI_STATES.DEFEAT, { winner, battleState: this.battleState });
+          this.notifyState(BATTLE_UI_STATES.DEFEAT, { winner: 'enemy', battleState: this.battleState });
         }
         return;
       }
