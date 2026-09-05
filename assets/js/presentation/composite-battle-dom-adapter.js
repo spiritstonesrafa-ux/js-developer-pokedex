@@ -21,6 +21,7 @@
   let vfxControllerModule;
   let vfxResolverModule;
   let audioControllerModule;
+  let cameraControllerModule;
 
   if (typeof module !== 'undefined' && module.exports) {
     presentationConstants = require('./battle-presentation-constants.js');
@@ -29,6 +30,7 @@
     vfxControllerModule = require('../vfx/move-vfx-controller.js');
     vfxResolverModule = require('../vfx/move-vfx-resolver.js');
     audioControllerModule = require('../audio/battle-audio-controller.js');
+    cameraControllerModule = require('../camera/battle-camera-controller.js');
   } else if (typeof window !== 'undefined') {
     presentationConstants = window.PBABattlePresentation || {};
     adapterBase = window.PBABattlePresentation || {};
@@ -36,6 +38,7 @@
     vfxControllerModule = window.PBABattleVfx || {};
     vfxResolverModule = (window.PBABattleVfx && window.PBABattleVfx.MoveVfxResolver) || window.PBABattleVfx || {};
     audioControllerModule = window.PBABattleAudio || {};
+    cameraControllerModule = window.PBABattleCamera || {};
   } else {
     presentationConstants = { PRESENTATION_COMMANDS: {} };
     adapterBase = { BattlePresentationAdapter: class {} };
@@ -43,6 +46,7 @@
     vfxControllerModule = {};
     vfxResolverModule = {};
     audioControllerModule = {};
+    cameraControllerModule = {};
   }
 
   const { PRESENTATION_COMMANDS } = presentationConstants;
@@ -54,6 +58,7 @@
      * @param {Object} [options.pokemonController] - Instância de PokemonAnimationController.
      * @param {Object} [options.vfxController] - Instância de MoveVfxController.
      * @param {Object} [options.audioController] - Instância de BattleAudioController.
+     * @param {Object} [options.cameraController] - Instância de BattleCameraController.
      */
     constructor(options = {}) {
       super();
@@ -65,6 +70,9 @@
       );
       this.audioController = options.audioController !== undefined ? options.audioController : (
         audioControllerModule.createBattleAudioController ? audioControllerModule.createBattleAudioController(options) : null
+      );
+      this.cameraController = options.cameraController !== undefined ? options.cameraController : (
+        cameraControllerModule.createCameraController ? cameraControllerModule.createCameraController(options) : null
       );
       this.executedCommands = [];
     }
@@ -163,7 +171,7 @@
 
         case PRESENTATION_COMMANDS.HP_TRANSITION: {
           const hpTasks = [];
-          // Reação corporal e impacto sonoro quando houver perda real de HP (> 0)
+          // Reação corporal, impacto sonoro e impacto de câmera quando houver perda real de HP (> 0)
           if (command.damage !== undefined && Number(command.damage) > 0) {
             const side = command.side || command.target;
             if (side && this.pokemonController) {
@@ -175,6 +183,15 @@
                 typeFamily: command.attackType || 'normal'
               }));
             }
+            if (this.cameraController) {
+              hpTasks.push(this.cameraController.playImpact({
+                damage: Number(command.damage),
+                multiplier: command.multiplier !== undefined ? Number(command.multiplier) : 1,
+                power: command.power,
+                intensity: command.intensity,
+                target: side
+              }));
+            }
           }
           if (hpTasks.length > 0) {
             await Promise.all(hpTasks);
@@ -183,15 +200,31 @@
         }
 
         case PRESENTATION_COMMANDS.MOVE_MISS_FEEDBACK: {
+          const missTasks = [];
           if (this.audioController) {
-            await this.audioController.playMiss();
+            missTasks.push(this.audioController.playMiss());
+          }
+          if (this.cameraController) {
+            missTasks.push(this.cameraController.playMiss());
+          }
+          if (missTasks.length > 0) {
+            await Promise.all(missTasks);
           }
           break;
         }
 
         case PRESENTATION_COMMANDS.EFFECTIVENESS_FEEDBACK: {
-          if (this.audioController && Number(command.multiplier) === 0) {
-            await this.audioController.playImmunity();
+          const effTasks = [];
+          if (Number(command.multiplier) === 0) {
+            if (this.audioController) {
+              effTasks.push(this.audioController.playImmunity());
+            }
+            if (this.cameraController) {
+              effTasks.push(this.cameraController.playImmunity());
+            }
+          }
+          if (effTasks.length > 0) {
+            await Promise.all(effTasks);
           }
           break;
         }
@@ -250,6 +283,13 @@
                 resultTasks.push(this.audioController.playDefeat());
               }
             }
+            if (this.cameraController) {
+              if (command.winner === 'player') {
+                resultTasks.push(this.cameraController.playVictory());
+              } else if (command.winner === 'enemy') {
+                resultTasks.push(this.cameraController.playDefeat());
+              }
+            }
           }
           if (resultTasks.length > 0) {
             await Promise.all(resultTasks);
@@ -263,7 +303,14 @@
     }
 
     /**
-     * Cancela animações do Pokémon, efeitos visuais e áudios em voo.
+     * Alias de conveniência para execute(command, context).
+     */
+    async handleCommand(command, context = null) {
+      return this.execute(command, context);
+    }
+
+    /**
+     * Cancela animações do Pokémon, efeitos visuais, áudios e câmera em voo.
      */
     cancel() {
       if (this.pokemonController) {
@@ -274,6 +321,9 @@
       }
       if (this.audioController) {
         this.audioController.cancel();
+      }
+      if (this.cameraController) {
+        this.cameraController.cancel();
       }
     }
 
@@ -290,6 +340,9 @@
       }
       if (this.audioController) {
         this.audioController.reset();
+      }
+      if (this.cameraController) {
+        this.cameraController.reset();
       }
     }
   }

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Battle Arena — Battle Camera & Impact Harness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/battle-animations.css">
+  <link rel="stylesheet" href="../../assets/css/move-vfx.css">
+  <link rel="stylesheet" href="../../assets/css/battle-camera.css">
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: #1e293b;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-gold: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      color: #e2e8f0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .audio-unlock-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s;
+    }
+
+    .audio-unlock-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+
+    .main-layout {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* STAGE CONTAINER E CAMERA WRAPPER */
+    .stage-outer-container {
+      width: 100%;
+      height: 380px;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 70%, #020617 100%);
+      border: 1px solid #312e81;
+      border-radius: 16px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .battle-camera-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .battle-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stage-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .combatant-zone {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .combatant-zone.player {
+      left: 14%;
+      bottom: 16%;
+    }
+
+    .combatant-zone.enemy {
+      right: 14%;
+      top: 16%;
+    }
+
+    .combatant-podium {
+      position: absolute;
+      bottom: 0;
+      width: 130px;
+      height: 30px;
+      background: radial-gradient(ellipse at center, #4338ca 0%, rgba(30, 27, 75, 0.3) 75%, transparent 100%);
+      border-radius: 50%;
+      z-index: 5;
+    }
+
+    .pokemon-sprite-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .pokemon-sprite-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.6));
+    }
+
+    .combatant-label {
+      position: absolute;
+      top: -24px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #4338ca;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      white-space: nowrap;
+      z-index: 12;
+    }
+
+    .vfx-stage-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .hit-flash-overlay {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 25;
+      transition: opacity 80ms ease-out;
+    }
+
+    /* TELEMETRY & CONTROLS */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .control-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: #334155;
+      border-color: #475569;
+      transform: translateY(-1px);
+    }
+
+    .btn-impact-light { border-color: #3b82f6; color: #93c5fd; }
+    .btn-impact-medium { border-color: #f59e0b; color: #fde68a; }
+    .btn-impact-heavy { border-color: #ef4444; color: #fca5a5; }
+
+    .btn-preset {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border-color: #4f46e5;
+    }
+
+    .btn-toggle {
+      background: #0f172a;
+      border: 1px solid #475569;
+    }
+
+    .btn-toggle.active {
+      background: #3b82f6;
+      border-color: #60a5fa;
+      color: white;
+    }
+
+    /* TELEMETRY READOUT */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .telemetry-item {
+      background: #0b0f19;
+      border: 1px solid #1e293b;
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .telemetry-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .telemetry-val {
+      font-family: monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* LOG CONSOLE */
+    .log-console {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      height: 90px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .log-line {
+      line-height: 1.3;
+    }
+
+    .log-line.impact { color: #fde047; }
+    .log-line.audio { color: #a78bfa; }
+    .log-line.system { color: #34d399; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span>⚡ PBA-012</span> Battle Camera & Impact Harness
+      <span class="badge">Experimental</span>
+    </h1>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn btn-toggle" id="reducedMotionBtn" onclick="toggleReducedMotion()">Reduced Motion: OFF</button>
+      <button class="audio-unlock-btn" id="unlockAudioBtn" onclick="unlockAudio()">🔊 Enable Audio</button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- ARENA & CAMERA WRAPPER -->
+    <div class="stage-outer-container">
+      <div class="battle-camera-wrapper" id="cameraWrapper" data-battle-camera>
+        <div class="battle-stage" id="battleStage" data-battle-stage>
+          <div class="stage-grid-lines"></div>
+
+          <!-- PLAYER COMBATANT -->
+          <div class="combatant-zone player" id="playerZone">
+            <div class="combatant-label">Player: Pikachu</div>
+            <div class="combatant-podium"></div>
+            <div class="pokemon-sprite-container" id="playerSprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif" alt="Pikachu" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
+            </div>
+          </div>
+
+          <!-- ENEMY COMBATANT -->
+          <div class="combatant-zone enemy" id="enemyZone">
+            <div class="combatant-label">Enemy: Bulbasaur</div>
+            <div class="combatant-podium"></div>
+            <div class="pokemon-sprite-container" id="enemySprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/1.gif" alt="Bulbasaur" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'">
+            </div>
+          </div>
+
+          <!-- VFX & HIT FLASH LAYERS -->
+          <div class="vfx-stage-layer" id="vfxStageLayer"></div>
+          <div class="hit-flash-overlay" id="flashOverlay" data-hit-flash></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS & TELEMETRY -->
+    <div class="controls-grid">
+      <!-- CONTROL CARD -->
+      <div class="control-card">
+        <div class="card-title">Impact Level Triggers</div>
+        <div class="btn-group">
+          <button class="btn btn-impact-light" onclick="triggerImpact('LIGHT', 20, 1, 40)">Light Impact (20 dmg)</button>
+          <button class="btn btn-impact-medium" onclick="triggerImpact('MEDIUM', 45, 1, 80)">Medium Impact (45 dmg)</button>
+          <button class="btn btn-impact-heavy" onclick="triggerImpact('HEAVY', 95, 1, 120)">Heavy Impact (95 dmg)</button>
+        </div>
+
+        <div class="card-title" style="margin-top:8px;">Combat Outcomes & Multipliers</div>
+        <div class="btn-group">
+          <button class="btn" onclick="triggerMiss()">Miss (Zero Shake)</button>
+          <button class="btn" onclick="triggerImmunity()">Immune (Zero Shake)</button>
+          <button class="btn" onclick="triggerImpact('RESISTED', 15, 0.5, 60)">Resisted (0.5x)</button>
+          <button class="btn" onclick="triggerImpact('SUPER', 60, 2.0, 80)">Super Effective (2x)</button>
+          <button class="btn" onclick="triggerImpact('4X', 120, 4.0, 90)">4x Effective (Heavy)</button>
+        </div>
+
+        <div class="card-title" style="margin-top:8px;">Integrated Presets (VFX + Audio + Camera)</div>
+        <div class="btn-group">
+          <button class="btn btn-preset" onclick="playPreset('thunderbolt')">⚡ Thunderbolt (Electric 90)</button>
+          <button class="btn btn-preset" onclick="playPreset('flamethrower')">🔥 Flamethrower (Fire 90)</button>
+          <button class="btn btn-preset" onclick="playPreset('watergun')">💧 Water Gun (Water 40)</button>
+          <button class="btn btn-preset" onclick="playPreset('rockthrow')">🪨 Rock Throw (Rock 50)</button>
+        </div>
+
+        <div class="card-title" style="margin-top:8px;">Lifecycle & Settles</div>
+        <div class="btn-group">
+          <button class="btn" onclick="cameraController.playVictory(); logEvent('Camera victory settle');">Victory Settle</button>
+          <button class="btn" onclick="cameraController.playDefeat(); logEvent('Camera defeat settle');">Defeat Settle</button>
+          <button class="btn" onclick="cameraController.cancel(); logEvent('Camera cancel');">Cancel</button>
+          <button class="btn" onclick="cameraController.reset(); logEvent('Camera reset');">Reset</button>
+        </div>
+      </div>
+
+      <!-- TELEMETRY CARD -->
+      <div class="control-card">
+        <div class="card-title">Camera Telemetry</div>
+        <div class="telemetry-grid">
+          <div class="telemetry-item">
+            <span class="telemetry-label">Impact Level</span>
+            <span class="telemetry-val" id="telLevel">IDLE</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Shake Magnitude</span>
+            <span class="telemetry-val" id="telShake">0.0 px</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Punch Scale</span>
+            <span class="telemetry-val" id="telPunch">1.000</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Flash Opacity</span>
+            <span class="telemetry-val" id="telFlash">0.00</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Hold Duration</span>
+            <span class="telemetry-val" id="telHold">0 ms</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Audio State</span>
+            <span class="telemetry-val" id="telAudio">LOCKED</span>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top:8px;">Live Trace Log</div>
+        <div class="log-console" id="logConsole">
+          <div class="log-line system">[System] Harness initialized. Ready for impact triggers.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE SCRIPTS -->
+  <script src="../../assets/js/presentation/animation/pokemon-animation-constants.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-registry.js"></script>
+  <script src="../../assets/js/presentation/animation/pokemon-animation-controller.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-constants.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-resolver.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-registry.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-dom-renderer.js"></script>
+  <script src="../../assets/js/vfx/move-vfx-controller.js"></script>
+  <script src="../../assets/js/audio/battle-audio-constants.js"></script>
+  <script src="../../assets/js/audio/audio-context-manager.js"></script>
+  <script src="../../assets/js/audio/audio-mixer.js"></script>
+  <script src="../../assets/js/audio/procedural-sfx.js"></script>
+  <script src="../../assets/js/audio/battle-audio-resolver.js"></script>
+  <script src="../../assets/js/audio/battle-audio-controller.js"></script>
+  <script src="../../assets/js/camera/battle-camera-constants.js"></script>
+  <script src="../../assets/js/camera/battle-camera-resolver.js"></script>
+  <script src="../../assets/js/camera/battle-camera-registry.js"></script>
+  <script src="../../assets/js/camera/battle-camera-controller.js"></script>
+
+  <script>
+    let cameraRegistry;
+    let cameraController;
+    let vfxController;
+    let animController;
+    let audioController;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Camera setup
+      cameraRegistry = new window.PBABattleCamera.BattleCameraRegistry();
+      cameraRegistry.registerCamera('#cameraWrapper');
+      cameraRegistry.registerStage('#battleStage');
+      cameraRegistry.registerFlashOverlay('#flashOverlay');
+
+      cameraController = new window.PBABattleCamera.BattleCameraController({
+        registry: cameraRegistry
+      });
+
+      // 2. VFX setup
+      const vfxRegistry = new window.PBABattleVfx.MoveVfxRegistry();
+      vfxRegistry.registerStage('#vfxStageLayer');
+      vfxRegistry.registerTarget('player', '#playerSprite');
+      vfxRegistry.registerTarget('enemy', '#enemySprite');
+      vfxController = new window.PBABattleVfx.MoveVfxController({ registry: vfxRegistry });
+
+      // 3. Animation setup
+      const animRegistry = new window.PBABattlePresentation.PokemonAnimationRegistry();
+      animRegistry.register('player', {
+        container: document.querySelector('#playerSprite'),
+        sprite: document.querySelector('#playerSprite img')
+      });
+      animRegistry.register('enemy', {
+        container: document.querySelector('#enemySprite'),
+        sprite: document.querySelector('#enemySprite img')
+      });
+      animController = new window.PBABattlePresentation.PokemonAnimationController({ registry: animRegistry });
+
+      // 4. Audio setup
+      audioController = new window.PBABattleAudio.BattleAudioController();
+
+      logEvent('[Init] All 4 presentation controllers initialized successfully.', 'system');
+    });
+
+    function logEvent(msg, type = '') {
+      const consoleEl = document.getElementById('logConsole');
+      const line = document.createElement('div');
+      line.className = 'log-line ' + type;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function updateTelemetry(desc) {
+      document.getElementById('telLevel').textContent = desc ? desc.impactLevel : 'IDLE';
+      document.getElementById('telShake').textContent = desc ? `${desc.shakeMagnitude.toFixed(1)} px` : '0.0 px';
+      document.getElementById('telPunch').textContent = desc ? desc.punchScale.toFixed(3) : '1.000';
+      document.getElementById('telFlash').textContent = desc ? desc.flashOpacity.toFixed(2) : '0.00';
+      document.getElementById('telHold').textContent = desc ? `${desc.holdMs} ms` : '0 ms';
+    }
+
+    async function triggerImpact(label, damage, multiplier = 1, power = 80) {
+      logEvent(`Triggering impact: ${label} (dmg: ${damage}, mult: ${multiplier}, pwr: ${power})`, 'impact');
+      const res = await cameraController.playImpact({
+        damage,
+        multiplier,
+        power,
+        intensity: power > 90 ? 'HIGH' : (power <= 50 ? 'LOW' : 'MEDIUM')
+      });
+      if (res && res.descriptor) {
+        updateTelemetry(res.descriptor);
+      }
+    }
+
+    async function triggerMiss() {
+      logEvent('Triggering outcome: MISS (Zero damage shake)', 'impact');
+      if (audioController) audioController.playMiss();
+      await cameraController.playMiss();
+      updateTelemetry({ impactLevel: 'NONE', shakeMagnitude: 0, punchScale: 1.0, flashOpacity: 0, holdMs: 0 });
+    }
+
+    async function triggerImmunity() {
+      logEvent('Triggering outcome: IMMUNITY (Zero damage shake)', 'impact');
+      if (audioController) audioController.playImmunity();
+      await cameraController.playImmunity();
+      updateTelemetry({ impactLevel: 'NONE', shakeMagnitude: 0, punchScale: 1.0, flashOpacity: 0, holdMs: 0 });
+    }
+
+    function toggleReducedMotion() {
+      const isReduced = !cameraController.reducedMotion;
+      cameraController.reducedMotion = isReduced;
+      const btn = document.getElementById('reducedMotionBtn');
+      btn.textContent = `Reduced Motion: ${isReduced ? 'ON' : 'OFF'}`;
+      btn.classList.toggle('active', isReduced);
+      logEvent(`Reduced Motion toggled to: ${isReduced}`, 'system');
+    }
+
+    async function unlockAudio() {
+      if (audioController) {
+        await audioController.unlock();
+        document.getElementById('telAudio').textContent = audioController.state;
+        document.getElementById('unlockAudioBtn').textContent = '✅ Audio Enabled';
+        document.getElementById('unlockAudioBtn').style.background = '#059669';
+        logEvent('AudioContext unlocked and running.', 'audio');
+      }
+    }
+
+    async function playPreset(move) {
+      let moveType = 'normal';
+      let power = 50;
+      let name = 'Tackle';
+
+      if (move === 'thunderbolt') { moveType = 'electric'; power = 90; name = 'Thunderbolt'; }
+      else if (move === 'flamethrower') { moveType = 'fire'; power = 90; name = 'Flamethrower'; }
+      else if (move === 'watergun') { moveType = 'water'; power = 40; name = 'Water Gun'; }
+      else if (move === 'rockthrow') { moveType = 'rock'; power = 50; name = 'Rock Throw'; }
+
+      logEvent(`[Preset] Executing full pipeline: ${name} (${moveType}, power ${power})`, 'system');
+
+      // 1. Attack Animation + Move VFX + Attack SFX
+      const desc = window.PBABattleVfx.MoveVfxResolver.resolve({ type: moveType, power, damageClass: 'special' });
+      await Promise.all([
+        animController.playAttack('player'),
+        vfxController.playMoveVfx(desc, { attackerSide: 'player', defenderSide: 'enemy' }),
+        audioController.playMoveAttack({ moveType, power })
+      ]);
+
+      // 2. Damage reaction + Impact SFX + Camera Impact
+      const damage = power >= 90 ? 70 : 30;
+      const mult = move === 'thunderbolt' ? 2 : (move === 'watergun' ? 0.5 : 1);
+
+      await Promise.all([
+        animController.playDamageReaction('enemy'),
+        audioController.playMoveImpact({ multiplier: mult, typeFamily: moveType }),
+        triggerImpact(name, damage, mult, power)
+      ]);
+    }
+  </script>
+</body>
+</html>

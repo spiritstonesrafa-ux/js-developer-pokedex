@@ -265,6 +265,7 @@
               attackType: event.attackType,
               damageClass: event.damageClass,
               moveName: event.moveName,
+              power: event.power !== undefined ? Number(event.power) : undefined,
               multiplier: event.multiplier !== undefined ? Number(event.multiplier) : 1
             }
           ];

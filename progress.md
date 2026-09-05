@@ -218,6 +218,24 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
     - `AUDIO_CORE_LOCALSTORAGE_DEPENDENCY = 0`
   - 100% de aprovação nos testes automatizados: 329 testes (40 novos testes AU01 a AU40 + 289 testes de fases anteriores) com 0 falhas e 0 regressões.
 
+- **PBA-012 Battle Camera & Impact**:
+  - Implementação de subsistema profissional de câmera e impacto de batalha desacoplado e acelerado por GPU em `assets/js/camera/` e `assets/css/battle-camera.css`:
+    - `battle-camera-constants.js`: Catálogo de efeitos (`SHAKE`, `PUNCH_IN`, `PUNCH_OUT`, `HIT_FLASH`, `IMPACT_HOLD`), 4 níveis de impacto (`NONE`, `LIGHT`, `MEDIUM`, `HEAVY`), magnitudes de tremor (2.5px, 5.0px, 8.5px), escalas de micro zoom (1.015, 1.025, 1.04), opacidades de flash (0.15, 0.25, 0.38), pausas de sustentação (40ms, 80ms) e limites estritos de segurança fotossensível (`NO_STROBE_EFFECT = YES`, `NO_RAPID_FLASH_PATTERN = YES`);
+    - `battle-camera-resolver.js`: Mapeamento funcional puro que converte dano, efetividade, power e intensidade em descritores de impacto imutáveis, elevando níveis para super efetivo (2x e 4x), atenuando para golpes resistidos (0.5x) e zerando impacto para Miss ou Imunidade (`MISS_DAMAGE_SHAKE = NO`, `IMMUNITY_DAMAGE_SHAKE = NO`);
+    - `battle-camera-registry.js`: Registro de wrapper de câmera, palco e overlay de hit flash, isolando transforms do restante da página (`CAMERA_LAYOUT_THRASHING = NONE`) com suporte a testes headless no Node.js;
+    - `battle-camera-controller.js`: Controlador de ciclo de vida com política de concorrência `CANCEL_PREVIOUS`, limpeza imediata de timers/classes (`TEMP_CAMERA_TIMERS_AFTER_COMPLETION = 0`), cancelamento limpo, retorno estrito ao estado base (`CAMERA_TRANSFORM_AFTER_COMPLETION = BASE`) e acessibilidade com `prefers-reduced-motion`;
+    - `battle-camera-dom-adapter.js`: Adaptador DOM conectando comandos de apresentação ao controlador de câmera;
+    - `composite-battle-dom-adapter.js`: Orquestração quádrupla coordenada (`Animation` + `VFX` + `Audio` + `Camera`) executada em paralelo em `HP_TRANSITION`;
+    - `tests/visual/battle-camera-harness.html`: Laboratório interativo visual completo com disparadores de níveis, multiplicadores, outcomes, presets integrados (Thunderbolt, Flamethrower, Water Gun, Rock Throw), toggle de reduced motion e telemetria em tempo real;
+  - 100% de separação arquitetural:
+    - `CAMERA SYSTEM ≠ GAME RULES`
+    - `CAMERA SYSTEM ≠ DAMAGE CALCULATION`
+    - `CAMERA_DAMAGE_CALCULATION = 0`
+    - `CAMERA_TYPE_CALCULATION = 0`
+    - `CAMERA_AI_DECISIONS = 0`
+    - `CAMERA_GAME_RULES = 0`
+  - 100% de aprovação nos testes automatizados: 369 testes (40 novos testes CAM01 a CAM40 + 329 testes de fases anteriores) com 0 falhas e 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -357,6 +375,21 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    CAMERA_EFFECTS = NOT_YET
    FINAL_BATTLE_UI = NOT_YET
    ```
+12. **Configurações Oficiais do Battle Camera & Impact System (PBA-012)**:
+   ```text
+   BATTLE_CAMERA_SYSTEM = YES
+   SCREEN_SHAKE = YES
+   CAMERA_PUNCH = YES
+   HIT_FLASH = YES
+   IMPACT_HOLD = YES
+   SUPER_EFFECTIVE_CAMERA = YES
+   IMMUNITY_DAMAGE_SHAKE = NO
+   MISS_DAMAGE_SHAKE = NO
+   REDUCED_MOTION_CAMERA = YES
+   CAMERA_RESOURCE_LEAK = NONE
+   CAMERA_LAYOUT_THRASHING = NONE
+   FINAL_BATTLE_UI = NOT_YET
+   ```
 
 ---
 
@@ -375,15 +408,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-009 = PASS`
   - `PBA-010 = PASS`
   - `PBA-011 = PASS`
-- **Working Tree**: Atualizado com o subsistema de áudio modular, mixer, procedural SFX, Composite Adapter atualizado e suíte AU01–AU40
+  - `PBA-012 = PASS`
+- **Working Tree**: Atualizado com o subsistema de câmera e impacto (screen shake, punch, flash, hold), Composite Adapter quádruplo e suíte CAM01–CAM40
 
 ---
 
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-012 — Battle Camera & Impact
+NEXT_PHASE = PBA-013 — Final Battle UI
 ```
 
-*(Atenção: A Fase PBA-012 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-013 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
 

@@ -103,7 +103,8 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   ├── pokedex.css      # Grid e cards dos pokémons
 │   │   ├── modal.css        # Estilos do modal com estatísticas e evolução
 │   │   ├── battle-animations.css # Animações GPU-accelerated de sprites da arena (PBA-009)
-│   │   └── move-vfx.css     # Estilização e keyframes dos efeitos visuais de golpes (PBA-010)
+│   │   ├── move-vfx.css     # Estilização e keyframes dos efeitos visuais de golpes (PBA-010)
+│   │   └── battle-camera.css # Estilos de câmera, micro-zoom, screen shake e hit flash (PBA-012)
 │   └── js/
 │       ├── pokemon-model.js # Classe e modelo de dados do Pokémon
 │       ├── poke-api.js      # Integração e requisições HTTP para a PokéAPI
@@ -127,7 +128,7 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── battle-presentation-scheduler.js # Agendador de delays (ImmediateScheduler e TimerScheduler)
 │       │   ├── battle-presentation-mapper.js    # Mapeamento puro determinístico dos eventos da Engine
 │       │   ├── battle-presentation-engine.js    # Orquestrador de timeline sequencial e cancelamento
-│       │   ├── composite-battle-dom-adapter.js  # Adaptador composto (Pokemon Animation + Move VFX)
+│       │   ├── composite-battle-dom-adapter.js  # Adaptador composto (Animation + VFX + Audio + Camera)
 │       │   └── animation/
 │       │       ├── pokemon-animation-constants.js   # Catálogo de animações, timings e classes
 │       │       ├── pokemon-animation-registry.js    # Registro de alvos DOM e fallback de sprites
@@ -147,6 +148,12 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │       │   ├── battle-audio-resolver.js     # Mapeamento puro de golpes para descritores de áudio
 │       │   ├── battle-audio-controller.js   # Controle de ciclo de vida, música procedural e cues
 │       │   └── battle-audio-adapter.js      # Adaptador DOM/Presentation conectando comandos ao áudio
+│       ├── camera/
+│       │   ├── battle-camera-constants.js   # Catálogo de efeitos, magnitudes de shake, punch e hold
+│       │   ├── battle-camera-resolver.js    # Resolução pura de descritores de câmera a partir de metadata
+│       │   ├── battle-camera-registry.js    # Referências do wrapper, stage e overlay de flash
+│       │   ├── battle-camera-controller.js  # Controle de ciclo de vida de shake, punch, flash e hold
+│       │   └── battle-camera-dom-adapter.js # Adaptador DOM ligando comandos da timeline à câmera
 │       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
 ├── docs/
 │   └── battle-architecture.md # Especificação técnica da Battle Arena
@@ -172,10 +179,13 @@ Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [
 │   │   └── move-vfx.test.js             # Suíte de testes de Efeitos Visuais de Golpes (VFX01-VFX40)
 │   ├── audio/
 │   │   └── battle-audio.test.js         # Suíte de testes do Audio System (AU01-AU40)
+│   ├── camera/
+│   │   └── battle-camera.test.js        # Suíte de testes da Battle Camera e Impacto (CAM01-CAM40)
 │   └── visual/
 │       ├── pokemon-animation-harness.html # Harness visual de animações de sprites
 │       ├── move-vfx-harness.html          # Harness visual de efeitos de golpes (18 tipos, 8 arquétipos)
-│       └── battle-audio-harness.html      # Harness visual e telemetria do Battle Audio System
+│       ├── battle-audio-harness.html      # Harness visual e telemetria do Battle Audio System
+│       └── battle-camera-harness.html     # Harness visual e telemetria do Battle Camera & Impact
 ├── index.html               # Estrutura principal da página
 ├── progress.md              # Registro contínuo de status e fases para agentes
 └── README.md                # Documentação oficial do projeto
@@ -198,7 +208,7 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-009 Pokemon Animations** *(Fase Concluída)*: A Battle Arena agora possui um sistema reutilizável de animações de Pokémon integrado à Presentation Engine, incluindo entrada, idle, ataque genérico, reação ao dano, faint, troca e vitória. Suporte completo a aceleração por hardware (GPU), orientações espelhadas para player/enemy, controle automático de idle, cancelamento limpo e acessibilidade com reduced motion.
 - [x] **PBA-010 Move Visual Effects** *(Fase Concluída)*: A Battle Arena agora possui um sistema visual reutilizável para golpes, com famílias de efeitos baseadas nos 18 tipos Pokémon e arquétipos visuais compartilhados (`PROJECTILE`, `BEAM`, `STREAM`, `BURST`, `SLASH`, `IMPACT`, `WAVE`, `AURA`). Resolução pura de descritores visuais com fallback genérico por tipo, classificação por intensidade (`LOW`, `MEDIUM`, `HIGH`), tratamento visual de MISS e IMMUNITY sem impacto de dano, escala aprimorada para Super Effective, renderização acelerada por hardware (GPU) via CSS Variables, controle de concorrência com cancelamento limpo, acessibilidade integral (`reducedMotion`) e orquestração integrada via `CompositeBattleDomAdapter`.
 - [x] **PBA-011 Audio System** *(Fase Concluída)*: A Battle Arena agora possui sistema de áudio modular com mixagem Web Audio API, volumes independentes (`MASTER`, `MUSIC`, `SFX`, `CRY`, `UI`), mute, efeitos procedurais de golpes e impactos para todos os 18 tipos, integração segura com cries e suporte a música procedural de batalha e cues de vitória/derrota originais.
-- [ ] **PBA-012 Battle Camera & Impact**: Screen shake, efeitos de acerto crítico e feedback dinâmico.
+- [x] **PBA-012 Battle Camera & Impact** *(Fase Concluída)*: A Battle Arena agora possui um sistema de impacto audiovisual que coordena screen shake localizado, micro zoom de câmera, hit flash e ênfase baseada no resultado já calculado do golpe (Normal, Super Effective, 4x, Resisted, Miss, Immunity). Totalmente acelerado por hardware (GPU), isolado ao palco da arena (`CAMERA_LAYOUT_THRASHING = NONE`), com prevenção estrita a estroboscópio (`NO_STROBE_EFFECT = YES`), suporte completo a acessibilidade (`reducedMotion`), proteção de concorrência com cancelamento limpo e zero interferência nas regras matemáticas da batalha.
 - [ ] **PBA-013 Final Battle UI**: Interface gráfica refinada de combate, logs de ação e status.
 - [ ] **PBA-014 Trainer Profile**: Perfil do treinador, insígnias conquistadas e estatísticas.
 - [ ] **PBA-015 Campaign Mode**: Modo campanha com progressão de ginásios e desafios crescentes.

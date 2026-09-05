@@ -757,15 +757,59 @@ A Fase PBA-011 implementa uma infraestrutura sonora modular, profissional e segu
 
 ---
 
-## 14. Decisões Explicitamente Adiadas
+## 14. Battle Camera & Impact Subsystem (Fase PBA-012)
 
-- **Câmera de Combate**: Screen shake, zoom e efeitos de acertos críticos (Fase PBA-012).
+A Fase PBA-012 introduziu uma camada de impacto visual e dinamismo espacial de câmera na Presentation Engine, aumentando a sensação de peso físico dos golpes sem alterar nenhuma regra de combate:
+$$\text{CAMERA SYSTEM} \neq \text{GAME RULES}$$
+$$\text{CAMERA SYSTEM} \neq \text{DAMAGE CALCULATION}$$
+
+### 14.1 Contrato do Wrapper de Câmera e Isolamento de Layout
+- **Contêiner Dedicado**: Todos os efeitos de deslocamento (`translate`) e escala (`scale`) atuam exclusivamente no contêiner demarcado pelo atributo `[data-battle-camera]` (`.battle-camera-wrapper`);
+- **Isolamento Total**: `document.body`, `html`, navegação, Pokédex e barras de rolagem permanecem 100% estáticos (`CAMERA_LAYOUT_THRASHING = NONE`);
+- **Origem de Transformação**: `transform-origin: center center;` para garantir que o micro zoom de impacto (punch) e o tremor expandam e contraiam simetricamente a partir do centro da arena.
+
+### 14.2 Catálogo de Efeitos e Níveis de Impacto
+O subsistema centraliza os seguintes efeitos:
+- **Screen Shake**: Tremor nos eixos X e Y proporcional à intensidade do golpe;
+- **Camera Punch**: Micro zoom súbito seguido de retorno elástico suave ao tamanho base;
+- **Hit Flash**: Overlay branco sutil no palco com curva de opacidade rápida;
+- **Impact Hold**: Pausa de sustentação visual ultra-curta na apresentação de golpes pesados (sem pausar a engine nem alterar relógios globais: `GLOBAL_TIME_SCALE = NO`).
+
+| Nível de Impacto | Shake Magnitude | Shake Duração | Punch Scale | Punch Duração | Flash Opacidade | Impact Hold |
+|---|---|---|---|---|---|---|
+| `NONE` | `0.0 px` | `0 ms` | `1.000` | `0 ms` | `0.00` | `0 ms` |
+| `LIGHT` | `2.5 px` | `150 ms` | `1.015` | `120 ms` | `0.15` | `0 ms` |
+| `MEDIUM` | `5.0 px` | `250 ms` | `1.025` | `180 ms` | `0.25` | `40 ms` |
+| `HEAVY` | `8.5 px` | `350 ms` | `1.040` | `240 ms` | `0.38` | `80 ms` |
+
+### 14.3 Resolução Pura de Impacto (BattleCameraResolver)
+- A função pura `BattleCameraResolver.resolve(metadata)` traduz metadados pré-existentes (`damage`, `multiplier`, `power`, `isMiss`, `isImmune`) em descritores de câmera imutáveis;
+- **Golpes Resistidos ($\le 0.5\times$)**: Atenuam uma categoria de impacto visual, mantendo `LIGHT` se houver dano real;
+- **Super Efetivo ($\ge 2.0\times$)**: Promove a categoria em um nível na escala (ex: `MEDIUM` $\to$ `HEAVY`);
+- **Super Efetivo Máximo ($4\times$)**: Garante nível `HEAVY`;
+- **Miss e Imunidade**: Quando `isMiss=true` ou `multiplier=0` (`damage=0`), o nível é estritamente `NONE` (`MISS_DAMAGE_SHAKE = NO`, `IMMUNITY_DAMAGE_SHAKE = NO`).
+
+### 14.4 Acessibilidade e Segurança Fotossensível
+- **Proteção contra Estrobo**: Flashes são de disparo único e breves ($\le 180\text{ms}$), com teto de opacidade em $0.38$ (`NO_STROBE_EFFECT = YES`, `NO_RAPID_FLASH_PATTERN = YES`);
+- **Prefers Reduced Motion**: Quando ativo (`reducedMotion = true`), o tremor é zerado (`shakeMagnitude = 0`), o micro zoom é desabilitado (`punchScale = 1.0`), o hold é zerado e o flash é atenuado ou desligado (`REDUCED_MOTION_CAMERA_SAFE = YES`).
+
+### 14.5 Concorrência e Integração no Composite Adapter
+- **Política CANCEL_PREVIOUS**: Disparos sucessivos cancelam imediatamente a animação anterior, impedindo acúmulo de transformações e distorções gráficas;
+- **Orquestração Paralela**: Durante `HP_TRANSITION` com dano $> 0$, o `CompositeBattleDomAdapter` executa de forma coordenada em `Promise.all`:
+  - Reação corporal de dano (`PokemonAnimationController`);
+  - Efeito sonoro de impacto (`BattleAudioController`);
+  - Impacto de câmera: tremor, zoom, flash e hold (`BattleCameraController`).
+
+---
+
+## 15. Decisões Explicitamente Adiadas
+
 - **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
 - **Trainer Profile & Campanha**: Estatísticas, histórico e progressão de ginásios (Fases PBA-014 e PBA-015).
 
 ---
 
-## 15. Riscos Técnicos e Estratégias de Mitigação
+## 16. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -782,7 +826,7 @@ A Fase PBA-011 implementa uma infraestrutura sonora modular, profissional e segu
 
 ---
 
-## 16. Roadmap Técnico Oficial
+## 17. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -796,7 +840,7 @@ A Fase PBA-011 implementa uma infraestrutura sonora modular, profissional e segu
 [x] PBA-009 Pokemon Animations (Sprites Animados e Movimentos Corporais) ─ [CONCLUÍDA]
 [x] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.) ── [CONCLUÍDA]
 [x] PBA-011 Audio System (Músicas, Efeitos Procedurais e Cries) ─ [CONCLUÍDA]
-[ ] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos)
+[x] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos) ─ [CONCLUÍDA]
 [ ] PBA-013 Final Battle UI (Interface Polida e Responsiva de Combate)
 [ ] PBA-014 Trainer Profile (Estatísticas, Histórico e Insígnias)
 [ ] PBA-015 Campaign Mode (Trilha de Desafios e Líderes de Ginásio)
