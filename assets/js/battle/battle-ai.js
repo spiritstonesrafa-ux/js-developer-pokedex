@@ -210,9 +210,11 @@
         const evalData = BattleEvaluator.evaluateMove(myActive, oppActive, m);
         let score = evalData.expectedDamage;
 
-        // Bônus decisivo para KO garantido
-        if (evalData.wouldKo) {
+        // Bônus decisivo para KO garantido vs possível (PBA-014B)
+        if (evalData.guaranteedKo) {
           score += CONFIG.KO_BONUS;
+        } else if (evalData.possibleKo) {
+          score += Math.floor(CONFIG.KO_BONUS / 2);
         }
 
         // Anulação estrita de golpes imunes

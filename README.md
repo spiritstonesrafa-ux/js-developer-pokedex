@@ -60,6 +60,7 @@ Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
   - **Battle Camera**: Tremores de tela direcionados (*screen shake*), micro zooms de impacto (*punch-in/out*), flashes de luz e sustentação de impacto.
   - **Battle UI**: Logs de narrativa (`aria-live="polite"`), mensagens de super efetivo/miss/imunidade e indicadores de status de equipe.
 - 🏆 **Telas de Vitória e Derrota**: Desfecho visual elegante ao nocautear os 3 Pokémon adversários ou ser completamente derrotado, com opção de revanche instantânea (*Rematch*) ou retorno ao Team Builder.
+- ⚖️ **Balanceamento Matemático Level 50 (PBA-014B)**: Atributos de combate normalizados pelas fórmulas canônicas da Generation III+ (Level 50, IV 31, EV 0) e variação de dano da série principal (85% a 100%), eliminando nocautes prematuros em um único golpe (OHKO) em confrontos neutros.
 - ♿ **Acessibilidade e Responsividade**: 100% utilizável via teclado, suporte nativo a `prefers-reduced-motion` e design responsivo impecável testado de 360px a 1366px sem overflow horizontal.
 
 ---

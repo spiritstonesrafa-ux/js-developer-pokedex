@@ -81,22 +81,27 @@
     }
 
     /**
-     * Aplica os modificadores de STAB e Efetividade de tipos sobre o dano base.
-     * 
-     * Regras:
-     * - Se typeMultiplier === 0 (imunidade): dano é rigorosamente 0 (STAB não supera imunidade);
-     * - Se typeMultiplier > 0: piso mínimo de 1 (mesmo com 0.25x);
-     * - modifiedDamage = floor(baseDamage * stabMultiplier * typeMultiplier).
-     * 
+     * Aplica os modificadores de variação aleatória de dano, STAB e Efetividade de tipos sobre o dano base.
+     *
+     * Pipeline da Fase PBA-014B:
+     * 1. Base Damage
+     * 2. Variação aleatória de dano (85..100): floor(baseDamage * damageRoll / 100)
+     * 3. STAB (1.5x): floor(damage * stabMultiplier)
+     * 4. Efetividade de tipo: floor(damage * typeMultiplier)
+     * 5. Imunidade (typeMultiplier === 0): rigorosamente 0
+     * 6. Não-imunes: piso mínimo de 1
+     *
      * @param {number} baseDamage - Dano base calculado (>= 1).
      * @param {number} [typeMultiplier] - Multiplicador de tipo (0, 0.25, 0.5, 1, 2, 4).
      * @param {number} [stabMultiplier] - Multiplicador de STAB (1.5 se ativado, 1.0 senão).
+     * @param {number} [damageRoll] - Rolagem externa de variância (85..100, padrão 100).
      * @returns {number} Dano final inteiro.
      */
-    function applyModifier(baseDamage, typeMultiplier = 1, stabMultiplier = 1) {
+    function applyModifier(baseDamage, typeMultiplier = 1, stabMultiplier = 1, damageRoll = 100) {
       const base = Number(baseDamage);
       const typeMult = Number(typeMultiplier);
       const stabMult = Number(stabMultiplier);
+      const roll = damageRoll !== undefined ? Number(damageRoll) : 100;
 
       if (!Number.isFinite(base) || base < 0) {
         throw new Error(`Dano base inválido: ${baseDamage}.`);
@@ -110,19 +115,70 @@
         throw new Error(`Multiplicador de STAB inválido: ${stabMultiplier}. Deve ser >= 1.`);
       }
 
-      // Imunidade absoluta: anula o golpe independente de STAB ou poder
+      if (!Number.isFinite(roll) || roll < 85 || roll > 100) {
+        throw new Error(`Roll de dano inválido: ${damageRoll}. Deve ser um número entre 85 e 100.`);
+      }
+
+      // Imunidade absoluta: anula o golpe independente de STAB, variância ou poder
       if (typeMult === 0) {
         return 0;
       }
 
-      const modifiedDamage = Math.floor(base * stabMult * typeMult);
+      // 1. Variância aleatória (85% .. 100%)
+      const variedDamage = Math.floor((base * roll) / 100);
+
+      // 2. STAB (Same-Type Attack Bonus)
+      const stabDamage = Math.floor(variedDamage * stabMult);
+
+      // 3. Efetividade elemental
+      const modifiedDamage = Math.floor(stabDamage * typeMult);
 
       // Para ataques não imunes, o piso de dano é sempre 1
       return Math.max(1, modifiedDamage);
     }
 
     /**
-     * Pipeline completo de cálculo de dano físico ou especial com STAB e efetividade.
+     * Calcula a faixa determinística de dano (mínimo com roll 85, máximo com roll 100 e média real dos 16 rolls).
+     * Utilizado para inteligência artificial determinística, testes e balance analyzer.
+     *
+     * @param {number} attackStat - Atributo ofensivo do atacante.
+     * @param {number} defenseStat - Atributo defensivo do defensor.
+     * @param {number} [power] - Poder do golpe.
+     * @param {number} [level] - Nível simulado (padrão 50).
+     * @param {number} [typeMultiplier] - Multiplicador elemental (padrão 1).
+     * @param {number} [stabMultiplier] - Multiplicador STAB (padrão 1).
+     * @returns {{ baseDamage: number, minDamage: number, maxDamage: number, averageDamage: number }}
+     */
+    function calculateDamageRange(attackStat, defenseStat, power = constants.BATTLE_CONFIG.BASIC_ATTACK_POWER, level = constants.BATTLE_CONFIG.SIMULATION_LEVEL, typeMultiplier = 1, stabMultiplier = 1) {
+      const baseDamage = calculateBaseDamage(attackStat, defenseStat, power, level);
+      const minDamage = applyModifier(baseDamage, typeMultiplier, stabMultiplier, 85);
+      const maxDamage = applyModifier(baseDamage, typeMultiplier, stabMultiplier, 100);
+
+      if (Number(typeMultiplier) === 0) {
+        return {
+          baseDamage,
+          minDamage: 0,
+          maxDamage: 0,
+          averageDamage: 0
+        };
+      }
+
+      let sum = 0;
+      for (let r = 85; r <= 100; r++) {
+        sum += applyModifier(baseDamage, typeMultiplier, stabMultiplier, r);
+      }
+      const averageDamage = Math.round(sum / 16);
+
+      return {
+        baseDamage,
+        minDamage,
+        maxDamage,
+        averageDamage
+      };
+    }
+
+    /**
+     * Pipeline completo de cálculo de dano físico ou especial com STAB, efetividade e roll de variância.
      * 
      * @param {number} attackStat - Atributo ofensivo do atacante (Attack ou Sp. Attack).
      * @param {number} defenseStat - Atributo defensivo do defensor (Defense ou Sp. Defense).
@@ -130,16 +186,18 @@
      * @param {number} [level] - Nível simulado.
      * @param {number} [typeMultiplier] - Multiplicador elemental (padrão 1).
      * @param {number} [stabMultiplier] - Multiplicador STAB (padrão 1).
+     * @param {number} [damageRoll] - Rolagem externa de variância (padrão 100).
      * @returns {number} Dano final calculado.
      */
-    function calculate(attackStat, defenseStat, power = constants.BATTLE_CONFIG.BASIC_ATTACK_POWER, level = constants.BATTLE_CONFIG.SIMULATION_LEVEL, typeMultiplier = 1, stabMultiplier = 1) {
+    function calculate(attackStat, defenseStat, power = constants.BATTLE_CONFIG.BASIC_ATTACK_POWER, level = constants.BATTLE_CONFIG.SIMULATION_LEVEL, typeMultiplier = 1, stabMultiplier = 1, damageRoll = 100) {
       const baseDamage = calculateBaseDamage(attackStat, defenseStat, power, level);
-      return applyModifier(baseDamage, typeMultiplier, stabMultiplier);
+      return applyModifier(baseDamage, typeMultiplier, stabMultiplier, damageRoll);
     }
 
     return {
       calculateBaseDamage,
       applyModifier,
+      calculateDamageRange,
       calculate
     };
   })();

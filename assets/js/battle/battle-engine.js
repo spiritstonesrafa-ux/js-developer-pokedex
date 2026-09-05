@@ -227,6 +227,10 @@
         moves: normalizedMoves
       };
 
+      if (raw.baseStats && typeof raw.baseStats === 'object') {
+        combatant.baseStats = { ...raw.baseStats };
+      }
+
       // Metadados visuais e sonoros passivos (preservação limpa sem acoplamento de DOM, fetch ou resolução de imagem)
       if (raw.photo && typeof raw.photo === 'string') combatant.photo = raw.photo;
       if (raw.animatedPhoto && typeof raw.animatedPhoto === 'string') combatant.animatedPhoto = raw.animatedPhoto;
@@ -670,9 +674,19 @@
         defenseStat = defender.specialDefense;
       }
 
-      // 6. Pipeline de cálculo de dano v2
+      // Validação do roll de dano determinístico (85..100)
+      let damageRoll = 100; // Padrão de retrocompatibilidade para testes legados
+      if (action && action.damageRoll !== undefined) {
+        const dRoll = Number(action.damageRoll);
+        if (!Number.isFinite(dRoll) || dRoll < 85 || dRoll > 100) {
+          throw new Error(`Roll de dano inválido: ${action.damageRoll}. Deve ser um número entre 85 e 100.`);
+        }
+        damageRoll = dRoll;
+      }
+
+      // 6. Pipeline de cálculo de dano v2 (PBA-014B: com variância 85..100)
       const baseDamage = DamageCalculator.calculateBaseDamage(attackStat, defenseStat, selectedMove.power);
-      const finalDamage = DamageCalculator.applyModifier(baseDamage, effectiveness.multiplier, stabMultiplier);
+      const finalDamage = DamageCalculator.applyModifier(baseDamage, effectiveness.multiplier, stabMultiplier, damageRoll);
 
       // 7. Aplicação do dano ao HP
       const previousHp = defender.currentHp;
@@ -690,6 +704,7 @@
         moveName: selectedMove.name,
         power: selectedMove.power,
         baseDamage,
+        damageRoll,
         stabMultiplier,
         typeMultiplier: effectiveness.multiplier,
         multiplier: effectiveness.multiplier,

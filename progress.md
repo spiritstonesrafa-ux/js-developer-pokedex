@@ -453,9 +453,63 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PUBLIC_BATTLE_STATS_UPDATE = PASS`
   - `PUBLIC_PROFILE_PERSISTENCE_AFTER_BATTLE = PASS`
   - `PUBLIC_REFRESH_DUPLICATE_RECORD = NO`
-  - `TRAINER_PROFILE = PASS`
+- **PBA-014B Battle Balance Foundation (Level 50 Stat Normalization + Damage Variance)**:
+  - Criação do módulo puro e desacoplado `assets/js/battle/battle-stat-normalizer.js` implementando as fórmulas canônicas da Generation III+;
+  - Linha de base estrita: Level 50 uniforme para todos (`SIMULATION_LEVEL = 50`), IV 31 perfeito, EV 0 neutro, Nature neutra (1.0);
+  - Fórmulas canônicas: HP $= \lfloor ((2 \times \text{Base} + 31) \times 50) / 100 \rfloor + 60$, outros atributos $= \lfloor \lfloor ((2 \times \text{Base} + 31) \times 50) / 100 \rfloor + 5 \rfloor$;
+  - Exceção canônica documentada: Shedinja (#292) fixado com HP = 1 (`SHEDINJA_POLICY = SPECIAL_CASE_HP_1_EXCLUDED_FROM_COHORT`);
+  - Preservação dos Base Stats da Pokédex intactos (`POKEDEX_BASE_STATS_CHANGED = NO`), mantendo `combatant.baseStats` para auditoria e debug;
+  - Variação aleatória de dano principal (85% .. 100%): geração externa desacoplada via `BattleRandomSource.rollDamage()` com `crypto.getRandomValues()` no browser e controle determinístico nos testes;
+  - Preservação das fronteiras de Engine e AI: `BATTLE_ENGINE_INTERNAL_RNG = 0` e `BATTLE_AI_INTERNAL_RNG = 0`;
+  - Helper determinístico `DamageCalculator.calculateDamageRange(...)` para avaliação de `minDamage`, `maxDamage` e `averageDamage`;
+  - Semântica refinada de nocaute na SMART AI: diferenciação estrita entre `guaranteedKo` (roll 85) e `possibleKo` (roll 100), priorizando KOs garantidos;
+  - Sem truques artificiais de balanceamento: `GLOBAL_DAMAGE_NERF = NO`, `ARBITRARY_HP_MULTIPLIER = NO`, `DAMAGE_CAP = NO`, `PER_SPECIES_LEVEL_BALANCING = NO`;
+  - Ferramenta de análise `tests/balance/battle-balance-analyzer.js` e suíte de testes `tests/balance/battle-balance.test.js` cobrindo os 40 gates BAL01–BAL40;
+  - Métricas comprovadas no cohort representativo: `NEUTRAL_OHKO_RATE_BEFORE = 11.1%` $\to$ `NEUTRAL_OHKO_RATE_AFTER = 0.0%`, média de hits para KO neutro aumentada de `2.89` para `4.67`;
+  - 100% de testes automatizados aprovados (495 testes totais passando, zero falhas).
 
-- **Working Tree**: Homologado com Perfil do Treinador em total conformidade com os contratos oficiais, presets de avatar CSS, crypto battleId, idempotência estrita e 463 testes automatizados 100% passando.
+---
+
+## 6. Estado Atual do Repositório
+
+- **Branch**: `main`
+- **Status das Fases**:
+  - `PBA-001 = PASS`
+  - `PBA-002 = PASS`
+  - `PBA-003 = PASS`
+  - `PBA-004 = PASS`
+  - `PBA-005 = PASS`
+  - `PBA-006 = PASS`
+  - `PBA-007 = PASS`
+  - `PBA-008 = PASS`
+  - `PBA-009 = PASS`
+  - `PBA-010 = PASS`
+  - `PBA-011 = PASS`
+  - `PBA-012 = PASS`
+  - `PBA-013 = PASS`
+  - `PBA_013_FINAL_ACCEPTANCE = PASS`
+  - `PBA_013_SPRITE_FIX = PASS`
+  - `PBA_014 = PASS`
+  - `PBA_014_FINAL_COMPLIANCE = PASS`
+  - `PBA_014B_TECHNICAL = PASS`
+  - `BATTLE_STAT_NORMALIZATION = PASS`
+  - `BATTLE_LEVEL = 50`
+  - `DEFAULT_IV = 31`
+  - `DEFAULT_EV = 0`
+  - `DEFAULT_NATURE = NEUTRAL`
+  - `DAMAGE_VARIANCE = 85_100`
+  - `DAMAGE_RNG_EXTERNAL = YES`
+  - `GLOBAL_DAMAGE_NERF = NO`
+  - `DAMAGE_CAP = NO`
+  - `PER_SPECIES_LEVEL_BALANCING = NO`
+  - `NEUTRAL_OHKO_RATE_BEFORE = 11.1%`
+  - `NEUTRAL_OHKO_RATE_AFTER = 0.0%`
+  - `AVERAGE_NEUTRAL_HITS_TO_KO_BEFORE = 2.89`
+  - `AVERAGE_NEUTRAL_HITS_TO_KO_AFTER = 4.67`
+  - `HUMAN_BALANCE_ACCEPTANCE = PENDING`
+  - `PBA_015 = NOT_STARTED`
+
+- **Working Tree**: Homologado tecnicamente com normalização Level 50 de combate, variância de dano 85..100, cohort representativo auditado, gates BAL01–BAL40 aprovados e 495 testes automatizados 100% passando.
 
 ---
 
@@ -465,5 +519,5 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
 NEXT_PHASE = PBA-015 — Campaign Mode
 ```
 
-*(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar solicitação explícita do usuário).*
+*(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar validação humana de jogabilidade e solicitação explícita do usuário).*
 

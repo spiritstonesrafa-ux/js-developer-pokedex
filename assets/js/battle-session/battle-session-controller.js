@@ -316,19 +316,26 @@
       this.notifyState(BATTLE_UI_STATES.RESOLVING);
 
       try {
-        // 1. Gera roll de acurácia externo para o golpe do jogador
+        // 1. Gera rolagens externas independentes para o jogador (PBA-013: Acurácia, PBA-014B: Variância de Dano)
         const playerAccuracyRoll = this.randomSource.rollAccuracy();
+        const playerDamageRoll = (typeof this.randomSource.rollDamage === 'function')
+          ? this.randomSource.rollDamage()
+          : 100;
 
         // 2. Consulta ação da SMART AI para o adversário
         const aiDecision = this.ai.chooseAction(this.battleState, 'enemy', { strategy: 'SMART' });
         let enemyAction = aiDecision.action;
 
-        // Se a IA escolheu atacar, gera roll de acurácia externo para ela
+        // Se a IA escolheu atacar, gera rolls externos independentes para ela
         if (enemyAction && enemyAction.type === 'MOVE') {
           const enemyAccuracyRoll = this.randomSource.rollAccuracy();
+          const enemyDamageRoll = (typeof this.randomSource.rollDamage === 'function')
+            ? this.randomSource.rollDamage()
+            : 100;
           enemyAction = {
             ...enemyAction,
-            accuracyRoll: enemyAccuracyRoll
+            accuracyRoll: enemyAccuracyRoll,
+            damageRoll: enemyDamageRoll
           };
         }
 
@@ -337,7 +344,8 @@
           player: {
             type: 'MOVE',
             moveId: Number(moveId),
-            accuracyRoll: playerAccuracyRoll
+            accuracyRoll: playerAccuracyRoll,
+            damageRoll: playerDamageRoll
           },
           enemy: enemyAction
         };
@@ -378,9 +386,13 @@
 
         if (enemyAction && enemyAction.type === 'MOVE') {
           const enemyAccuracyRoll = this.randomSource.rollAccuracy();
+          const enemyDamageRoll = (typeof this.randomSource.rollDamage === 'function')
+            ? this.randomSource.rollDamage()
+            : 100;
           enemyAction = {
             ...enemyAction,
-            accuracyRoll: enemyAccuracyRoll
+            accuracyRoll: enemyAccuracyRoll,
+            damageRoll: enemyDamageRoll
           };
         }
 

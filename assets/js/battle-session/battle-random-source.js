@@ -38,6 +38,7 @@
     constructor(options = {}) {
       this.rng = typeof options.rng === 'function' ? options.rng : defaultCryptoRandom;
       this.accuracySequence = Array.isArray(options.accuracySequence) ? [...options.accuracySequence] : null;
+      this.damageSequence = Array.isArray(options.damageSequence) ? [...options.damageSequence] : null;
       this.opponentSequence = Array.isArray(options.opponentSequence) ? [...options.opponentSequence] : null;
     }
 
@@ -55,6 +56,22 @@
 
       const floatVal = this.rng();
       return Math.floor(floatVal * 100) + 1;
+    }
+
+    /**
+     * Realiza uma rolagem de variação de dano no intervalo inteiro [85, 100].
+     * Se houver uma sequência injetada, consome o primeiro valor.
+     * @returns {number} Inteiro entre 85 e 100.
+     */
+    rollDamage() {
+      if (this.damageSequence && this.damageSequence.length > 0) {
+        const next = this.damageSequence.shift();
+        const intVal = Math.floor(Number(next));
+        return Math.max(85, Math.min(100, intVal));
+      }
+
+      const floatVal = this.rng();
+      return Math.floor(floatVal * 16) + 85;
     }
 
     /**
@@ -107,6 +124,10 @@
 
     setAccuracySequence(seq) {
       this.accuracySequence = Array.isArray(seq) ? [...seq] : null;
+    }
+
+    setDamageSequence(seq) {
+      this.damageSequence = Array.isArray(seq) ? [...seq] : null;
     }
 
     setOpponentSequence(seq) {

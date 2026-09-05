@@ -20,6 +20,7 @@
 (function () {
   let sessionConstants;
   let pokeApiService;
+  let BattleStatNormalizer;
 
   if (typeof module !== 'undefined' && module.exports) {
     sessionConstants = require('./battle-session-constants.js');
@@ -28,9 +29,15 @@
     } catch {
       pokeApiService = null;
     }
+    try {
+      BattleStatNormalizer = require('../battle/battle-stat-normalizer.js');
+    } catch {
+      BattleStatNormalizer = null;
+    }
   } else if (typeof window !== 'undefined') {
     sessionConstants = window.PBABattleSession || {};
     pokeApiService = window.pokeApi;
+    BattleStatNormalizer = window.PBABattle ? window.PBABattle.BattleStatNormalizer : null;
   }
 
   const { SESSION_CONFIG } = sessionConstants || {
@@ -164,12 +171,33 @@
       const types = Array.isArray(pokeData.types) ? [...pokeData.types] : (pokeData.type ? [pokeData.type] : ['normal']);
 
       const rawStats = pokeData.stats || {};
-      const hp = Math.max(1, Number(rawStats.hp || 50));
-      const attack = Math.max(1, Number(rawStats.attack || 50));
-      const defense = Math.max(1, Number(rawStats.defense || 50));
-      const specialAttack = Math.max(1, Number(rawStats.specialAttack || attack));
-      const specialDefense = Math.max(1, Number(rawStats.specialDefense || defense));
-      const speed = Math.max(1, Number(rawStats.speed || 50));
+      const baseStats = {
+        hp: Math.max(1, Number(rawStats.hp || 50)),
+        attack: Math.max(1, Number(rawStats.attack || 50)),
+        defense: Math.max(1, Number(rawStats.defense || 50)),
+        specialAttack: Math.max(1, Number(rawStats.specialAttack || rawStats.attack || 50)),
+        specialDefense: Math.max(1, Number(rawStats.specialDefense || rawStats.defense || 50)),
+        speed: Math.max(1, Number(rawStats.speed || 50))
+      };
+
+      const normalized = (BattleStatNormalizer && typeof BattleStatNormalizer.normalizeStats === 'function')
+        ? BattleStatNormalizer.normalizeStats(baseStats, { pokemonId: id, pokemonName: name })
+        : {
+            hp: baseStats.hp,
+            attack: baseStats.attack,
+            defense: baseStats.defense,
+            specialAttack: baseStats.specialAttack,
+            specialDefense: baseStats.specialDefense,
+            speed: baseStats.speed,
+            baseStats
+          };
+
+      const hp = normalized.hp;
+      const attack = normalized.attack;
+      const defense = normalized.defense;
+      const specialAttack = normalized.specialAttack;
+      const specialDefense = normalized.specialDefense;
+      const speed = normalized.speed;
 
       const stats = {
         hp,
@@ -197,6 +225,7 @@
         specialDefense,
         speed,
         stats,
+        baseStats: normalized.baseStats || baseStats,
         moves,
         photo: pokeData.photo || '',
         animatedPhoto: pokeData.animatedPhoto || pokeData.photo || '',

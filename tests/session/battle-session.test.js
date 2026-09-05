@@ -166,10 +166,10 @@ describe('PHASE PBA-013 — BATTLE SESSION LAYER', () => {
     const pikachu = team[0];
     assert.strictEqual(pikachu.id, 25);
     assert.strictEqual(pikachu.name, 'pikachu');
-    assert.deepStrictEqual(pikachu.types, ['electric']);
-    assert.strictEqual(pikachu.hp, 35);
-    assert.strictEqual(pikachu.maxHp, 35);
-    assert.strictEqual(pikachu.currentHp, 35);
+    assert.strictEqual(pikachu.baseStats.hp, 35);
+    assert.strictEqual(pikachu.hp, 110);
+    assert.strictEqual(pikachu.maxHp, 110);
+    assert.strictEqual(pikachu.currentHp, 110);
     assert.ok(pikachu.speed > 0);
     assert.ok(Array.isArray(pikachu.moves));
     assert.ok(pikachu.moves.length >= 1 && pikachu.moves.length <= 4);

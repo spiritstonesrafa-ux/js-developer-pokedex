@@ -69,11 +69,16 @@
           attackStat: 0,
           defenseStat: 0,
           baseDamage: 0,
+          minDamage: 0,
+          maxDamage: 0,
+          averageDamage: 0,
           stabMultiplier: 1.0,
           typeMultiplier: 1.0,
           typeClassification: 'NEUTRAL',
           damageIfHit: 0,
           expectedDamage: 0,
+          guaranteedKo: false,
+          possibleKo: false,
           wouldKo: false
         };
       }
@@ -99,16 +104,17 @@
       const effectiveness = TypeEffectiveness.calculate(moveType, defenderTypes);
       const typeMultiplier = effectiveness.multiplier;
 
-      // 4. Dano Base Puro
-      const baseDamage = DamageCalculator.calculateBaseDamage(attackStat, defenseStat, power, 50);
+      // 4. Faixa e Média de Dano (PBA-014B: Level 50 e Variância 85..100)
+      const simLevel = (constants && constants.BATTLE_CONFIG && constants.BATTLE_CONFIG.SIMULATION_LEVEL) || 50;
+      const range = DamageCalculator.calculateDamageRange(attackStat, defenseStat, power, simLevel, typeMultiplier, stabMultiplier);
 
-      // 5. Dano Real Caso Acerte (Damage If Hit)
-      let damageIfHit = 0;
-      if (typeMultiplier > 0) {
-        damageIfHit = DamageCalculator.applyModifier(baseDamage, typeMultiplier, stabMultiplier);
-      }
+      const baseDamage = range.baseDamage;
+      const minDamage = range.minDamage;
+      const maxDamage = range.maxDamage;
+      const averageDamage = range.averageDamage;
+      const damageIfHit = averageDamage;
 
-      // 6. Ponderação por Precisão para obter Dano Esperado (Expected Value)
+      // 5. Ponderação por Precisão para obter Dano Esperado (Expected Value)
       let accuracyFactor = 1.0;
       if (accuracy !== null && accuracy !== 'ALWAYS_HIT' && accuracy !== undefined) {
         const accNum = Number(accuracy);
@@ -117,11 +123,13 @@
         }
       }
 
-      const expectedDamage = damageIfHit > 0 ? Math.floor(damageIfHit * accuracyFactor) : 0;
+      const expectedDamage = averageDamage > 0 ? Math.floor(averageDamage * accuracyFactor) : 0;
 
-      // 7. Avaliação de nocaute (KO)
+      // 6. Semântica refinada de nocaute (KO)
       const defenderHp = Number(defender.currentHp) || 0;
-      const wouldKo = damageIfHit >= defenderHp && damageIfHit > 0;
+      const guaranteedKo = minDamage >= defenderHp && minDamage > 0;
+      const possibleKo = maxDamage >= defenderHp && maxDamage > 0;
+      const wouldKo = guaranteedKo; // Retrocompatibilidade: wouldKo expressa KO garantido
 
       return {
         moveId: move.id,
@@ -134,11 +142,16 @@
         attackStat,
         defenseStat,
         baseDamage,
+        minDamage,
+        maxDamage,
+        averageDamage,
         stabMultiplier,
         typeMultiplier,
         typeClassification: effectiveness.classification,
         damageIfHit,
         expectedDamage,
+        guaranteedKo,
+        possibleKo,
         wouldKo
       };
     }
