@@ -802,14 +802,94 @@ O subsistema centraliza os seguintes efeitos:
 
 ---
 
-## 15. Decisões Explicitamente Adiadas
+---
 
-- **Battle UI Final**: Interface gráfica definitiva de combate, seleção de golpes e trocas (Fase PBA-013).
-- **Trainer Profile & Campanha**: Estatísticas, histórico e progressão de ginásios (Fases PBA-014 e PBA-015).
+## 15. Battle Session Layer & Final Battle UI (Fase PBA-013)
+
+A Fase PBA-013 transforma os subsistemas isolados de combate em uma experiência pública 100% jogável através de uma arquitetura modular de sessão e interface:
+
+```text
+       ┌───────────────────────────────┐
+       │         Team Builder          │  (Fonte de verdade do jogador: team.current)
+       └──────────────┬────────────────┘
+                      │ Lista de IDs (exatamente 3)
+                      ▼
+       ┌───────────────────────────────┐
+       │    Battle Session Layer       │  (battle-session-controller.js)
+       │ ├── BattleTeamHydrator        │  (Hidratação assíncrona + auto move loadout)
+       │ ├── BattleOpponentFactory     │  (Seleção de 3 espécies distintas de Kanto)
+       │ └── BattleRandomSource        │  (Provedor de RNG externo injetável 1..100)
+       └──────────────┬────────────────┘
+                      │ createTeamBattle() / resolveTurn() / resolveReplacement()
+                      ▼
+       ┌───────────────────────────────┐
+       │   Battle Engine + Battle AI   │  (Execução pura determinística offline)
+       └──────────────┬────────────────┘
+                      │ Batches de Eventos
+                      ▼
+       ┌───────────────────────────────┐
+       │   Presentation Engine (PR)    │  (Timeline assíncrona com MAX_CONCURRENT = 1)
+       └──────────────┬────────────────┘
+                      │ Presentation Commands
+                      ▼
+       ┌──────────────────────────────────────────────────────────────────────────┐
+       │                       CompositeBattleDomAdapter                          │
+       ├─────────────────┬─────────────────┬────────────────────┬─────────────────┤
+       │                 │                 │                    │                 │
+       ▼                 ▼                 ▼                    ▼                 ▼
+ ┌───────────┐     ┌───────────┐     ┌───────────┐        ┌───────────┐     ┌───────────┐
+ │ Battle UI │     │  Pokemon  │     │ Move VFX  │        │   Audio   │     │  Camera   │
+ │  Adapter  │     │ Animation │     │Controller │        │Controller │     │Controller │
+ └───────────┘     └───────────┘     └───────────┘        └───────────┘     └───────────┘
+```
+
+### 15.1 Princípios Arquiteturais e Regras Estritas de Isolamento
+- **UI_DAMAGE_CALCULATION = 0**: A UI nunca calcula dano nem subtrai HP arbitrariamente;
+- **UI_TYPE_CALCULATION = 0**: A UI não consulta tabelas de fraquezas nem reavalia STAB;
+- **UI_WINNER_CALCULATION = 0**: A condição de vitória ou derrota é consumida unicamente de `battleState.status === 'BATTLE_ENDED'`;
+- **UI_HP_MUTATION = 0 & UI_PP_MUTATION = 0**: Apenas o Battle Engine atualiza os valores canônicos de HP e PP;
+- **CAMERA_VFX_DIRECT_DEPENDENCY = NO, AUDIO_VFX_DIRECT_DEPENDENCY = NO, ANIMATION_VFX_DIRECT_DEPENDENCY = NO**: Todos os cinco adaptadores são irmãos sob o `CompositeBattleDomAdapter`, orquestrados em paralelo sem acoplamento direto;
+- **NETWORK_REQUESTS_DURING_RESOLVE_TURN = 0**: Todas as requisições de hidratação e golpes à PokéAPI ocorrem exclusivamente durante o estado `PREPARING`. O combate ativo roda 100% offline.
+
+### 15.2 Estados Oficiais da UI (BATTLE_UI_STATES)
+1. `NO_TEAM`: Equipe incompleta (< 3 Pokémon). Exibe cartão informativo e botão de redirecionamento para o Team Builder ("Ir para Meu Time");
+2. `READY`: Equipe completa (3/3). Exibe painel pré-batalha com escalação da equipe e botão "INICIAR BATALHA";
+3. `PREPARING`: Carregamento assíncrono e hidratação da equipe do jogador e do oponente da SMART AI;
+4. `BATTLE`: Arena ativa com HUDs de HP, sprites dos combatentes, palco com background original em CSS e barra de utilitários;
+5. `AWAITING_PLAYER_ACTION`: Controles de golpes (até 4) e botão "TROCAR POKÉMON" habilitados para entrada do usuário;
+6. `RESOLVING`: Bloqueio estrito de interação (`DOUBLE_SUBMIT = NO`) enquanto a timeline de apresentação é executada;
+7. `AWAITING_PLAYER_REPLACEMENT`: Modal forçado de substituição após nocaute do Pokémon ativo do jogador;
+8. `VICTORY`: Banner de celebração de vitória com opções de Revanche ("Jogar Novamente") e retorno;
+9. `DEFEAT`: Banner de derrota com opções de Revanche e retorno ao Team Builder;
+10. `ERROR`: Tela de erro com recuperação ("Tentar Novamente").
+
+### 15.3 Hidratação e Política de Loadout Determinístico de Golpes
+- **Shortlist com Teto**: Avalia até `MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON = 8` golpes da PokéAPI para evitar saturação de rede (`MOVE_HYDRATION_REQUEST_EXPLOSION = NO`);
+- **Filtro Estrito**: Descarta golpes de status (`damageClass === 'status'`) e golpes com poder nulo ou $\le 0$;
+- **Loadout Determinístico**: Ordena candidatos priorizando STAB (+50 pts), sinergia com o melhor atributo ofensivo (+20 pts) e maior poder base, selecionando de 1 a 4 golpes sem duplicatas;
+- **Fallback Seguro**: Em caso de falha de rede ou golpes insuficientes, utiliza tabela determinística por tipo primário (ex: Tackle + Golpe do Tipo) sem recorrer a fixtures de teste em produção (`PRODUCTION_FIXTURE_DEPENDENCY = 0`).
+
+### 15.4 Fábrica de Oponentes e Aleatoriedade Externa (BattleRandomSource)
+- **Pool Controlada**: Seleciona 3 espécies distintas da pool balanceada de Kanto #1–151 (`ENEMY_DUPLICATE_SPECIES = NO`);
+- **Injeção de RNG**: A aleatoriedade para rolagens de acurácia ($1..100$) e sorteio de oponentes reside exclusivamente em `BattleRandomSource` (`crypto.getRandomValues` no browser; `DeterministicRandomSource` em testes unitários). BattleEngine e BattleAI possuem $0\text{ RNG}$ interno.
+
+### 15.5 Responsividade, Acessibilidade e Performance
+- **Responsividade 360px a 1366px**: Layout fluido sem rolagem horizontal (`NO_HORIZONTAL_OVERFLOW = YES`);
+- **Barras de HP com Semáforo**: Transições suaves com cores baseadas na porcentagem restante ($>50\%$ verde, $20..50\%$ amarelo, $\le 20\%$ vermelho) e atributos `role="progressbar"`, `aria-valuenow`, `aria-valuemin="0"`, `aria-valuemax`;
+- **Caixa de Narrativa com Live Region**: Mensagens dinâmicas de combate acompanham `aria-live="polite"`;
+- **Acessibilidade por Teclado**: Todos os elementos interativos são botões com foco visível (`:focus-visible`).
 
 ---
 
-## 16. Riscos Técnicos e Estratégias de Mitigação
+## 16. Decisões Explicitamente Adiadas
+
+- **Trainer Profile**: Estatísticas, histórico persistido e insígnias (Fase PBA-014).
+- **Modo Campanha**: Trilha de desafios e líderes de ginásio (Fase PBA-015).
+- **Itens, Habilidades e Condições de Status**: Reservados para expansões posteriores da engine.
+
+---
+
+## 17. Riscos Técnicos e Estratégias de Mitigação
 
 1. **Rate Limiting da PokéAPI**:
    - *Risco*: Múltiplas requisições simultâneas para carregar dados de golpes de vários Pokémon durante a batalha podem saturar a API ou atrasar o início do combate.
@@ -826,7 +906,7 @@ O subsistema centraliza os seguintes efeitos:
 
 ---
 
-## 17. Roadmap Técnico Oficial
+## 18. Roadmap Técnico Oficial
 
 ```text
 [x] PBA-001 Foundation (Preparação e Arquitetura) ──────────── [CONCLUÍDA]
@@ -841,11 +921,12 @@ O subsistema centraliza os seguintes efeitos:
 [x] PBA-010 Move Visual Effects (Partículas de Fogo, Água, Trovão, etc.) ── [CONCLUÍDA]
 [x] PBA-011 Audio System (Músicas, Efeitos Procedurais e Cries) ─ [CONCLUÍDA]
 [x] PBA-012 Battle Camera & Impact (Screen Shake, Zooms e Críticos) ─ [CONCLUÍDA]
-[ ] PBA-013 Final Battle UI (Interface Polida e Responsiva de Combate)
+[x] PBA-013 Final Battle UI (Interface Polida e Responsiva de Combate) ─ [CONCLUÍDA]
 [ ] PBA-014 Trainer Profile (Estatísticas, Histórico e Insígnias)
 [ ] PBA-015 Campaign Mode (Trilha de Desafios e Líderes de Ginásio)
 [ ] PBA-016 Performance & Accessibility (Otimizações Finais)
 [ ] PBA-017 Automated Tests (Testes de Regras, Cálculos e Efetividade)
 [ ] PBA-018 Portfolio Release (Deploy Final e Documentação de Caso de Estudo)
 ```
+
 

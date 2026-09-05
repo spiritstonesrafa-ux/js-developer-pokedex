@@ -55,6 +55,7 @@
   class CompositeBattleDomAdapter extends BattlePresentationAdapter {
     /**
      * @param {Object} [options]
+     * @param {Object} [options.uiAdapter] - Instância de BattleUiDomAdapter.
      * @param {Object} [options.pokemonController] - Instância de PokemonAnimationController.
      * @param {Object} [options.vfxController] - Instância de MoveVfxController.
      * @param {Object} [options.audioController] - Instância de BattleAudioController.
@@ -62,6 +63,7 @@
      */
     constructor(options = {}) {
       super();
+      this.uiAdapter = options.uiAdapter !== undefined ? options.uiAdapter : null;
       this.pokemonController = options.pokemonController !== undefined ? options.pokemonController : (
         pokemonControllerModule.createAnimationController ? pokemonControllerModule.createAnimationController(options) : null
       );
@@ -93,6 +95,8 @@
         command: JSON.parse(JSON.stringify(command)),
         timestamp: Date.now()
       });
+
+      const uiTask = this.uiAdapter ? this.uiAdapter.execute(command, context) : Promise.resolve();
 
       switch (command.type) {
         case PRESENTATION_COMMANDS.BATTLE_INTRO: {
@@ -298,8 +302,10 @@
         }
 
         default:
-          return Promise.resolve();
+          break;
       }
+
+      await uiTask;
     }
 
     /**
@@ -313,6 +319,9 @@
      * Cancela animações do Pokémon, efeitos visuais, áudios e câmera em voo.
      */
     cancel() {
+      if (this.uiAdapter && typeof this.uiAdapter.cancel === 'function') {
+        this.uiAdapter.cancel();
+      }
       if (this.pokemonController) {
         this.pokemonController.cancel();
       }
@@ -332,6 +341,9 @@
      */
     reset() {
       this.executedCommands = [];
+      if (this.uiAdapter && typeof this.uiAdapter.reset === 'function') {
+        this.uiAdapter.reset();
+      }
       if (this.pokemonController) {
         this.pokemonController.reset();
       }

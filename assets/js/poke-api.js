@@ -43,6 +43,14 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
   // Extrai apenas os nomes das habilidades
   pokemon.abilities = pokeDetail.abilities.map((abilitySlot) => abilitySlot.ability.name);
 
+  // Mapeia lista de golpes candidatos disponíveis
+  pokemon.moves = Array.isArray(pokeDetail.moves)
+    ? pokeDetail.moves.map((slot) => ({
+        name: slot.move ? slot.move.name : '',
+        url: slot.move ? slot.move.url : ''
+      }))
+    : [];
+
   // Mapeia os atributos de status (HP, Ataque, etc.) e calcula o somatório total
   const statsMap = {};
   let totalStats = 0;

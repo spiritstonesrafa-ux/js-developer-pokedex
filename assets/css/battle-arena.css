@@ -1,0 +1,828 @@
+/**
+ * ====================================================================
+ * ESTILOS DA BATTLE ARENA POKÉMON: (battle-arena.css)
+ * ====================================================================
+ * Layout, componentes e identidade visual da arena de batalha (PBA-013).
+ *
+ * Características:
+ * - Identidade compatível com Pokédex Pro (Glassmorphism, gradientes, Outfit);
+ * - Responsivo e fluido (360px, 390px, 768px, 1366px) sem scroll horizontal;
+ * - Barras de HP dinâmicas com transições suaves e semáforo de status (verde/amarelo/vermelho);
+ * - Palco isolado para a câmera com background original em CSS;
+ * - Controles acessíveis com foco visível e touch-targets ergonômicos.
+ */
+
+/* Container Geral da Aba Batalhar */
+.battle-view-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 180px);
+}
+
+/* ====================================================================
+   1. ESTADOS PRÉ-BATALHA (NO_TEAM, READY, PREPARING, ERROR)
+   ==================================================================== */
+.battle-card-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.battle-panel-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+.battle-panel-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.battle-panel-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  max-width: 500px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Rosters de Pré-Batalha */
+.prebattle-matchup-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.prebattle-side-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  flex: 1;
+  min-width: 260px;
+  max-width: 380px;
+}
+
+.prebattle-side-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+
+.prebattle-team-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.prebattle-mini-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.prebattle-mini-card img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.prebattle-mini-card span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.prebattle-vs-badge {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #f59e0b;
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+  padding: 8px;
+}
+
+/* Botões Principais de Ação */
+.btn-battle-action-primary {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-battle-action-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+}
+
+.btn-battle-action-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-battle-action-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.btn-battle-action-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Spinner de Carregamento */
+.battle-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: battle-spin 0.8s linear infinite;
+}
+
+@keyframes battle-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ====================================================================
+   2. ARENA DE BATALHA ATIVA (BATTLE VIEW)
+   ==================================================================== */
+.battle-arena-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Barra Superior de Utilitários e Status */
+.battle-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.battle-turn-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f59e0b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.battle-audio-toggle-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.battle-audio-toggle-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Indicadores de Equipe (Bolas/Dots de 3 membros) */
+.team-status-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.team-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #334155;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.team-dot.active {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  transform: scale(1.15);
+}
+
+.team-dot.bench {
+  background: #38bdf8;
+}
+
+.team-dot.fainted {
+  background: #ef4444;
+  opacity: 0.5;
+}
+
+/* HUDs dos Combatentes (Player e Inimigo) */
+.combatant-hud {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.combatant-hud.enemy-hud {
+  align-self: flex-end;
+  width: 260px;
+  max-width: 90%;
+}
+
+.combatant-hud.player-hud {
+  align-self: flex-start;
+  width: 280px;
+  max-width: 90%;
+}
+
+.hud-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hud-pokemon-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-pokemon-types {
+  display: flex;
+  gap: 4px;
+}
+
+.hud-type-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #ffffff;
+}
+
+/* Barra de Vida (HP Bar) */
+.hp-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hp-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s ease;
+}
+
+.hp-fill.status-healthy {
+  background: linear-gradient(90deg, #10b981, #22c55e);
+}
+
+.hp-fill.status-warning {
+  background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+
+.hp-fill.status-danger {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.hp-values-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* ====================================================================
+   3. PALCO DA BATALHA (BATTLE STAGE & CAMERA WRAPPER)
+   ==================================================================== */
+.battle-camera-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 420px;
+  min-height: 240px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.battle-stage {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 70%, #020617 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  overflow: hidden;
+}
+
+/* Plataforma de Chão Original em CSS */
+.stage-ground-platform {
+  position: absolute;
+  bottom: 12px;
+  left: 5%;
+  right: 5%;
+  height: 40px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Slots dos Combatentes */
+.combatant-slot {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.combatant-slot.player-slot {
+  margin-top: 50px;
+}
+
+.combatant-slot.enemy-slot {
+  margin-bottom: 50px;
+}
+
+.combatant-sprite-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.combatant-sprite-img.fainted {
+  opacity: 0.25;
+  filter: grayscale(100%);
+  transform: translateY(20px);
+}
+
+/* Container de VFX sobreposto */
+.battle-vfx-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Overlay de Hit Flash da Câmera */
+.hit-flash-overlay {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+  transition: opacity 0.08s ease-out;
+}
+
+/* ====================================================================
+   4. CAIXA DE NARRATIVA / LOG
+   ==================================================================== */
+.battle-narrative-box {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  letter-spacing: 0.02em;
+}
+
+/* ====================================================================
+   5. PAINEL DE AÇÃO (GOLPES E TROCA)
+   ==================================================================== */
+.battle-action-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-controls-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-switch-action {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.btn-switch-action:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-switch-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Grid de Golpes (Moves) */
+.moves-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.move-action-btn {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 5px solid var(--move-accent-color, #38bdf8);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  min-height: 60px;
+}
+
+.move-action-btn:hover:not(:disabled) {
+  background: rgba(30, 41, 59, 0.9);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.move-action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.move-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+.move-btn-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.move-btn-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: capitalize;
+}
+
+.move-btn-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #ffffff;
+}
+
+.move-btn-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.move-btn-category {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: capitalize;
+}
+
+/* ====================================================================
+   6. MODAIS DE TROCA E SUBSTITUIÇÃO (SWITCH & REPLACEMENT)
+   ==================================================================== */
+.battle-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.battle-modal-card {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.battle-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.battle-modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.battle-modal-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.battle-modal-close-btn:hover {
+  color: #f8fafc;
+}
+
+.switch-pokemon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.switch-pokemon-item {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.switch-pokemon-item:hover:not(:disabled) {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: #38bdf8;
+}
+
+.switch-pokemon-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(70%);
+}
+
+.switch-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.switch-item-sprite {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.switch-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switch-item-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: capitalize;
+}
+
+.switch-item-hp-bar {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.switch-item-status-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.switch-item-status-tag.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.switch-item-status-tag.fainted {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* ====================================================================
+   7. TELA DE RESULTADO (VICTORY / DEFEAT)
+   ==================================================================== */
+.battle-result-card {
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.battle-result-badge {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.battle-result-badge.victory {
+  color: #10b981;
+  text-shadow: 0 0 24px rgba(16, 185, 129, 0.6);
+}
+
+.battle-result-badge.defeat {
+  color: #ef4444;
+  text-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+}
+
+.battle-result-buttons-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ====================================================================
+   8. RESPONSIVIDADE E ACESSIBILIDADE
+   ==================================================================== */
+@media (max-width: 640px) {
+  .battle-view-container {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .moves-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-stage {
+    padding: 10px 20px;
+  }
+
+  .combatant-slot {
+    width: 100px;
+    height: 100px;
+  }
+
+  .combatant-hud.enemy-hud,
+  .combatant-hud.player-hud {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .battle-panel-title {
+    font-size: 1.3rem;
+  }
+}
+
+/* Foco visível por teclado */
+button:focus-visible,
+.switch-pokemon-item:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+/* Preferência por movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .hp-fill,
+  .battle-spinner,
+  .btn-battle-action-primary,
+  .move-action-btn {
+    transition: none !important;
+    animation: none !important;
+  }
+}

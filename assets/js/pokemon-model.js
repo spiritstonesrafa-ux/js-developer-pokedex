@@ -18,6 +18,7 @@ class Pokemon {
     this.height = 0;          // Altura em metros
     this.weight = 0;          // Peso em quilogramas
     this.abilities = [];       // Lista de habilidades
+    this.moves = [];           // Lista de golpes disponíveis ({ name, url })
     this.stats = {            // Atributos de batalha (Base Stats)
       hp: 0,
       attack: 0,

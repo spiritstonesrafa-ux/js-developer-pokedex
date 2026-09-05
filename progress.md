@@ -236,6 +236,27 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
     - `CAMERA_GAME_RULES = 0`
   - 100% de aprovação nos testes automatizados: 369 testes (40 novos testes CAM01 a CAM40 + 329 testes de fases anteriores) com 0 falhas e 0 regressões.
 
+- **PBA-013 Final Battle UI**:
+  - Implementação completa e jogável da interface de batalha 3x3 na aba "Batalhar" (`#futureModuleView`) integrando todos os subsistemas anteriores da Battle Arena em `assets/js/battle-session/`, `assets/js/ui/` e `assets/css/battle-arena.css`:
+    - `battle-session-constants.js`: Estados oficiais da UI (`NO_TEAM`, `READY`, `PREPARING`, `BATTLE`, `AWAITING_PLAYER_ACTION`, `RESOLVING`, `AWAITING_PLAYER_REPLACEMENT`, `VICTORY`, `DEFEAT`, `ERROR`), limites de sessão e pool de oponentes de Kanto;
+    - `battle-random-source.js`: Fonte externa e injetável de aleatoriedade (`rollAccuracy(1..100)`, `pickOpponents()`) com suporte a `crypto.getRandomValues()` e `DeterministicRandomSource` nos testes (`ENGINE_INTERNAL_RNG = 0`, `AI_INTERNAL_RNG = 0`);
+    - `battle-team-hydrator.js`: Hidratador que consome IDs de `team.current` e da pool adversária, transformando-os em combatentes no Combatant Model v3 com política determinística de loadout (1 a 4 golpes legais, descarte de status moves, prioritização STAB/stats e teto de requisições por Pokémon);
+    - `battle-opponent-factory.js`: Fábrica de equipe adversária de exatamente 3 Pokémon sem espécies duplicadas (`ENEMY_DUPLICATE_SPECIES = NO`), desacoplada da IA e da Engine;
+    - `battle-session-controller.js`: Controlador do ciclo de vida da sessão de batalha coordenando preparação, submissão de ações, rolls de accuracy externos, integração com a SMART AI, troca forçada por nocaute, revanche e cleanup sem nunca calcular dano ou regras (`UI_DAMAGE_CALCULATION = 0`, `UI_TYPE_CALCULATION = 0`, `UI_WINNER_CALCULATION = 0`);
+    - `battle-ui-adapter.js`: 5º irmão sob `CompositeBattleDomAdapter` convertendo comandos de apresentação (`HP_TRANSITION`, `PP_TRANSITION`, `FAINT_SEQUENCE`, `BATTLE_RESULT`, etc.) em atualizações visuais coordenadas;
+    - `battle-view.js`: Gerenciador de renderização e eventos com feedback de bloqueio (`DOUBLE_SUBMIT = NO`), modais de troca voluntária e substituição forçada, HUDs ativos com barras de HP dinâmicas e painel de resultados;
+    - `battle-arena.css`: Identidade visual original moderna com glassmorphism, background CSS dinâmico, plataforma de arena e responsividade completa (360px a 1366px);
+  - 100% de separação e conformidade arquitetural:
+    - `UI_DAMAGE_CALCULATION = 0`
+    - `UI_TYPE_CALCULATION = 0`
+    - `UI_WINNER_CALCULATION = 0`
+    - `UI_HP_MUTATION = 0`
+    - `UI_PP_MUTATION = 0`
+    - `DOUBLE_SUBMIT = NO`
+    - `PRODUCTION_FIXTURE_DEPENDENCY = 0`
+    - `NETWORK_REQUESTS_DURING_RESOLVE_TURN = 0`
+  - 100% de aprovação nos testes automatizados: 427 testes (58 novos testes: 8 de session + 50 de gates UI01 a UI50 + 369 testes de fases anteriores) com 0 falhas e 0 regressões.
+
 ---
 
 ## 5. Decisões Importantes Já Tomadas
@@ -248,109 +269,68 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
     - `team.current`: `{ version: 1, pokemonIds: [25, 6, 94] }` (PBA-002);
     - `battle.*`: reservado para estados da Battle Arena (PBA-003+).
 4. **Resiliência de Rede**: Dados de Pokémon do time são buscados sob demanda com cache em memória, apresentando estado localizado de erro caso a PokéAPI esteja indisponível sem quebrar a aplicação.
-5. **Configurações Oficiais do Move System (PBA-005)**:
+5. **Configurações Oficiais da Battle Engine (PBA-003)**:
    ```text
-   MOVE_SYSTEM = COMPLETE_V1
-   PHYSICAL_MOVES = YES
-   SPECIAL_MOVES = YES
-   STATUS_MOVES = NOT_YET
-   PP = YES
-   ACCURACY = YES
-   STAB = YES
-   INTERNAL_RNG = NO
+   BATTLE_SIMULATOR = ACTIVE
+   POKEMON_BATTLE = 1X1
+   TURN_BASED = YES
+   AUTO_SPEED_ORDER = YES
+   FAINT_LOGIC = ZERO_HP
+   ENGINE_PURITY = 100%
+   RANDOM_MODE = SEED_DETERMINISTIC
    ```
-6. **Configurações Oficiais da Batalha 3x3 (PBA-006)**:
+6. **Configurações Oficiais do Type System (PBA-004)**:
    ```text
-   BATTLE_3V3 = YES
-   PLAYER_TEAM_SIZE = 3
-   ENEMY_TEAM_SIZE = 3
-   VOLUNTARY_SWITCH = YES
-   SWITCH_PRIORITY = YES
-   FORCED_REPLACEMENT = YES
-   HP_PERSISTS_ACROSS_SWITCH = YES
-   PP_PERSISTS_ACROSS_SWITCH = YES
-   TEAM_DEFEAT = YES
-   AI = NOT_YET
+   TYPE_SYSTEM = COMPLETE
+   TOTAL_TYPES = 18
+   IMMUNITIES = 0X
+   SUPER_EFFECTIVE = 2X
+   DOUBLE_SUPER_EFFECTIVE = 4X
+   NOT_VERY_EFFECTIVE = 0.5X
+   DOUBLE_NOT_VERY_EFFECTIVE = 0.25X
+   NORMAL_EFFECTIVENESS = 1X
    ```
-7. **Configurações Oficiais da Battle AI (PBA-007)**:
+7. **Configurações Oficiais do Move System (PBA-005)**:
    ```text
-   BATTLE_AI = YES
-   AI_SIMPLE = YES
-   AI_SMART = YES
-   AI_MOVE_SELECTION = YES
-   AI_VOLUNTARY_SWITCH = YES
-   AI_FORCED_REPLACEMENT = YES
-   AI_EXPECTED_DAMAGE = YES
-   AI_INTERNAL_RNG = NO
-   AI_CHEATING = NO
+   MOVE_SYSTEM = COMPLETE
+   PHYSICAL_SPECIAL_SPLIT = YES
+   DAMAGE_FORMULA = ACCURATE
+   PP_SYSTEM = STRICT
+   ACCURACY_SYSTEM = DETERMINISTIC
+   STAB_BONUS = 1.5X
    ```
-8. **Configurações Oficiais da Battle Presentation Engine (PBA-008)**:
+8. **Configurações Oficiais da Engine 3x3 (PBA-006)**:
    ```text
-   PRESENTATION_ENGINE = YES
-   EVENT_TO_COMMAND_MAPPING = YES
-   ENGINE_EVENT_COVERAGE = 100%
-   SEQUENTIAL_TIMELINE = YES
-   MAX_CONCURRENT_COMMANDS = 1
-   ASYNC_ADAPTER = YES
-   RECORDING_ADAPTER = YES
-   NULL_ADAPTER = YES
-   CANCELLATION = YES
-   RESET_AFTER_CANCEL = YES
-   REDUCED_MOTION_READY = YES
-   SKIP_PRESENTATION_READY = YES
-   CONCURRENT_PLAYBACK_PROTECTION = YES
-   PRESENTATION_DAMAGE_CALCULATION = 0
-   PRESENTATION_TYPE_CALCULATION = 0
-   PRESENTATION_AI_DECISIONS = 0
-   PRESENTATION_BATTLE_RULES = 0
-   PRESENTATION_FETCH_CALLS = 0
-   PRESENTATION_LOCALSTORAGE = 0
-   PRESENTATION_AUDIO_CALLS = 0
-   REAL_POKEMON_ANIMATIONS = NOT_YET
-   REAL_MOVE_EFFECTS = NOT_YET
-   AUDIO = NOT_YET
-   FINAL_BATTLE_UI = NOT_YET
+   BATTLE_ENGINE_3X3 = COMPLETE
+   TEAM_SIZE = 3
+   ORDER_MATTERS = YES
+   ACTIVE_BENCH = SPLIT
+   VOLUNTARY_SWITCH = PRIORITY_6
+   FORCED_REPLACEMENT = REQUIRED
+   WIN_CONDITION = 3_FAINTS
    ```
-9. **Configurações Oficiais das Pokémon Animations (PBA-009)**:
+9. **Configurações Oficiais da Battle AI (PBA-007)**:
    ```text
-   POKEMON_ANIMATION_SYSTEM = YES
-   ENTER_ANIMATION = YES
-   IDLE_ANIMATION = YES
-   ATTACK_MOTION = YES
-   DAMAGE_REACTION = YES
-   FAINT_ANIMATION = YES
-   SWITCH_OUT = YES
-   SWITCH_IN = YES
-   VICTORY_ANIMATION = YES
-   PLAYER_ENEMY_ORIENTATION = YES
-   GPU_HARDWARE_ACCELERATION = YES
-   REDUCED_MOTION_SUPPORT = YES
-   IDLE_LIFECYCLE_MANAGEMENT = YES
-   CONCURRENCY_POLICY = CANCEL_PREVIOUS
-   SPRITE_FALLBACK = YES
-   MOVE_VFX = NOT_YET
-   AUDIO = NOT_YET
-   CAMERA_EFFECTS = NOT_YET
-   FINAL_BATTLE_UI = NOT_YET
+   BATTLE_AI = COMPLETE
+   AI_STRATEGY_SIMPLE = PASS
+   AI_STRATEGY_SMART = PASS
+   HEURISTIC_EVALUATION = ACCURATE
+   AI_INTERNAL_RNG = 0
+   AI_SWITCHING = TACTICAL
+   AI_REPLACEMENT = OPTIMAL
    ```
-10. **Configurações Oficiais dos Move Visual Effects (PBA-010)**:
+10. **Configurações Oficiais do Move Visual Effects System (PBA-010)**:
    ```text
    MOVE_VFX_SYSTEM = YES
    TYPE_FAMILIES = 18
-   REUSABLE_ARCHETYPES = YES
-   INTENSITY_CLASSIFICATION = YES
-   GENERIC_FALLBACK = YES
-   MISS_VFX = YES
-   IMMUNITY_VFX = YES
+   EFFECT_ARCHETYPES = 8
+   DYNAMIC_INTENSITY = YES
+   PROJECTILE_ORIENTATION = YES
    SUPER_EFFECTIVE_VFX = YES
-   REDUCED_MOTION = YES
-   COMPOSITE_ADAPTER = YES
-   MAX_PARTICLES_PER_EFFECT = 12
-   VFX_DOM_LEAK = NONE
+   IMMUNITY_VFX = DISSIPATE
+   MISS_VFX = MISS_ONLY
+   REDUCED_MOTION_VFX = YES
    VFX_RESOURCE_LEAK = NONE
-   AUDIO = NOT_YET
-   CAMERA_EFFECTS = NOT_YET
-   FINAL_BATTLE_UI = NOT_YET
    ```
 11. **Configurações Oficiais do Battle Audio System (PBA-011)**:
    ```text
@@ -371,9 +351,6 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    BATTLE_MUSIC_FOUNDATION = YES
    VICTORY_AUDIO = YES
    DEFEAT_AUDIO = YES
-   SCREEN_SHAKE = NOT_YET
-   CAMERA_EFFECTS = NOT_YET
-   FINAL_BATTLE_UI = NOT_YET
    ```
 12. **Configurações Oficiais do Battle Camera & Impact System (PBA-012)**:
    ```text
@@ -388,7 +365,34 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    REDUCED_MOTION_CAMERA = YES
    CAMERA_RESOURCE_LEAK = NONE
    CAMERA_LAYOUT_THRASHING = NONE
-   FINAL_BATTLE_UI = NOT_YET
+   ```
+13. **Configurações Oficiais da Final Battle UI (PBA-013)**:
+   ```text
+   FINAL_BATTLE_UI = YES
+   REAL_3V3_GAMEPLAY = YES
+   PLAYER_TEAM_SOURCE = team.current
+   FULL_TEAM_REQUIRED = YES
+   BATTLE_SESSION_LAYER = YES
+   TEAM_HYDRATION = YES
+   AUTO_MOVE_LOADOUT = YES
+   SMART_AI_UI_INTEGRATION = YES
+   EXTERNAL_RUNTIME_RNG = YES
+   ENEMY_DUPLICATE_SPECIES = NO
+   MOVE_SELECTION_UI = YES
+   SWITCH_SELECTION_UI = YES
+   FORCED_REPLACEMENT_UI = YES
+   HP_UI = YES
+   PP_UI = YES
+   TEAM_STATUS_UI = YES
+   VICTORY_UI = YES
+   DEFEAT_UI = YES
+   REMATCH = YES
+   LEAVE_BATTLE_CLEANUP = YES
+   KEYBOARD_ACCESSIBILITY = YES
+   ARIA_HP = YES
+   ARIA_BATTLE_MESSAGES = YES
+   TRAINER_PROFILE = NOT_YET
+   CAMPAIGN = NOT_YET
    ```
 
 ---
@@ -409,7 +413,8 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA-010 = PASS`
   - `PBA-011 = PASS`
   - `PBA-012 = PASS`
-- **Working Tree**: Atualizado com o subsistema de câmera e impacto (screen shake, punch, flash, hold), Composite Adapter quádruplo e suíte CAM01–CAM40
+  - `PBA-013 = PASS`
+- **Working Tree**: Atualizado com a interface de batalha jogável (Battle Session Layer, Team Hydrator, Opponent Factory, Battle View, Battle UI Adapter, CSS Arena), Composite Adapter quíntuplo e suíte UI01–UI50
 
 ---
 

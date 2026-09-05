@@ -802,10 +802,16 @@ window.switchAppTab = function(tabName) {
   const teamView = document.getElementById('teamView');
 
   if (tabName === 'pokedex') {
+    if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
+      window.battleSessionController.leaveBattle();
+    }
     if (pokedexView) pokedexView.style.display = 'block';
     if (teamView) teamView.style.display = 'none';
     if (futureModuleView) futureModuleView.style.display = 'none';
   } else if (tabName === 'team') {
+    if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
+      window.battleSessionController.leaveBattle();
+    }
     if (pokedexView) pokedexView.style.display = 'none';
     if (teamView) {
       teamView.style.display = 'block';
@@ -818,7 +824,11 @@ window.switchAppTab = function(tabName) {
     if (teamView) teamView.style.display = 'none';
     if (futureModuleView) {
       futureModuleView.style.display = 'block';
-      renderFutureModule('battle');
+      if (window.battleView) {
+        window.battleView.render();
+      } else {
+        renderFutureModule('battle');
+      }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -843,5 +853,29 @@ if (window.teamManager) {
 // Inicializa o Team UI e badges de navegação
 if (window.teamUI) {
   window.teamUI.init();
+}
+
+// Inicializa o Battle View e Session Controller (PBA-013)
+if (typeof window !== 'undefined') {
+  if (!window.battleSessionController && window.PBABattleSession && window.PBABattleSession.BattleSessionController) {
+    const uiAdapter = window.PBABattleUi && window.PBABattleUi.BattleUiDomAdapter
+      ? new window.PBABattleUi.BattleUiDomAdapter()
+      : null;
+
+    const compositeAdapter = window.PBABattlePresentation && window.PBABattlePresentation.createCompositeBattleDomAdapter
+      ? window.PBABattlePresentation.createCompositeBattleDomAdapter({ uiAdapter })
+      : null;
+
+    window.battleSessionController = new window.PBABattleSession.BattleSessionController({
+      compositeAdapter
+    });
+  }
+
+  if (!window.battleView && window.PBABattleUi && window.PBABattleUi.BattleView) {
+    window.battleView = new window.PBABattleUi.BattleView({
+      sessionController: window.battleSessionController
+    });
+    window.battleView.init();
+  }
 }
 
