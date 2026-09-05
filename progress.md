@@ -395,15 +395,15 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
    CAMPAIGN = NOT_YET
    ```
 
-- **PBA-014 Trainer Profile (Perfil do Treinador)**:
+- **PBA-014 Trainer Profile (Perfil do Treinador) & Hardening**:
   - Implementação modular completa em `assets/js/trainer/`:
-    - `trainer-store.js`: Armazenamento sob o namespace `trainer.profile` com seed determinístico, recuperação contra falhas e sanitização;
-    - `trainer-manager.js`: Regras de negócio determinísticas, cálculo exato de win rate formatado (`66,7%`), gestão de sequência atual (`currentStreak`) e melhor sequência (`bestStreak`), limite de 20 confrontos recentes e gestão do Pokémon Companheiro;
-    - `trainer-ui.js`: Renderização moderna em glassmorphism do passaporte do treinador, vitrine do companheiro animado, grid de 6 estatísticas de combate, visualização do time ativo e histórico das últimas batalhas;
-  - Folha de estilo dedicada `assets/css/trainer-profile.css` com suporte responsivo a mobile (390x844) e desktop (1366x768), compatível com tema Dark/Light;
-  - Integração em tempo real com a Battle Arena: ao concluir combate (`VICTORY` ou `DEFEAT`), `BattleSessionController` registra o resultado, turnos e oponente automaticamente no histórico e estatísticas;
+    - `trainer-store.js`: Armazenamento sob o namespace `trainer.profile` com schema versionado, ID estável gerado (`crypto.randomUUID()`), zero-state no primeiro acesso (0 batalhas, 0 vitórias/derrotas, histórico vazio), migração transparente de seeds demonstrativos antigos e proteção contra corrupção;
+    - `trainer-manager.js`: Regras de negócio estritas com idempotência total por `battleId` (duplicações bloqueadas), cálculo determinístico de `winRate` (`wins / battlesPlayed`), gestão de `currentWinStreak` e `bestWinStreak`, limite rigoroso de 10 batalhas no histórico (`MAX_RECENT_BATTLES = 10`, mais recente primeiro), validação e invalidação segura de Pokémon Companheiro fora do time (`COMPANION_INVALIDATION_SAFE`), e reset isolado de estatísticas preservando identidade, time e favoritos;
+    - `trainer-ui.js`: Renderização moderna em glassmorphism do passaporte do treinador (`displayName: "Treinador"`), vitrine animada do companheiro com tipos, grid de 6 estatísticas de combate (zero-state limpo), visualização do time ativo e histórico das últimas batalhas;
+  - Folha de estilo dedicada `assets/css/trainer-profile.css` com suporte responsivo a mobile (360x700, 390x844) e desktop (768x1024, 1366x768), compatível com tema Dark/Light;
+  - Integração em tempo real com a Battle Arena: ao concluir combate (`VICTORY` ou `DEFEAT`), `BattleSessionController` gera `battleId` exclusivo e registra o desfecho, turnos, líder e oponente automaticamente no histórico e estatísticas; batalhas abandonadas/canceladas NÃO contam;
   - Navegação fluida de 4 abas no cabeçalho: `Pokédex` | `Meu Time` | `Batalhar` | `Perfil`;
-  - 100% de testes automatizados TR01–TR15 aprovados (451 testes totais passando, zero falhas).
+  - 100% de testes automatizados TP01–TP40 aprovados (455 testes totais passando, zero falhas).
 
 ---
 
@@ -427,9 +427,15 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA_013_FINAL_ACCEPTANCE = PASS`
   - `PBA_013_SPRITE_FIX = PASS`
   - `PBA-014 = PASS`
+  - `DEFAULT_PROFILE_ZERO_STATS = PASS`
+  - `TRAINER_ID_GENERATED = YES`
+  - `BATTLE_STATS_REAL_ONLY = YES`
+  - `BATTLE_RESULT_IDEMPOTENCY = PASS`
+  - `RECENT_BATTLES_MAX = 10`
+  - `ABANDONED_BATTLE_COUNTED = NO`
   - `TRAINER_PROFILE = PASS`
 
-- **Working Tree**: Homologado com Perfil do Treinador completo, sincronizado com LocalStorage, Battle Arena e Team Manager, com 451 testes automatizados 100% passando.
+- **Working Tree**: Homologado com Perfil do Treinador endurecido, zero-state garantido, idempotência por battleId, limite estrito de 10 batalhas e 455 testes automatizados 100% passando.
 
 ---
 

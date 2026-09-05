@@ -3,14 +3,17 @@
  * GERENCIADOR DE REGRAS DE NEGÓCIO: TRAINER MANAGER (trainer-manager.js)
  * ====================================================================
  * Gerencia as regras de negócio e cálculo determinístico do Perfil do Treinador:
- * - Estatísticas de carreira (batalhas, vitórias, derrotas, win rate, sequências);
- * - Gestão do Pokémon Companheiro;
- * - Registro dinâmico de novas batalhas vindas da Battle Arena;
- * - Notificação de ouvintes (Observer Pattern).
+ * - Estatísticas reais de carreira (batalhas, vitórias, derrotas, win rate, sequências);
+ * - Idempotência estrita por battleId (evita duplicação de estatísticas);
+ * - Histórico limitado estritamente às últimas 10 batalhas (ordem decrescente);
+ * - Validação e invalidação de Pokémon Companheiro baseada no time ativo;
+ * - Reset isolado de estatísticas preservando identidade e preferências do usuário.
  */
 
 (function(root) {
   'use strict';
+
+  const MAX_RECENT_BATTLES = 10;
 
   class TrainerManager {
     /**
@@ -19,13 +22,29 @@
     constructor(store = (typeof root !== 'undefined' ? root.TrainerStore : null)) {
       this.store = store;
       this.data = this.store ? this.store.load() : {
-        name: 'Rafael',
-        tag: '#A7F291',
-        companion: null,
-        stats: { totalBattles: 0, victories: 0, defeats: 0, currentStreak: 0, bestStreak: 0 },
+        version: 1,
+        trainerId: 'local-trainer-id',
+        displayName: 'Treinador',
+        avatarPreset: 'default',
+        companionPokemonId: null,
+        stats: {
+          battlesPlayed: 0,
+          wins: 0,
+          losses: 0,
+          winRate: 0,
+          currentWinStreak: 0,
+          bestWinStreak: 0,
+          lastBattleAt: null,
+          leaderUsage: {}
+        },
         recentBattles: []
       };
       this.listeners = [];
+      this.recordedBattleIds = new Set(
+        Array.isArray(this.data.recentBattles)
+          ? this.data.recentBattles.map(b => b.battleId).filter(Boolean)
+          : []
+      );
     }
 
     /**
@@ -64,11 +83,19 @@
     }
 
     /**
-     * Retorna o nome do treinador.
+     * Retorna o nome de exibição do treinador.
+     * @returns {string}
+     */
+    getDisplayName() {
+      return this.data.displayName || 'Treinador';
+    }
+
+    /**
+     * Alias de compatibilidade para getDisplayName.
      * @returns {string}
      */
     getName() {
-      return this.data.name || 'Rafael';
+      return this.getDisplayName();
     }
 
     /**
@@ -76,191 +103,295 @@
      * @param {string} newName
      * @returns {boolean}
      */
-    setName(newName) {
+    setDisplayName(newName) {
       if (typeof newName !== 'string') return false;
       const trimmed = newName.trim();
       if (!trimmed || trimmed.length > 30) return false;
 
-      this.data.name = trimmed;
+      this.data.displayName = trimmed;
       this.persist();
-      this.notify('NAME_UPDATED', { name: trimmed });
+      this.notify('NAME_UPDATED', { displayName: trimmed });
       return true;
     }
 
     /**
-     * Retorna a tag/código do treinador.
+     * Alias de compatibilidade para setDisplayName.
+     * @param {string} newName
+     * @returns {boolean}
+     */
+    setName(newName) {
+      return this.setDisplayName(newName);
+    }
+
+    /**
+     * Retorna o ID único e estável do treinador.
+     * @returns {string}
+     */
+    getTrainerId() {
+      return this.data.trainerId || 'local-trainer-id';
+    }
+
+    /**
+     * Retorna a tag formatada para exibição (ex: #A7F291).
      * @returns {string}
      */
     getTag() {
-      return this.data.tag || '#A7F291';
+      const id = this.getTrainerId().replace(/-/g, '').toUpperCase();
+      return `#${id.substring(0, 6)}`;
     }
 
     /**
-     * Atualiza a tag do treinador.
-     * @param {string} newTag
-     * @returns {boolean}
+     * Retorna o ID do Pokémon Companheiro selecionado.
+     * @returns {number|null}
      */
-    setTag(newTag) {
-      if (typeof newTag !== 'string') return false;
-      const trimmed = newTag.trim();
-      if (!trimmed || trimmed.length > 15) return false;
-
-      this.data.tag = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
-      this.persist();
-      this.notify('TAG_UPDATED', { tag: this.data.tag });
-      return true;
+    getCompanionPokemonId() {
+      return this.data.companionPokemonId || null;
     }
 
     /**
-     * Retorna o Pokémon Companheiro atual.
+     * Retorna o Pokémon Companheiro atual formatado.
      * @returns {Object|null}
      */
     getCompanion() {
-      return this.data.companion ? { ...this.data.companion } : null;
+      const id = this.getCompanionPokemonId();
+      if (!id) return null;
+
+      // Tenta recuperar do cache global ou constrói representação padrão
+      const cached = (typeof window !== 'undefined' && window.allLoadedPokemons)
+        ? window.allLoadedPokemons.find(p => p.number === id)
+        : null;
+
+      if (cached) {
+        return {
+          id: cached.number,
+          name: cached.name,
+          type: cached.type,
+          types: cached.types,
+          photo: cached.photo,
+          animatedPhoto: cached.animatedPhoto
+        };
+      }
+
+      return {
+        id,
+        name: `Pokémon #${id}`,
+        type: 'normal',
+        types: ['normal'],
+        photo: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`,
+        animatedPhoto: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`
+      };
     }
 
     /**
-     * Define o Pokémon Companheiro.
-     * @param {Object} pokemon
+     * Define o Pokémon Companheiro através do seu ID ou objeto Pokémon.
+     * @param {number|Object|null} pokemon
      * @returns {boolean}
      */
     setCompanion(pokemon) {
-      if (!pokemon || typeof pokemon !== 'object') return false;
-      const id = Number(pokemon.number || pokemon.id);
+      if (pokemon === null) {
+        this.data.companionPokemonId = null;
+        this.persist();
+        this.notify('COMPANION_UPDATED', { companionPokemonId: null });
+        return true;
+      }
+
+      const id = typeof pokemon === 'number'
+        ? pokemon
+        : Number(pokemon?.number || pokemon?.id);
+
       if (!Number.isInteger(id) || id <= 0) return false;
 
-      const name = String(pokemon.name || '').trim();
-      if (!name) return false;
-
-      const types = Array.isArray(pokemon.types) && pokemon.types.length > 0
-        ? [...pokemon.types]
-        : [pokemon.type || 'normal'];
-
-      const photo = pokemon.photo || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
-      const animatedPhoto = pokemon.animatedPhoto || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`;
-
-      this.data.companion = {
-        id,
-        name: name.toLowerCase(),
-        type: types[0],
-        types,
-        photo,
-        animatedPhoto
-      };
-
+      this.data.companionPokemonId = id;
       this.persist();
-      this.notify('COMPANION_UPDATED', { companion: this.data.companion });
+      this.notify('COMPANION_UPDATED', { companionPokemonId: id });
       return true;
     }
 
     /**
-     * Retorna as estatísticas calculadas de carreira do treinador.
-     * @returns {{
-     *   totalBattles: number,
-     *   victories: number,
-     *   defeats: number,
-     *   winRatePercent: number,
-     *   winRateFormatted: string,
-     *   currentStreak: number,
-     *   bestStreak: number
-     * }}
+     * Valida o companheiro contra os integrantes do time atual.
+     * Se o companheiro não pertencer mais ao time, invalida com segurança (define como null).
+     * @param {Array<number>} teamIds - Lista de IDs do time atual.
+     * @returns {boolean} True se o companheiro permanece válido, false se foi invalidado.
+     */
+    validateCompanionAgainstTeam(teamIds) {
+      const currentCompanionId = this.getCompanionPokemonId();
+      if (!currentCompanionId) return true;
+
+      if (!Array.isArray(teamIds) || !teamIds.includes(currentCompanionId)) {
+        this.data.companionPokemonId = null;
+        this.persist();
+        this.notify('COMPANION_INVALIDATED', { previousCompanionId: currentCompanionId });
+        return false;
+      }
+
+      return true;
+    }
+
+    /**
+     * Retorna as estatísticas consolidadas da carreira do treinador.
+     * Garante as invariantes:
+     * - wins + losses === battlesPlayed
+     * - bestWinStreak >= currentWinStreak
+     * @returns {Object}
      */
     getStats() {
-      const stats = this.data.stats || {
-        totalBattles: 0,
-        victories: 0,
-        defeats: 0,
-        currentStreak: 0,
-        bestStreak: 0
-      };
+      const stats = this.data.stats || {};
+      const battlesPlayed = Math.max(0, Number(stats.battlesPlayed) || 0);
+      const wins = Math.max(0, Number(stats.wins) || 0);
+      const losses = Math.max(0, Number(stats.losses) || 0);
+      const currentWinStreak = Math.max(0, Number(stats.currentWinStreak) || 0);
+      const bestWinStreak = Math.max(currentWinStreak, Number(stats.bestWinStreak) || 0);
 
-      const total = Math.max(0, Number(stats.totalBattles) || 0);
-      const wins = Math.max(0, Number(stats.victories) || 0);
-      const losses = Math.max(0, Number(stats.defeats) || 0);
-      const currentStreak = Math.max(0, Number(stats.currentStreak) || 0);
-      const bestStreak = Math.max(0, Number(stats.bestStreak) || 0);
+      // Invariante matemática
+      const safeBattles = wins + losses === battlesPlayed ? battlesPlayed : (wins + losses);
 
-      const winRatePercent = total > 0 ? (wins / total) * 100 : 0;
-      const winRateFormatted = total > 0
-        ? `${winRatePercent.toFixed(1).replace('.', ',')}%`
-        : '0,0%';
+      const winRate = safeBattles > 0
+        ? Math.round((wins / safeBattles) * 1000) / 10
+        : 0;
+
+      const winRateFormatted = `${winRate.toFixed(1).replace('.', ',')}%`;
 
       return {
-        totalBattles: total,
-        victories: wins,
-        defeats: losses,
-        winRatePercent: Math.round(winRatePercent * 10) / 10,
+        battlesPlayed: safeBattles,
+        wins,
+        losses,
+        winRate,
         winRateFormatted,
-        currentStreak,
-        bestStreak
+        currentWinStreak,
+        bestWinStreak,
+        lastBattleAt: stats.lastBattleAt || null,
+        leaderUsage: { ...(stats.leaderUsage || {}) }
       };
     }
 
     /**
-     * Retorna a lista das batalhas mais recentes (cópia imutável).
+     * Retorna o histórico das batalhas mais recentes (limitado a MAX_RECENT_BATTLES = 10).
      * @param {number} [limit=10]
      * @returns {Array<Object>}
      */
-    getRecentBattles(limit = 10) {
+    getRecentBattles(limit = MAX_RECENT_BATTLES) {
       const battles = Array.isArray(this.data.recentBattles) ? this.data.recentBattles : [];
-      return battles.slice(0, limit).map(b => ({ ...b }));
+      const effectiveLimit = Math.min(Math.max(1, limit), MAX_RECENT_BATTLES);
+      return battles.slice(0, effectiveLimit).map(b => ({ ...b }));
     }
 
     /**
-     * Registra o resultado de uma nova batalha concluída na arena.
-     * @param {Object} battleInfo - Informações do confronto.
-     * @param {'VICTORY'|'DEFEAT'} battleInfo.result - Resultado do jogador.
-     * @param {number} [battleInfo.turns=1] - Quantidade de turnos decorridos.
-     * @param {string} [battleInfo.opponentName] - Nome do adversário enfrentado.
-     * @param {Array<Object>} [battleInfo.playerTeam] - Time utilizado na batalha.
-     * @returns {Object} Novo registro adicionado.
+     * Registra o resultado de uma batalha concluída na arena.
+     * Possui idempotência estrita por battleId: chamadas repetidas são ignoradas.
+     * 
+     * @param {Object} battleSummary - Resumo da batalha.
+     * @param {string} battleSummary.battleId - Identificador único da sessão de combate.
+     * @param {'VICTORY'|'DEFEAT'|'WIN'|'LOSS'|'PLAYER_WIN'|'ENEMY_WIN'} battleSummary.result - Desfecho.
+     * @param {number} [battleSummary.turns=1] - Quantidade de turnos decorridos.
+     * @param {number} [battleSummary.leaderId] - ID do Pokémon Líder (Slot 1).
+     * @param {string} [battleSummary.opponentName] - Nome do adversário.
+     * @returns {{ recorded: boolean, duplicate?: boolean, record?: Object, stats?: Object }}
      */
-    recordBattle(battleInfo = {}) {
-      const result = String(battleInfo.result || '').toUpperCase();
-      if (result !== 'VICTORY' && result !== 'DEFEAT') {
-        throw new Error(`Resultado de batalha inválido: "${battleInfo.result}". Deve ser VICTORY ou DEFEAT.`);
+    recordBattle(battleSummary = {}) {
+      const battleId = typeof battleSummary.battleId === 'string' && battleSummary.battleId.trim()
+        ? battleSummary.battleId.trim()
+        : null;
+
+      if (!battleId) {
+        throw new Error('battleId é obrigatório para registrar uma batalha no Perfil do Treinador.');
       }
 
-      const turns = Math.max(1, Number(battleInfo.turns) || 1);
-      const opponentName = typeof battleInfo.opponentName === 'string' && battleInfo.opponentName.trim()
-        ? battleInfo.opponentName.trim()
-        : 'Treinador Rival';
+      // IDEMPOTÊNCIA: verifica se este battleId já foi registrado
+      if (this.recordedBattleIds.has(battleId)) {
+        return { recorded: false, duplicate: true };
+      }
 
-      // Atualiza contadores
-      this.data.stats.totalBattles += 1;
-      if (result === 'VICTORY') {
-        this.data.stats.victories += 1;
-        this.data.stats.currentStreak += 1;
-        if (this.data.stats.currentStreak > this.data.stats.bestStreak) {
-          this.data.stats.bestStreak = this.data.stats.currentStreak;
+      const rawResult = String(battleSummary.result || '').toUpperCase();
+      const isWin = rawResult === 'VICTORY' || rawResult === 'WIN' || rawResult === 'PLAYER_WIN';
+      const isLoss = rawResult === 'DEFEAT' || rawResult === 'LOSS' || rawResult === 'ENEMY_WIN';
+
+      if (!isWin && !isLoss) {
+        throw new Error(`Resultado de batalha inválido: "${battleSummary.result}". Apenas confrontos concluídos (VICTORY/DEFEAT) são registrados.`);
+      }
+
+      const turns = Math.max(1, Number(battleSummary.turns) || 1);
+      const leaderId = Number.isInteger(Number(battleSummary.leaderId)) ? Number(battleSummary.leaderId) : null;
+      const opponentName = typeof battleSummary.opponentName === 'string' && battleSummary.opponentName.trim()
+        ? battleSummary.opponentName.trim()
+        : 'Desafiante da Arena';
+
+      // Atualiza estatísticas garantindo invariantes
+      const stats = this.data.stats;
+      stats.battlesPlayed += 1;
+
+      if (isWin) {
+        stats.wins += 1;
+        stats.currentWinStreak += 1;
+        if (stats.currentWinStreak > stats.bestWinStreak) {
+          stats.bestWinStreak = stats.currentWinStreak;
         }
       } else {
-        this.data.stats.defeats += 1;
-        this.data.stats.currentStreak = 0;
+        stats.losses += 1;
+        stats.currentWinStreak = 0;
       }
 
-      // Cria registro da batalha recente
+      // Recalcula winRate de forma determinística
+      stats.winRate = Math.round((stats.wins / stats.battlesPlayed) * 1000) / 10;
+      stats.lastBattleAt = new Date().toISOString();
+
+      // Atualiza estatística de uso de líder
+      if (leaderId) {
+        if (!stats.leaderUsage || typeof stats.leaderUsage !== 'object') {
+          stats.leaderUsage = {};
+        }
+        stats.leaderUsage[leaderId] = (stats.leaderUsage[leaderId] || 0) + 1;
+      }
+
+      // Cria registro de histórico
       const newRecord = {
-        id: `battle-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        result,
+        battleId,
+        result: isWin ? 'VICTORY' : 'DEFEAT',
         turns,
+        leaderId,
         opponentName,
-        date: 'Recente'
+        date: 'Hoje',
+        timestamp: Date.now()
       };
 
       if (!Array.isArray(this.data.recentBattles)) {
         this.data.recentBattles = [];
       }
 
-      // Insere no início (mais recente primeiro) e limita a 20 registros
+      // Insere no início (mais recente primeiro) e limita rigorosamente a 10
       this.data.recentBattles.unshift(newRecord);
-      if (this.data.recentBattles.length > 20) {
-        this.data.recentBattles = this.data.recentBattles.slice(0, 20);
+      if (this.data.recentBattles.length > MAX_RECENT_BATTLES) {
+        this.data.recentBattles = this.data.recentBattles.slice(0, MAX_RECENT_BATTLES);
       }
 
+      this.recordedBattleIds.add(battleId);
       this.persist();
       this.notify('BATTLE_RECORDED', { record: newRecord, stats: this.getStats() });
-      return newRecord;
+
+      return { recorded: true, record: newRecord, stats: this.getStats() };
+    }
+
+    /**
+     * Reseta as estatísticas do treinador para zero, preservando a identidade
+     * (nome, trainerId, avatar) e preservando outros módulos da aplicação.
+     * @returns {Object} Estatísticas resetadas.
+     */
+    resetStats() {
+      this.data.stats = {
+        battlesPlayed: 0,
+        wins: 0,
+        losses: 0,
+        winRate: 0,
+        currentWinStreak: 0,
+        bestWinStreak: 0,
+        lastBattleAt: null,
+        leaderUsage: {}
+      };
+      this.data.recentBattles = [];
+      this.recordedBattleIds.clear();
+
+      this.persist();
+      this.notify('STATS_RESET', { stats: this.getStats() });
+      return this.getStats();
     }
 
     /**
@@ -269,9 +400,11 @@
      */
     getProfileSummary() {
       return {
-        name: this.getName(),
+        displayName: this.getDisplayName(),
+        trainerId: this.getTrainerId(),
         tag: this.getTag(),
         companion: this.getCompanion(),
+        companionPokemonId: this.getCompanionPokemonId(),
         stats: this.getStats(),
         recentBattles: this.getRecentBattles()
       };

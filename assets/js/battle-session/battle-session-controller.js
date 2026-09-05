@@ -201,6 +201,7 @@
       }
 
       this.notifyState(BATTLE_UI_STATES.PREPARING);
+      this.currentBattleId = 'btl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 
       try {
         // 1. Hidrata o time do jogador
@@ -432,14 +433,17 @@
         const winner = this.battleState.winner || (status === 'PLAYER_WIN' ? 'player' : 'enemy');
         const isVictory = winner === 'player' || status === 'PLAYER_WIN';
 
-        // Registro de estatística no Perfil do Treinador (PBA-014)
+        // Registro de estatística no Perfil do Treinador (PBA-014) com battleId e leaderId
         try {
           const tm = (typeof window !== 'undefined' && window.trainerManager) ? window.trainerManager : (typeof globalThis !== 'undefined' ? globalThis.trainerManager : null);
           if (tm && typeof tm.recordBattle === 'function') {
             const oppName = this.enemyTeam && this.enemyTeam[0] ? `Treinador Rival (${this.enemyTeam[0].name})` : 'Desafiante da Arena';
+            const leaderId = this.battleState?.player?.team?.[0]?.id || null;
             tm.recordBattle({
+              battleId: this.currentBattleId || ('btl_' + Date.now()),
               result: isVictory ? 'VICTORY' : 'DEFEAT',
               turns: this.battleState && this.battleState.turn ? this.battleState.turn : 1,
+              leaderId,
               opponentName: oppName
             });
           }

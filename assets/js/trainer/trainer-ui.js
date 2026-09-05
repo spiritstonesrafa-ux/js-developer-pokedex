@@ -2,8 +2,8 @@
  * ====================================================================
  * INTERFACE DO PERFIL DO TREINADOR: TRAINER UI (trainer-ui.js)
  * ====================================================================
- * Renderiza o passaporte do treinador, vitrine do companheiro, estatísticas,
- * time ativo e histórico das últimas batalhas.
+ * Renderiza o passaporte do treinador, vitrine do companheiro com validação
+ * de time ativo, grid de estatísticas com zero-state, time ativo e histórico.
  */
 
 (function(root) {
@@ -38,7 +38,10 @@
 
       if (this.teamMgr) {
         this.teamMgr.onChange(() => {
-          // Atualiza o time atual se a aba de perfil estiver visível
+          // Invalida companheiro se tiver saído do time
+          if (this.manager) {
+            this.manager.validateCompanionAgainstTeam(this.teamMgr.getTeamIds());
+          }
           const container = document.getElementById(this.containerId);
           if (container && container.style.display !== 'none') {
             this.render();
@@ -67,7 +70,11 @@
         return;
       }
 
-      const name = this.manager.getName();
+      // Validação prévia de integridade do companheiro com o time ativo
+      const teamIds = this.teamMgr ? this.teamMgr.getTeamIds() : [];
+      this.manager.validateCompanionAgainstTeam(teamIds);
+
+      const displayName = this.manager.getDisplayName();
       const tag = this.manager.getTag();
       const companion = this.manager.getCompanion();
       const stats = this.manager.getStats();
@@ -83,7 +90,7 @@
               </div>
               <div class="trainer-identity">
                 <div class="trainer-name-row">
-                  <h2 class="trainer-name">${this.escapeHtml(name)}</h2>
+                  <h2 class="trainer-name">${this.escapeHtml(displayName)}</h2>
                   <span class="trainer-tag-badge">Trainer ${this.escapeHtml(tag)}</span>
                   <button class="trainer-edit-btn" id="editTrainerNameBtn" title="Editar Nome" aria-label="Editar Nome">
                     <i class="fa-solid fa-pen"></i>
@@ -96,28 +103,33 @@
             </div>
 
             <!-- VITRINE DO POKÉMON COMPANHEIRO -->
-            ${this.renderCompanionSection(companion)}
+            ${this.renderCompanionSection(companion, teamIds)}
           </section>
 
           <!-- 2. GRID DE ESTATÍSTICAS DE CARREIRA -->
           <section class="stats-section" aria-label="Estatísticas de Combate">
-            <h3 class="section-heading">
-              <i class="fa-solid fa-chart-column" style="color: #6390f0;"></i> Estatísticas de Carreira
-            </h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 class="section-heading" style="margin: 0;">
+                <i class="fa-solid fa-chart-column" style="color: #6390f0;"></i> Estatísticas de Carreira
+              </h3>
+              <button class="companion-action-btn" id="resetStatsBtn" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; opacity: 0.8;" title="Zerar Estatísticas de Batalha">
+                <i class="fa-solid fa-rotate-left"></i> Zerar Stats
+              </button>
+            </div>
             <div class="stats-grid">
               <div class="stat-box">
                 <i class="fa-solid fa-khanda stat-icon battles"></i>
-                <div class="stat-value">${stats.totalBattles}</div>
+                <div class="stat-value">${stats.battlesPlayed}</div>
                 <div class="stat-label">Batalhas</div>
               </div>
               <div class="stat-box">
                 <i class="fa-solid fa-trophy stat-icon victories"></i>
-                <div class="stat-value">${stats.victories}</div>
+                <div class="stat-value">${stats.wins}</div>
                 <div class="stat-label">Vitórias</div>
               </div>
               <div class="stat-box">
                 <i class="fa-solid fa-shield-xmark stat-icon defeats"></i>
-                <div class="stat-value">${stats.defeats}</div>
+                <div class="stat-value">${stats.losses}</div>
                 <div class="stat-label">Derrotas</div>
               </div>
               <div class="stat-box">
@@ -127,12 +139,12 @@
               </div>
               <div class="stat-box">
                 <i class="fa-solid fa-fire-flame-curved stat-icon streak"></i>
-                <div class="stat-value">${stats.currentStreak}</div>
+                <div class="stat-value">${stats.currentWinStreak}</div>
                 <div class="stat-label">Vitórias Seguidas</div>
               </div>
               <div class="stat-box">
                 <i class="fa-solid fa-crown stat-icon best-streak"></i>
-                <div class="stat-value">${stats.bestStreak}</div>
+                <div class="stat-value">${stats.bestWinStreak}</div>
                 <div class="stat-label">Melhor Sequência</div>
               </div>
             </div>
@@ -148,7 +160,7 @@
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Gerenciar Time
               </button>
             </div>
-            ${this.renderTeamPreview()}
+            ${this.renderTeamPreview(teamIds)}
           </section>
 
           <!-- 4. ÚLTIMAS BATALHAS -->
@@ -168,7 +180,7 @@
      * Renderiza o box do Pokémon Companheiro.
      * @private
      */
-    renderCompanionSection(companion) {
+    renderCompanionSection(companion, teamIds) {
       if (!companion) {
         return `
           <div class="companion-card">
@@ -176,6 +188,7 @@
               <div class="companion-details">
                 <div class="companion-label"><i class="fa-solid fa-heart"></i> Pokémon Companheiro</div>
                 <h3>Nenhum companheiro selecionado</h3>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0.25rem 0 0;">Escolha um integrante do seu time para acompanhar sua jornada.</p>
               </div>
             </div>
             <button class="companion-action-btn" id="selectCompanionBtn">
@@ -214,9 +227,7 @@
      * Renderiza o grid de membros do time atual.
      * @private
      */
-    renderTeamPreview() {
-      const teamIds = this.teamMgr ? this.teamMgr.getTeamIds() : [];
-
+    renderTeamPreview(teamIds) {
       if (!teamIds || teamIds.length === 0) {
         return `
           <div class="team-empty-state">
@@ -257,7 +268,7 @@
     }
 
     /**
-     * Renderiza a lista de últimas batalhas.
+     * Renderiza a lista de últimas batalhas (máximo 10).
      * @private
      */
     renderRecentBattles(battles) {
@@ -269,13 +280,13 @@
         `;
       }
 
-      const itemsHtml = battles.map(b => {
-        const isWin = b.result === 'VICTORY';
+      const itemsHtml = battles.slice(0, 10).map(b => {
+        const isWin = b.result === 'VICTORY' || b.result === 'WIN';
         const badgeClass = isWin ? 'victory' : 'defeat';
         const icon = isWin ? 'fa-trophy' : 'fa-skull';
         const label = isWin ? 'Vitória' : 'Derrota';
         const turnsText = `· ${b.turns || 1} ${b.turns === 1 ? 'turno' : 'turnos'}`;
-        const dateText = b.date || 'Recente';
+        const dateText = b.date || 'Hoje';
         const opponentText = b.opponentName ? `vs ${this.escapeHtml(b.opponentName)}` : '';
 
         return `
@@ -298,17 +309,17 @@
     }
 
     /**
-     * Vincula listeners interativos (edição de nome e troca de companheiro).
+     * Vincula listeners interativos.
      * @private
      */
     attachEventListeners() {
       const editBtn = document.getElementById('editTrainerNameBtn');
       if (editBtn) {
         editBtn.addEventListener('click', () => {
-          const current = this.manager.getName();
+          const current = this.manager.getDisplayName();
           const newName = window.prompt('Digite seu novo nome de Treinador:', current);
           if (newName && newName.trim()) {
-            this.manager.setName(newName.trim());
+            this.manager.setDisplayName(newName.trim());
           }
         });
       }
@@ -319,56 +330,46 @@
           this.promptCompanionSelection();
         });
       }
+
+      const resetBtn = document.getElementById('resetStatsBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          const confirmed = window.confirm('Deseja zerar suas estatísticas de batalha? Seu nome, ID e time serão preservados.');
+          if (confirmed) {
+            this.manager.resetStats();
+          }
+        });
+      }
     }
 
     /**
-     * Apresenta diálogo/opções para selecionar Pokémon Companheiro.
+     * Apresenta diálogo/opções para selecionar Pokémon Companheiro a partir do time ativo.
      * @private
      */
     promptCompanionSelection() {
-      // Se houver time, lista os Pokémon do time como opções imediatas
       const teamIds = this.teamMgr ? this.teamMgr.getTeamIds() : [];
-      let promptMsg = 'Escolha o ID do seu Pokémon Companheiro:\n';
-      
-      if (teamIds.length > 0) {
-        promptMsg += 'Integrantes do seu time ativo:\n';
-        teamIds.forEach(id => {
-          const mon = window.allLoadedPokemons ? window.allLoadedPokemons.find(p => p.number === id) : null;
-          promptMsg += `- ID ${id}: ${mon ? mon.name : 'Pokémon'}\n`;
-        });
-      }
-      promptMsg += '\nOu digite qualquer número de Pokédex (ex: 6 para Charizard, 25 para Pikachu):';
 
-      const input = window.prompt(promptMsg, '6');
-      if (!input) return;
-
-      const monId = parseInt(input, 10);
-      if (isNaN(monId) || monId <= 0 || monId > 1025) {
-        alert('Número de Pokémon inválido. Digite um número de 1 a 1025.');
+      if (teamIds.length === 0) {
+        alert('Seu time está vazio! Monte seu time primeiro na aba "Meu Time" para escolher um companheiro.');
         return;
       }
 
-      // Tenta encontrar em cache ou buscar
-      const cached = window.allLoadedPokemons ? window.allLoadedPokemons.find(p => p.number === monId) : null;
-      if (cached) {
-        this.manager.setCompanion(cached);
-      } else {
-        // Cria estrutura básica e atualiza
-        this.manager.setCompanion({
-          number: monId,
-          name: `pokemon-${monId}`,
-          types: ['normal']
-        });
+      let promptMsg = 'Escolha o número de Pokédex do seu Pokémon Companheiro (integrantes do seu time):\n';
+      teamIds.forEach(id => {
+        const mon = window.allLoadedPokemons ? window.allLoadedPokemons.find(p => p.number === id) : null;
+        promptMsg += `- ID ${id}: ${mon ? mon.name : 'Pokémon'}\n`;
+      });
 
-        // Se pokeApi estiver disponível, enriquece em segundo plano
-        if (typeof window.pokeApi !== 'undefined' && typeof window.pokeApi.getPokemonById === 'function') {
-          window.pokeApi.getPokemonById(monId).then(fullMon => {
-            if (fullMon) {
-              this.manager.setCompanion(fullMon);
-            }
-          }).catch(() => {});
-        }
+      const input = window.prompt(promptMsg, String(teamIds[0]));
+      if (!input) return;
+
+      const monId = parseInt(input, 10);
+      if (isNaN(monId) || !teamIds.includes(monId)) {
+        alert('O companheiro deve ser um dos Pokémon do seu time ativo.');
+        return;
       }
+
+      this.manager.setCompanion(monId);
     }
 
     /**
