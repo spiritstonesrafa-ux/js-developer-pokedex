@@ -392,6 +392,7 @@
       const enemyVisual = this.resolveCombatantVisual(enemyActive, 'enemy');
 
       const isResolving = uiState === 'RESOLVING';
+      const shadowAura = this.sessionController?.sessionOptions?.metadata?.kind === 'SHADOW' || !!battleState?.modifiers?.SHADOW_AURA;
 
       // Cores para barras de HP
       const playerHpPct = Math.max(0, Math.min(100, Math.round((playerActive.currentHp / playerActive.maxHp) * 100)));
@@ -439,7 +440,8 @@
 
       this.container.innerHTML = `
         <div class="battle-view-container battle-immersive-shell">
-          <div class="battle-arena-layout">
+          <div class="battle-arena-layout ${shadowAura ? 'shadow-aura-active' : ''}">
+          ${shadowAura ? '<div class="shadow-aura-indicator" role="status"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></div>' : ''}
             <!-- Barra Superior com Utilitários -->
             <div class="battle-top-bar">
               <button id="btnExitBattle" class="battle-exit-btn" onclick="if(window.battleView) window.battleView.requestExitBattle();" aria-label="Sair da batalha">
@@ -922,4 +924,5 @@
     Object.assign(window.PBABattleUi, exportsObj);
   }
 })();
+
 
