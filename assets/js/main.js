@@ -801,6 +801,7 @@ window.switchAppTab = function(tabName) {
 
   const teamView = document.getElementById('teamView');
   const profileView = document.getElementById('profileView');
+  const campaignView = document.getElementById('campaignView');
 
   if (tabName === 'pokedex') {
     if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
@@ -810,6 +811,7 @@ window.switchAppTab = function(tabName) {
     if (teamView) teamView.style.display = 'none';
     if (futureModuleView) futureModuleView.style.display = 'none';
     if (profileView) profileView.style.display = 'none';
+    if (campaignView) campaignView.style.display = 'none';
   } else if (tabName === 'team') {
     if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
       window.battleSessionController.leaveBattle();
@@ -821,11 +823,13 @@ window.switchAppTab = function(tabName) {
     }
     if (futureModuleView) futureModuleView.style.display = 'none';
     if (profileView) profileView.style.display = 'none';
+    if (campaignView) campaignView.style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (tabName === 'battle') {
     if (pokedexView) pokedexView.style.display = 'none';
     if (teamView) teamView.style.display = 'none';
     if (profileView) profileView.style.display = 'none';
+    if (campaignView) campaignView.style.display = 'none';
     if (futureModuleView) {
       futureModuleView.style.display = 'block';
       if (window.battleView) {
@@ -834,6 +838,14 @@ window.switchAppTab = function(tabName) {
         renderFutureModule('battle');
       }
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (tabName === 'campaign') {
+    if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') window.battleSessionController.leaveBattle();
+    if (pokedexView) pokedexView.style.display = 'none';
+    if (teamView) teamView.style.display = 'none';
+    if (futureModuleView) futureModuleView.style.display = 'none';
+    if (profileView) profileView.style.display = 'none';
+    if (campaignView) { campaignView.style.display = 'block'; if (window.campaignView) window.campaignView.render(); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (tabName === 'profile') {
     if (window.battleSessionController && window.battleSessionController.uiState !== 'NO_TEAM') {
@@ -894,9 +906,14 @@ if (typeof window !== 'undefined') {
     window.battleView.init();
   }
 
+  if (!window.campaignManager && window.PBACampaign && window.PBACampaign.CampaignManager) {
+    window.campaignManager = new window.PBACampaign.CampaignManager();
+    window.campaignBattleCoordinator = new window.PBACampaign.CampaignBattleCoordinator(window.campaignManager, window.battleSessionController);
+    window.campaignView = new window.PBACampaign.CampaignView({ manager: window.campaignManager, coordinator: window.campaignBattleCoordinator, container: document.getElementById('campaignView') });
+  }
+
   // Inicializa o Perfil do Treinador (PBA-014)
   if (window.trainerUI) {
     window.trainerUI.init();
   }
 }
-

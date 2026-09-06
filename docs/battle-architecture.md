@@ -956,3 +956,6 @@ A Fase PBA-013 transforma os subsistemas isolados de combate em uma experiência
 A seleção de espécies acontece antes da IA e usa um shuffle bag persistente, exclusão do time do jogador, janela anti-repeat de cinco partidas e bloqueio de trio exato recente. O estado local guarda somente IDs, é versionado e limitado. Uma seleção só é confirmada após a hidratação dos três integrantes.
 
 O modo imersivo pertence exclusivamente à apresentação. BattleView observa estados ativos e alterna body.battle-immersive-active; Engine, AI e Presentation Engine não conhecem layout ou fullscreen. Sair reutiliza os contratos cancel/reset da pilha audiovisual e não registra batalha abandonada.
+
+## PBA-015 Campaign
+CampaignStore owns versioned progress; CampaignManager owns progression; CampaignBattleCoordinator passes campaign team IDs, fixed enemy IDs and metadata to BattleSessionController. The engine remains unique. TypeChart → BattleModifierResolver → DamageCalculator resolves Shadow Aura, and BattleEvaluator/AI receive the same modifier context.

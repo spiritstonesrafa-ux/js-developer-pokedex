@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="assets/css/battle-camera.css"> <!-- Câmera e Impacto de Batalha (PBA-012) -->
   <link rel="stylesheet" href="assets/css/battle-arena.css"> <!-- Arena e Interface de Batalha (PBA-013) -->
   <link rel="stylesheet" href="assets/css/trainer-profile.css"> <!-- Perfil do Treinador (PBA-014) -->
+  <link rel="stylesheet" href="assets/css/campaign.css">
 
   <!-- Favicon SVG (Ícone da aba do navegador) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23EE1515'/><path d='M2 50 A48 48 0 0 0 98 50 Z' fill='%23FFFFFF'/><path d='M2 50 L98 50' stroke='%23222224' stroke-width='8'/><circle cx='50' cy='50' r='16' fill='%23222224'/><circle cx='50' cy='50' r='10' fill='%23FFFFFF'/></svg>">
@@ -79,6 +80,9 @@
         <button id="navBattleBtn" class="nav-tab" data-tab="battle">
           <i class="fa-solid fa-khanda"></i>
           <span>Batalhar</span>
+        </button>
+        <button id="navCampaignBtn" class="nav-tab" data-tab="campaign">
+          <i class="fa-solid fa-trophy"></i><span>Campanha</span>
         </button>
         <button id="navProfileBtn" class="nav-tab" data-tab="profile">
           <i class="fa-solid fa-id-card"></i>
@@ -185,6 +189,8 @@
       <!-- Preenchido dinamicamente ao selecionar 'Batalhar' -->
     </section>
 
+    <section id="campaignView" class="view-panel" style="display: none;" aria-label="Circuito dos Mestres"></section>
+
     <!-- MÓDULO 4: PERFIL DO TREINADOR (PBA-014) -->
     <section id="profileView" class="view-panel" style="display: none;" aria-label="Perfil do Treinador">
       <!-- Preenchido dinamicamente via assets/js/trainer/trainer-ui.js -->
@@ -219,6 +225,7 @@
   <script src="assets/js/battle/battle-stat-normalizer.js"></script>
   <script src="assets/js/battle/type-chart.js"></script>
   <script src="assets/js/battle/type-effectiveness.js"></script>
+  <script src="assets/js/battle/battle-modifier-resolver.js"></script>
   <script src="assets/js/battle/move-model.js"></script>
   <script src="assets/js/battle/damage-calculator.js"></script>
   <script src="assets/js/battle/turn-manager.js"></script>
@@ -265,6 +272,12 @@
   <script src="assets/js/trainer/trainer-store.js"></script>
   <script src="assets/js/trainer/trainer-manager.js"></script>
   <script src="assets/js/trainer/trainer-ui.js"></script>
+  <script src="assets/js/campaign/campaign-constants.js"></script>
+  <script src="assets/js/campaign/campaign-catalog.js"></script>
+  <script src="assets/js/campaign/campaign-store.js"></script>
+  <script src="assets/js/campaign/campaign-manager.js"></script>
+  <script src="assets/js/campaign/campaign-battle-coordinator.js"></script>
+  <script src="assets/js/campaign/campaign-view.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

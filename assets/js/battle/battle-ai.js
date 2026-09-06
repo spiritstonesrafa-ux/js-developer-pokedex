@@ -207,7 +207,7 @@
 
       // Avaliação detalhada de cada golpe utilizável do ativo
       const evaluatedMoves = usableMoves.map(m => {
-        const evalData = BattleEvaluator.evaluateMove(myActive, oppActive, m);
+        const evalData = BattleEvaluator.evaluateMove(myActive, oppActive, m, { attackerSide: side, modifiers: state.modifiers || {} });
         let score = evalData.expectedDamage;
 
         // Bônus decisivo para KO garantido vs possível (PBA-014B)

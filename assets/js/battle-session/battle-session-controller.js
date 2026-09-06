@@ -164,6 +164,7 @@
 
       this.view = options.view || null;
       this.uiState = BATTLE_UI_STATES.NO_TEAM;
+      this.sessionOptions = null;
       this.battleState = null;
       this.playerTeam = null;
       this.enemyTeam = null;
@@ -235,7 +236,7 @@
      * @returns {Promise<Object>} Battle State inicial v2.
      */
     async prepareBattle(options = {}) {
-      const teamIds = this.getPlayerTeamIds();
+      const teamIds = Array.isArray(options.playerTeamIds) ? options.playerTeamIds.map(Number) : this.getPlayerTeamIds();
 
       if (teamIds.length !== SESSION_CONFIG.TEAM_SIZE) {
         this.notifyState(BATTLE_UI_STATES.NO_TEAM, { teamSize: teamIds.length });
@@ -243,14 +244,15 @@
       }
 
       this.notifyState(BATTLE_UI_STATES.PREPARING);
-      this.currentBattleId = generateCryptoBattleId();
+      this.currentBattleId = options.battleId || generateCryptoBattleId();
+      this.sessionOptions = { ...options, playerTeamIds: teamIds };
 
       try {
         // 1. Hidrata o time do jogador
         this.playerTeam = await this.hydrator.hydrateTeam(teamIds);
 
         // 2. Constrói e hidrata o time adversário
-        this.enemyTeam = await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride, { playerTeamIds: teamIds });
+        this.enemyTeam = Array.isArray(options.enemyTeamIds) ? await this.hydrator.hydrateTeam(options.enemyTeamIds) : await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride, { playerTeamIds: teamIds });
 
         // Preflight de Compatibilidade com o Engine (PBA-014C-HARDENING):
         // Se qualquer Pokémon tiver 0 golpes suportados (ex: Ditto com Transform, Wobbuffet com Counter/Mirror Coat),
@@ -283,7 +285,7 @@
         this.incompatibilityError = null;
 
         // 3. Cria a batalha 3x3 no Battle Engine
-        this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam);
+        this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam, { modifiers: options.modifiers || {}, metadata: options.metadata || null });
 
         // 4. Sincroniza metadados visuais e sonoros nos combatentes do estado de batalha
         if (this.battleState && this.battleState.player && Array.isArray(this.battleState.player.team)) {
@@ -324,7 +326,7 @@
      */
     async startBattle() {
       if (!this.battleState) {
-        await this.prepareBattle();
+        await this.prepareBattle(this.sessionOptions || {});
       }
 
       if (!this.battleState) {
@@ -526,7 +528,7 @@
         try {
           const tm = (typeof window !== 'undefined' && window.trainerManager) ? window.trainerManager : (typeof globalThis !== 'undefined' ? globalThis.trainerManager : null);
           if (tm && typeof tm.recordBattle === 'function') {
-            const oppName = this.enemyTeam && this.enemyTeam[0] ? `Treinador Rival (${this.enemyTeam[0].name})` : 'Desafiante da Arena';
+            const oppName = this.sessionOptions?.metadata?.opponentName || (this.enemyTeam && this.enemyTeam[0] ? `Treinador Rival (${this.enemyTeam[0].name})` : 'Desafiante da Arena');
             const leaderId = this.battleState?.player?.team?.[0]?.id || null;
             tm.recordBattle({
               battleId: this.currentBattleId || ('btl_' + Date.now()),
@@ -539,6 +541,11 @@
         } catch (err) {
           console.warn('Não foi possível registrar a batalha no Perfil do Treinador:', err);
         }
+        try {
+          const campaign = typeof window !== 'undefined' ? window.campaignManager : null;
+          const meta = this.sessionOptions?.metadata;
+          if (campaign && meta?.mode === 'CAMPAIGN') campaign.recordBattle({ battleId: this.currentBattleId, kind: meta.kind, id: meta.id, winner: isVictory ? 'player' : 'enemy' });
+        } catch (err) { console.warn('Não foi possível registrar a progressão da campanha:', err); }
 
         if (isVictory) {
           this.notifyState(BATTLE_UI_STATES.VICTORY, { winner: 'player', battleState: this.battleState });
@@ -591,7 +598,7 @@
      */
     async rematch() {
       this.leaveBattle();
-      return this.prepareBattle().then(() => this.startBattle());
+      return this.prepareBattle(this.sessionOptions || {}).then(() => this.startBattle());
     }
 
     abandonBattle() {
@@ -623,6 +630,7 @@
       }
       this.battleState = null;
       this.uiState = BATTLE_UI_STATES.NO_TEAM;
+      this.sessionOptions = null;
     }
   }
 

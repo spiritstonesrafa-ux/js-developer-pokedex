@@ -260,3 +260,6 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 ---
 
 Desenvolvido com 💜 por Rafael.
+## 🏆 Circuito dos Mestres
+- Campanha com draft inicial, 18 Mestres de Tipo, insígnias, recrutamento e Super Treinador.
+- Um desafio final secreto para quem concluir a jornada.

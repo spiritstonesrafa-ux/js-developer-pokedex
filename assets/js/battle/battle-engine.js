@@ -22,6 +22,7 @@
   let DamageCalculator;
   let TurnManager;
   let TypeEffectiveness;
+  let BattleModifierResolver;
   let MoveModel;
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -29,12 +30,14 @@
     DamageCalculator = require('./damage-calculator.js');
     TurnManager = require('./turn-manager.js');
     TypeEffectiveness = require('./type-effectiveness.js');
+    BattleModifierResolver = require('./battle-modifier-resolver.js');
     MoveModel = require('./move-model.js');
   } else if (typeof window !== 'undefined' && window.PBABattle) {
     constants = window.PBABattle;
     DamageCalculator = window.PBABattle.DamageCalculator;
     TurnManager = window.PBABattle.TurnManager;
     TypeEffectiveness = window.PBABattle.TypeEffectiveness;
+    BattleModifierResolver = window.PBABattle.BattleModifierResolver;
     MoveModel = window.PBABattle.MoveModel;
   } else {
     constants = {
@@ -305,9 +308,9 @@
      * @param {Object|Array} enemyInput - Dados do Pokémon ou equipe adversária.
      * @returns {Object} Estado inicial da batalha.
      */
-    function createBattle(playerInput, enemyInput) {
+    function createBattle(playerInput, enemyInput, options = {}) {
       if (Array.isArray(playerInput) || Array.isArray(enemyInput)) {
-        return createTeamBattle(playerInput, enemyInput);
+        return createTeamBattle(playerInput, enemyInput, options);
       }
 
       const playerCombatant = createCombatant(playerInput);
@@ -319,7 +322,9 @@
         turn: 1,
         player: playerCombatant,
         enemy: enemyCombatant,
-        winner: null
+        winner: null,
+        modifiers: options.modifiers || {},
+        metadata: options.metadata || null
       };
 
       return state;
@@ -333,7 +338,7 @@
      * @param {Array<Object>} enemyTeamInput - Lista com 3 Pokémon adversários.
      * @returns {Object} Estado inicial Battle State v2.
      */
-    function createTeamBattle(playerTeamInput, enemyTeamInput) {
+    function createTeamBattle(playerTeamInput, enemyTeamInput, options = {}) {
       const playerTeam = validateAndCreateTeam(playerTeamInput, 'player');
       const enemyTeam = validateAndCreateTeam(enemyTeamInput, 'enemy');
 
@@ -349,7 +354,9 @@
           activeIndex: 0,
           team: enemyTeam
         },
-        winner: null
+        winner: null,
+        modifiers: options.modifiers || {},
+        metadata: options.metadata || null
       };
 
       return state;
@@ -652,6 +659,7 @@
 
       // 4. Resolução de Type Effectiveness
       const effectiveness = TypeEffectiveness.calculate(selectedMove.type, defender.types);
+      const effectiveMultiplier = BattleModifierResolver && BattleModifierResolver.resolveTypeMultiplier ? BattleModifierResolver.resolveTypeMultiplier(effectiveness.multiplier, { attackerSide: attackerRole, modifiers: state.modifiers || {} }) : effectiveness.multiplier;
 
       events.push({
         type: BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED,
@@ -686,7 +694,7 @@
 
       // 6. Pipeline de cálculo de dano v2 (PBA-014B: com variância 85..100)
       const baseDamage = DamageCalculator.calculateBaseDamage(attackStat, defenseStat, selectedMove.power);
-      const finalDamage = DamageCalculator.applyModifier(baseDamage, effectiveness.multiplier, stabMultiplier, damageRoll);
+      const finalDamage = DamageCalculator.applyModifier(baseDamage, effectiveMultiplier, stabMultiplier, damageRoll);
 
       // 7. Aplicação do dano ao HP
       const previousHp = defender.currentHp;

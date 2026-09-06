@@ -18,15 +18,18 @@
   let constants;
   let DamageCalculator;
   let TypeEffectiveness;
+  let BattleModifierResolver;
 
   if (typeof module !== 'undefined' && module.exports) {
     constants = require('./battle-constants.js');
     DamageCalculator = require('./damage-calculator.js');
     TypeEffectiveness = require('./type-effectiveness.js');
+    BattleModifierResolver = require('./battle-modifier-resolver.js');
   } else if (typeof window !== 'undefined' && window.PBABattle) {
     constants = window.PBABattle;
     DamageCalculator = window.PBABattle.DamageCalculator;
     TypeEffectiveness = window.PBABattle.TypeEffectiveness;
+    BattleModifierResolver = window.PBABattle.BattleModifierResolver;
   }
 
   const BattleEvaluator = (() => {
@@ -39,7 +42,7 @@
      * @param {Object} move - Objeto de golpe a avaliar.
      * @returns {Object} Dados da avaliação pura.
      */
-    function evaluateMove(attacker, defender, move) {
+    function evaluateMove(attacker, defender, move, context = {}) {
       if (!attacker || typeof attacker !== 'object') {
         throw new Error('Atacante inválido fornecido para evaluateMove.');
       }
@@ -102,7 +105,7 @@
       // 3. Efetividade de Tipos (Type Effectiveness)
       const defenderTypes = Array.isArray(defender.types) ? defender.types : [];
       const effectiveness = TypeEffectiveness.calculate(moveType, defenderTypes);
-      const typeMultiplier = effectiveness.multiplier;
+      const typeMultiplier = BattleModifierResolver && BattleModifierResolver.resolveTypeMultiplier ? BattleModifierResolver.resolveTypeMultiplier(effectiveness.multiplier, context) : effectiveness.multiplier;
 
       // 4. Faixa e Média de Dano (PBA-014B: Level 50 e Variância 85..100)
       const simLevel = (constants && constants.BATTLE_CONFIG && constants.BATTLE_CONFIG.SIMULATION_LEVEL) || 50;
