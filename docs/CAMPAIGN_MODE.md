@@ -8,3 +8,6 @@ Trainer history supports optional campaign mode/kind/challenge fields without br
 
 ## Draft expansion
 The draft now has 144 static options (16 per generation). The original 36 IDs remain valid. Master overlap is allowed, but CampaignManager rejects three members of the same Master team at start; rewards reject already-owned IDs and roster IDs are unique.
+
+## Final progression
+After the elite reward, Shadow is logically unlocked with revealSeen=false. CampaignView replays the reveal after reload until acknowledged; then the final challenge is available. Completed campaigns render the real badge, roster, boss and attempt summary.

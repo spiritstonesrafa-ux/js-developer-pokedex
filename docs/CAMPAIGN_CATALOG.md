@@ -11,3 +11,7 @@ The starting draft contains 36 regular species, four from each of nine generatio
 
 ## Draft expansion
 Starting pool: 144 unique options, 16 per generation. The original 36 are retained. Master overlap is allowed; Super IDs are excluded. Campaign start forbids all three members of a Master team.
+
+## Development audit
+Run 
+ode scripts/audit-campaign-draft.js to hydrate every draft ID through the production BattleTeamHydrator and validate four supported moves without runtime campaign hydration.

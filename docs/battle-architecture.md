@@ -959,3 +959,5 @@ O modo imersivo pertence exclusivamente à apresentação. BattleView observa es
 
 ## PBA-015 Campaign
 CampaignStore owns versioned progress; CampaignManager owns progression; CampaignBattleCoordinator passes campaign team IDs, fixed enemy IDs and metadata to BattleSessionController. The engine remains unique. TypeChart → BattleModifierResolver → DamageCalculator resolves Shadow Aura, and BattleEvaluator/AI receive the same modifier context.
+
+Campaign narrative state is persisted in CampaignStore (Super victorySeen and Shadow revealSeen); CampaignView only presents those state-machine stages.
