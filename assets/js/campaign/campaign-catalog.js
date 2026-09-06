@@ -1,6 +1,6 @@
 (function () {
  const p=(id,name,types,bst,generation)=>Object.freeze({id,name,types:Object.freeze(types),bst,generation,sprite:`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`});
- const DRAFT=Object.freeze([
+ const DRAFT_BASE=Object.freeze([
  p(3,'venusaur',['grass','poison'],525,1),p(6,'charizard',['fire','flying'],534,1),p(9,'blastoise',['water'],530,1),p(143,'snorlax',['normal'],540,1),
  p(154,'meganium',['grass'],525,2),p(157,'typhlosion',['fire'],534,2),p(160,'feraligatr',['water'],530,2),p(181,'ampharos',['electric'],510,2),
  p(254,'sceptile',['grass'],530,3),p(257,'blaziken',['fire','fighting'],530,3),p(260,'swampert',['water','ground'],535,3),p(282,'gardevoir',['psychic','fairy'],518,3),
@@ -31,7 +31,19 @@
  ['fairy','Lumi','Mestre do Encanto','Insígnia do Aurora',4,[[303,'mawile',['steel','fairy'],380],[468,'togekiss',['fairy','flying'],545],[869,'alcremie',['fairy'],495]]]
  ];
  const MASTERS=Object.freeze(M.map(([type,trainerName,trainerTitle,badgeName,difficulty,team])=>Object.freeze({challengeId:`master-${type}`,type,trainerName,trainerTitle,badgeName,difficulty,description:`Enfrente ${trainerName}, ${trainerTitle}.`,team:Object.freeze(team.map(x=>p(x[0],x[1],x[2],x[3],null)))})));
- const MASTER_SPECIES=Object.freeze(MASTERS.flatMap(m=>m.team));
+ const MASTER_SPECIES=Object.freeze(MASTERS.flatMap(m=>m.team)); const EXTRA_DRAFT_IDS=Object.freeze({
+  1:[3,6,9,143,7,8,25,38,59,65,68,94,131,149,242,248],
+  2:[154,157,160,181,158,159,169,182,199,212,214,229,246,247,249,250],
+  3:[254,257,260,282,258,259,276,277,286,330,350,376,382,383,384,373],
+  4:[389,392,395,461,393,394,398,405,407,445,462,468,477,478,485,488],
+  5:[497,500,503,596,499,501,502,510,526,530,553,597,609,612,635,641],
+  6:[652,655,658,706,656,657,663,681,691,700,701,707,715,716,717,718],
+  7:[724,745,784,733,728,729,730,734,746,750,768,778,788,785,786,787],
+  8:[812,815,818,823,816,817,824,849,851,858,869,887,888,889,891,892],
+  9:[908,911,914,959,912,913,915,920,923,960,983,998,1000,1001,1002,1003]
+ });
+ const typeForId=(id)=>{const found=[...DRAFT_BASE,...MASTERS.flatMap(m=>m.team)].find(x=>x.id===id);return found?found.types:['normal'];};
+ const DRAFT=Object.freeze(Object.entries(EXTRA_DRAFT_IDS).flatMap(([generation,ids])=>ids.map(id=>p(id,`pokemon-${id}`,typeForId(id),500,Number(generation)))));
  // Elite trio intentionally comes from the objective master ranking; it is a rematch roster, not a separate recruit catalog.
  const SUPER_TEAM=Object.freeze([p(493,'arceus',['normal'],720,4),p(890,'eternatus',['poison','dragon'],690,8),p(150,'mewtwo',['psychic'],680,1)]);
  const SUPER_AUDIT=Object.freeze([{id:493,name:'arceus',bst:720,attack:120,specialAttack:120,speed:120,selected:true,reason:'GLOBAL_RANK_1'},{id:890,name:'eternatus',bst:690,attack:85,specialAttack:145,speed:130,selected:true,reason:'GLOBAL_RANK_2'},{id:150,name:'mewtwo',bst:680,attack:110,specialAttack:154,speed:130,selected:true,reason:'GLOBAL_RANK_3'},{id:384,name:'rayquaza',bst:680,attack:150,specialAttack:150,speed:95,selected:false,reason:'LOWER_TIEBREAK'},{id:249,name:'lugia',bst:680,attack:90,specialAttack:90,speed:110,selected:false,reason:'LOWER_TIEBREAK'},{id:250,name:'ho-oh',bst:680,attack:130,specialAttack:110,speed:90,selected:false,reason:'LOWER_TIEBREAK'},{id:382,name:'kyogre',bst:670,attack:100,specialAttack:150,speed:90,selected:false,reason:'LOWER_BST'},{id:383,name:'groudon',bst:670,attack:150,specialAttack:100,speed:90,selected:false,reason:'LOWER_BST'},{id:289,name:'slaking',bst:670,attack:160,specialAttack:95,speed:100,selected:false,reason:'LOWER_BST'},{id:635,name:'hydreigon',bst:600,attack:105,specialAttack:125,speed:98,selected:false,reason:'LOWER_BST'}]);
@@ -39,6 +51,9 @@
  const api=Object.freeze({DRAFT,MASTERS,MASTER_SPECIES,SUPER_TEAM,SUPER_AUDIT,byId,allMasterIds:MASTER_SPECIES.map(x=>x.id),startingStats:{min:Math.min(...DRAFT.map(x=>x.bst)),max:Math.max(...DRAFT.map(x=>x.bst)),average:Math.round(DRAFT.reduce((s,x)=>s+x.bst,0)/DRAFT.length)}});
  if(typeof module!=='undefined'&&module.exports)module.exports=api; else {window.PBACampaign=window.PBACampaign||{};Object.assign(window.PBACampaign,api);}
 })();
+
+
+
 
 
 

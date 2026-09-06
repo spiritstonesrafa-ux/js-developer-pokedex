@@ -8,3 +8,6 @@ Global default-species ranking (IDs 1–1025): BST descending, then max(Attack, 
 
 The starting draft contains 36 regular species, four from each of nine generations and all 18 types. The 18 original Type Masters have a unique three-species team and badge. The 54 Master species exclude Ditto, Unown, Wobbuffet and Smeargle. Super and Shadow use Arceus, Eternatus and Mewtwo.
 
+
+## Draft expansion
+Starting pool: 144 unique options, 16 per generation. The original 36 are retained. Master overlap is allowed; Super IDs are excluded. Campaign start forbids all three members of a Master team.
