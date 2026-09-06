@@ -509,6 +509,16 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `HUMAN_BALANCE_ACCEPTANCE = PASS`
   - `PBA_014C_TECHNICAL = PASS`
   - `PBA_014C_HARDENING = PASS`
+  - `PBA_014C_FINAL_HARDENING = PASS`
+  - `HIDDEN_POWER_SUPPORTED = NO`
+  - `HIDDEN_POWER_DYNAMIC_TYPE_UNMODELED = YES`
+  - `UNOWN_SUPPORTED_OFFENSIVE_MOVES = 0`
+  - `UNOWN_BATTLE_COMPATIBLE = NO`
+  - `UNOWN_FAKE_MOVE_INJECTED = NO`
+  - `UNOWN_SESSION_PREFLIGHT = PASS`
+  - `DITTO_BATTLE_COMPATIBLE = NO`
+  - `WOBBUFFET_BATTLE_COMPATIBLE = NO`
+  - `SMEARGLE_BATTLE_COMPATIBLE = NO`
   - `ZERO_SUPPORTED_API_OK_USES_NETWORK_FALLBACK = NO`
   - `NETWORK_FALLBACK_REQUIRES_FAILURE = YES`
   - `API_OK_FINAL_MOVES_ALL_FROM_API = YES`
@@ -526,7 +536,7 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `MOVESET_HUMAN_ACCEPTANCE = PENDING`
   - `PBA_015 = NOT_STARTED`
 
-- **Working Tree**: Homologado tecnicamente com PBA-014C-HARDENING: distinção semântica estrita entre `UNSUPPORTED_ENGINE_MOVESET` e `NETWORK_FALLBACK_MOVESET`, preflight de compatibilidade na camada de sessão sem crash ou acionamento indevido do Battle Engine, auditoria real de PokéAPI para Ditto, Wobbuffet, Smeargle e Unown, 0 injeções artificiais de Tackle quando API responde com sucesso, e 515 testes automatizados 100% passando.
+- **Working Tree**: Homologado tecnicamente com PBA-014C-FINAL-HARDENING: classificação estrita de suporte a golpes (physical/special + power > 0 insuficiente sem compatibilidade mecânica), Hidden Power classificado como `UNSUPPORTED_DYNAMIC_TYPE` (`DYNAMIC_TYPE_FROM_IVS`), Unown (#201) com 0 golpes suportados e bloqueado com segurança no preflight da sessão, Kanto pool 13/13 com 4 golpes preservado, e 518 testes automatizados 100% passando.
 
 ---
 

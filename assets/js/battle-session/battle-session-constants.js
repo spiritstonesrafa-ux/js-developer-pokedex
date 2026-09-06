@@ -63,11 +63,48 @@
     ])
   });
 
+  /**
+   * Catálogo de golpes ofensivos cuja mecânica especial de dano/tipo não pode ser representada
+   * pelo modelo de batalha atual (PBA-014C-FINAL-HARDENING).
+   * Motivos:
+   * - 'hidden-power': tipo dinâmico derivado dos IVs do Pokémon (DYNAMIC_TYPE_FROM_IVS).
+   */
+  const UNSUPPORTED_COMPLEX_MOVES = Object.freeze({
+    'hidden-power': Object.freeze({
+      name: 'hidden-power',
+      category: 'UNSUPPORTED_DYNAMIC_TYPE',
+      reason: 'DYNAMIC_TYPE_FROM_IVS'
+    })
+  });
+
+  /**
+   * Determina se um golpe é mecanicamente suportado pelo Battle Engine atual.
+   * Descarta status moves, golpes sem poder positivo e golpes com mecânicas especiais não suportadas.
+   *
+   * @param {Object} moveDetail - Objeto do golpe (com damageClass/power/name).
+   * @returns {boolean}
+   */
+  function isMechanicallySupportedMove(moveDetail) {
+    if (!moveDetail || typeof moveDetail !== 'object') return false;
+    const name = String(moveDetail.name || '').trim().toLowerCase();
+    if (UNSUPPORTED_COMPLEX_MOVES[name]) return false;
+
+    const dmgClass = String(moveDetail.damageClass || moveDetail.damage_class?.name || moveDetail.damage_class || '').toLowerCase();
+    if (dmgClass !== 'physical' && dmgClass !== 'special') return false;
+
+    const power = Number(moveDetail.power);
+    if (!Number.isFinite(power) || power <= 0) return false;
+
+    return true;
+  }
+
   const constants = {
     BATTLE_UI_STATES,
     SESSION_CONFIG,
     MOVESET_LOADOUT_SOURCE,
-    MOVESET_LIMIT_REASON
+    MOVESET_LIMIT_REASON,
+    UNSUPPORTED_COMPLEX_MOVES,
+    isMechanicallySupportedMove
   };
 
   if (typeof module !== 'undefined' && module.exports) {

@@ -43,7 +43,9 @@
   const {
     SESSION_CONFIG,
     MOVESET_LOADOUT_SOURCE,
-    MOVESET_LIMIT_REASON
+    MOVESET_LIMIT_REASON,
+    UNSUPPORTED_COMPLEX_MOVES,
+    isMechanicallySupportedMove
   } = sessionConstants || {
     SESSION_CONFIG: {
       TEAM_SIZE: 3,
@@ -58,12 +60,22 @@
     MOVESET_LOADOUT_SOURCE: {
       API_MOVESET: 'API_MOVESET',
       LIMITED_API_MOVESET: 'LIMITED_API_MOVESET',
+      UNSUPPORTED_ENGINE_MOVESET: 'UNSUPPORTED_ENGINE_MOVESET',
       NETWORK_FALLBACK_MOVESET: 'NETWORK_FALLBACK_MOVESET'
     },
     MOVESET_LIMIT_REASON: {
       NONE: 'NONE',
       ENGINE_CAPABILITY_LIMIT: 'ENGINE_CAPABILITY_LIMIT',
+      ZERO_SUPPORTED_ENGINE_MOVES: 'ZERO_SUPPORTED_ENGINE_MOVES',
       NETWORK_FALLBACK: 'NETWORK_FALLBACK'
+    },
+    UNSUPPORTED_COMPLEX_MOVES: { 'hidden-power': { category: 'UNSUPPORTED_DYNAMIC_TYPE', reason: 'DYNAMIC_TYPE_FROM_IVS' } },
+    isMechanicallySupportedMove: (m) => {
+      if (!m) return false;
+      const n = String(m.name || '').toLowerCase();
+      if (n === 'hidden-power') return false;
+      const dc = String(m.damageClass || m.damage_class?.name || '').toLowerCase();
+      return (dc === 'physical' || dc === 'special') && Number(m.power) > 0;
     }
   };
 
@@ -362,13 +374,12 @@
         for (const moveDetail of details) {
           if (!moveDetail) continue;
 
-          // Validações estritas de suporte (PBA-005 / MQ06 / MQ07):
-          // Descarta status moves e moves sem power base positivo
-          const dmgClass = String(moveDetail.damageClass || '').toLowerCase();
-          const power = Number(moveDetail.power);
+          // Validações estritas de suporte (PBA-005 / MQ06 / MQ07 / PBA-014C-FINAL-HARDENING):
+          // Descarta status moves, golpes sem power base positivo e golpes com mecânicas especiais não suportadas (ex: hidden-power)
+          if (!isMechanicallySupportedMove(moveDetail)) continue;
 
-          if (dmgClass !== 'physical' && dmgClass !== 'special') continue;
-          if (!Number.isFinite(power) || power <= 0) continue;
+          const dmgClass = String(moveDetail.damageClass || moveDetail.damage_class?.name || '').toLowerCase();
+          const power = Number(moveDetail.power);
 
           let moveId = Number(moveDetail.id);
           if (!Number.isInteger(moveId) || moveId <= 0) {

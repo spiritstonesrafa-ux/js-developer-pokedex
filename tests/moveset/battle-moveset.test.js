@@ -30,7 +30,9 @@ const pokeApi = require('../../assets/js/poke-api.js');
 const {
   SESSION_CONFIG,
   MOVESET_LOADOUT_SOURCE,
-  MOVESET_LIMIT_REASON
+  MOVESET_LIMIT_REASON,
+  UNSUPPORTED_COMPLEX_MOVES,
+  isMechanicallySupportedMove
 } = require('../../assets/js/battle-session/battle-session-constants.js');
 const { BattleTeamHydrator } = require('../../assets/js/battle-session/battle-team-hydrator.js');
 const MoveModel = require('../../assets/js/battle/move-model.js');
@@ -50,6 +52,7 @@ const MOCK_MOVE_DB = {
   'horn-drill': { id: 32, name: 'horn-drill', type: 'normal', power: null, accuracy: 30, pp: 5, damageClass: 'physical' },
   counter: { id: 68, name: 'counter', type: 'fighting', power: null, accuracy: 100, pp: 20, damageClass: 'physical' },
   flail: { id: 175, name: 'flail', type: 'normal', power: null, accuracy: 100, pp: 15, damageClass: 'physical' },
+  'hidden-power': { id: 237, name: 'hidden-power', type: 'normal', power: 60, accuracy: 100, pp: 15, damageClass: 'special' },
   // Offensive moves
   tackle: { id: 33, name: 'tackle', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' },
   scratch: { id: 10, name: 'scratch', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' },
@@ -756,6 +759,115 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
     assert.strictEqual(controller.uiState, 'READY', 'UI state deve retornar para READY com alerta');
     assert.ok(controller.incompatibilityError, 'Deve registrar mensagem de incompatibilidade');
     assert.ok(controller.incompatibilityError.includes('Ditto ainda não é compatível com a Battle Arena'), `Mensagem deve ser controlada: ${controller.incompatibilityError}`);
+  });
+
+  it('HIDDEN-POWER-01 — Hidden Power Classification: special with power 60 is strictly rejected as mechanically unsupported', () => {
+    const hiddenPowerMock = {
+      id: 237,
+      name: 'hidden-power',
+      damageClass: 'special',
+      power: 60,
+      accuracy: 100,
+      pp: 15,
+      type: 'normal'
+    };
+
+    assert.strictEqual(
+      isMechanicallySupportedMove(hiddenPowerMock),
+      false,
+      'Hidden Power NÃO deve ser considerado mecanicamente suportado devido a tipo dinâmico derivado de IVs'
+    );
+    assert.ok(UNSUPPORTED_COMPLEX_MOVES['hidden-power'], 'hidden-power deve estar no catálogo de UNSUPPORTED_COMPLEX_MOVES');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['hidden-power'].category, 'UNSUPPORTED_DYNAMIC_TYPE');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['hidden-power'].reason, 'DYNAMIC_TYPE_FROM_IVS');
+  });
+
+  it('UNOWN-01 — Zero Supported Moves for Unown: Unown with only Hidden Power yields moves=[], UNSUPPORTED_ENGINE_MOVESET, ZERO_SUPPORTED_ENGINE_MOVES', async () => {
+    const mockApi = createMockApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+
+    const unown = {
+      id: 201,
+      name: 'unown',
+      types: ['psychic'],
+      stats: { hp: 48, attack: 72, defense: 48, specialAttack: 72, specialDefense: 48, speed: 48 },
+      moves: [
+        { name: 'hidden-power' }
+      ]
+    };
+
+    const hydrated = await hydrator.hydratePokemon(unown);
+
+    assert.strictEqual(hydrated.moves.length, 0, 'Unown deve ter 0 golpes suportados');
+    assert.strictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET);
+    assert.strictEqual(hydrated.moveLoadoutReason, MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES);
+    assert.notStrictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.LIMITED_API_MOVESET);
+    assert.notStrictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.NETWORK_FALLBACK_MOVESET);
+
+    const diag = hydrator.lastLoadoutDiagnostic;
+    assert.ok(diag, 'Deve expor diagnóstico de resolução');
+    assert.strictEqual(diag.candidateCount, 1);
+    assert.strictEqual(diag.moveDetailSuccesses, 1);
+    assert.strictEqual(diag.supportedCount, 0);
+    assert.strictEqual(diag.source, MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET);
+    assert.strictEqual(diag.reason, MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES);
+  });
+
+  it('SESSION-PREFLIGHT-UNOWN-01 — Session Blocks Team with Unown: startBattle aborted cleanly without engine call', async () => {
+    const { BattleSessionController } = require('../../assets/js/battle-session/battle-session-controller.js');
+
+    let engineCalled = false;
+    const mockEngine = {
+      createTeamBattle: () => {
+        engineCalled = true;
+        return { player: { team: [] }, enemy: { team: [] } };
+      }
+    };
+
+    // Equipe do jogador: Unown (#201 com 0 golpes suportados), Pikachu (#25), Charmander (#4)
+    const customTeam = [
+      { id: 201, name: 'unown', types: ['psychic'], stats: { hp: 48, attack: 72, defense: 48, specialAttack: 72, specialDefense: 48, speed: 48 }, moves: [], moveLoadoutSource: MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET, moveLoadoutReason: MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES },
+      { id: 25, name: 'pikachu', types: ['electric'], stats: { hp: 50, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 }, moves: [{ name: 'thunderbolt' }, { name: 'tackle' }, { name: 'quick-attack' }, { name: 'thunder-punch' }] },
+      { id: 4, name: 'charmander', types: ['fire'], stats: { hp: 50, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 }, moves: [{ name: 'ember' }, { name: 'flamethrower' }, { name: 'scratch' }, { name: 'fire-punch' }] }
+    ];
+
+    const mockTeamStore = {
+      load: () => [201, 25, 4]
+    };
+
+    const customHydrator = {
+      async hydrateTeam(ids) {
+        return customTeam;
+      }
+    };
+
+    const mockOpponentFactory = {
+      async createOpponentTeam() {
+        return [
+          { id: 3, name: 'venusaur', types: ['grass'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'vine-whip', power: 45, pp: 25, type: 'grass', damageClass: 'physical' }] },
+          { id: 6, name: 'charizard', types: ['fire'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'flamethrower', power: 90, pp: 15, type: 'fire', damageClass: 'special' }] },
+          { id: 9, name: 'blastoise', types: ['water'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'water-gun', power: 40, pp: 25, type: 'water', damageClass: 'special' }] }
+        ];
+      }
+    };
+
+    const controller = new BattleSessionController({
+      hydrator: customHydrator,
+      teamStore: mockTeamStore,
+      engine: mockEngine,
+      opponentFactory: mockOpponentFactory
+    });
+
+    await controller.startBattle();
+
+    assert.strictEqual(engineCalled, false, 'BattleEngine NUNCA deve ser chamado para equipe contendo Unown');
+    assert.strictEqual(controller.battleState, null, 'battleState deve permanecer nulo');
+    assert.strictEqual(controller.uiState, 'READY', 'UI state deve retornar para READY com alerta de incompatibilidade');
+    assert.ok(controller.incompatibilityError, 'Deve registrar mensagem de incompatibilidade');
+    assert.ok(
+      controller.incompatibilityError.includes('Unown ainda não é compatível com a Battle Arena'),
+      `Mensagem deve ser específica e amigável: ${controller.incompatibilityError}`
+    );
   });
 
 });
