@@ -48,7 +48,8 @@ Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
 ## ⚔️ Pokémon Battle Arena (100% Jogável e Operacional — PBA-013)
 
 - 🎮 **Batalhas 3x3 Reais em Tempo Real**: Selecione sua equipe de 3 Pokémon no Team Builder e entre diretamente na arena de combate oficial.
-- 🤖 **Adversário Controlado por SMART AI**: Enfrente equipes de Kanto selecionadas dinamicamente sem espécies duplicadas, com inteligência artificial que calcula fraquezas, resistências, STAB, dano esperado e trocas táticas.
+- 🖥️ **Battle View Imersiva**: Durante a luta, a mesma SPA se transforma em uma tela de jogo em 100dvh, sem scroll do documento, com palco e painel lateral no desktop e quatro golpes em grade 2×2 no mobile.
+- 🤖 **Adversário Controlado por SMART AI**: Enfrente equipes selecionadas de um roster curado de 72 espécies das nove gerações, com rotação anti-repeat; a IA continua responsável apenas pelas decisões táticas em combate.
 - 🥊 **Seleção Tática de Golpes (PBA-014C)**: Descoberta progressiva com até 4 golpes ofensivos da PokéAPI por Pokémon, priorizando STAB, afinidade físico/especial, diversidade de tipos elementais e acurácia, com exibição de Power, Categoria, Tipo e PP.
 - 🔄 **Troca Voluntária de Pokémon**: Troque de Pokémon estrategicamente a qualquer turno; a ação de troca tem prioridade sobre ataques normais e preserva o estado exato de HP/PP do combatente recolhido.
 - ⚠️ **Substituição Forçada após Nocaute**: Quando um Pokémon é nocauteado, o modal de substituição força a escolha imediata de um membro vivo do banco para continuar o combate.
@@ -259,4 +260,3 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 ---
 
 Desenvolvido com 💜 por Rafael.
-

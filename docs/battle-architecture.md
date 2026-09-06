@@ -930,3 +930,29 @@ A Fase PBA-013 transforma os subsistemas isolados de combate em uma experiência
 ```
 
 
+
+---
+
+## 19. PBA-014D — Immersive Battle View e Quick Battle Rotation
+
+    Quick Battle Roster (72 IDs)
+            ↓
+    QuickBattleOpponentSelector
+            ↓
+    BattleOpponentFactory (hidrata somente os 3 escolhidos)
+            ↓
+    Battle Session
+            ↓
+    Battle Engine
+            ↓
+    Battle AI (golpes e trocas; nunca composição pré-batalha)
+
+    Battle Session state
+            ↓
+    BattleView
+            ↓
+    Immersive Layout (mesma SPA, 100dvh, no-scroll)
+
+A seleção de espécies acontece antes da IA e usa um shuffle bag persistente, exclusão do time do jogador, janela anti-repeat de cinco partidas e bloqueio de trio exato recente. O estado local guarda somente IDs, é versionado e limitado. Uma seleção só é confirmada após a hidratação dos três integrantes.
+
+O modo imersivo pertence exclusivamente à apresentação. BattleView observa estados ativos e alterna body.battle-immersive-active; Engine, AI e Presentation Engine não conhecem layout ou fullscreen. Sair reutiliza os contratos cancel/reset da pilha audiovisual e não registra batalha abandonada.

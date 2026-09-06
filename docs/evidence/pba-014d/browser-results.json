@@ -1,0 +1,530 @@
+{
+  "prepMs": 6592,
+  "measurements": {
+    "1366x768": {
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "scrollY": 0,
+      "scrollHeight": 768,
+      "scrollWidth": 1366,
+      "bodyOverflow": "hidden",
+      "columns": "202.5px 202.5px",
+      "elements": {
+        "futureModuleView": {
+          "top": 0,
+          "bottom": 768,
+          "left": 0,
+          "right": 1366,
+          "width": 1366,
+          "height": 768,
+          "visible": true
+        },
+        "btnExitBattle": {
+          "top": 13,
+          "bottom": 45,
+          "left": 19,
+          "right": 89.65625,
+          "width": 70.65625,
+          "height": 32,
+          "visible": true
+        },
+        "enemyHpFill": {
+          "top": 94.796875,
+          "bottom": 102.796875,
+          "left": 935,
+          "right": 1342,
+          "width": 407,
+          "height": 8,
+          "visible": true
+        },
+        "battleStage": {
+          "top": 58,
+          "bottom": 760,
+          "left": 10,
+          "right": 909,
+          "width": 899,
+          "height": 702,
+          "visible": true
+        },
+        "playerHpFill": {
+          "top": 179.59375,
+          "bottom": 187.59375,
+          "left": 935,
+          "right": 1342,
+          "width": 407,
+          "height": 8,
+          "visible": true
+        },
+        "battleNarrativeBox": {
+          "top": 227.59375,
+          "bottom": 271.59375,
+          "left": 921,
+          "right": 1356,
+          "width": 435,
+          "height": 44,
+          "visible": true
+        },
+        "btnOpenSwitch": {
+          "top": 290.59375,
+          "bottom": 324.59375,
+          "left": 1168.046875,
+          "right": 1345,
+          "width": 176.953125,
+          "height": 34,
+          "visible": true
+        },
+        "movesGrid": {
+          "top": 332.59375,
+          "bottom": 456.59375,
+          "left": 932,
+          "right": 1345,
+          "width": 413,
+          "height": 124,
+          "visible": true
+        }
+      },
+      "moves": [
+        {
+          "top": 332.59375,
+          "bottom": 390.59375,
+          "left": 932,
+          "right": 1134.5,
+          "visible": true
+        },
+        {
+          "top": 332.59375,
+          "bottom": 390.59375,
+          "left": 1142.5,
+          "right": 1345,
+          "visible": true
+        },
+        {
+          "top": 398.59375,
+          "bottom": 456.59375,
+          "left": 932,
+          "right": 1134.5,
+          "visible": true
+        },
+        {
+          "top": 398.59375,
+          "bottom": 456.59375,
+          "left": 1142.5,
+          "right": 1345,
+          "visible": true
+        }
+      ],
+      "allCriticalVisible": true
+    },
+    "360x700": {
+      "innerWidth": 360,
+      "innerHeight": 700,
+      "scrollY": 0,
+      "scrollHeight": 700,
+      "scrollWidth": 360,
+      "bodyOverflow": "hidden",
+      "columns": "165.5px 165.5px",
+      "elements": {
+        "futureModuleView": {
+          "top": 0,
+          "bottom": 700,
+          "left": 0,
+          "right": 360,
+          "width": 360,
+          "height": 700,
+          "visible": true
+        },
+        "btnExitBattle": {
+          "top": 8,
+          "bottom": 40,
+          "left": 12,
+          "right": 52,
+          "width": 40,
+          "height": 32,
+          "visible": true
+        },
+        "enemyHpFill": {
+          "top": 72.1875,
+          "bottom": 77.1875,
+          "left": 16,
+          "right": 344,
+          "width": 328,
+          "height": 5,
+          "visible": true
+        },
+        "battleStage": {
+          "top": 105.796875,
+          "bottom": 280.796875,
+          "left": 6,
+          "right": 354,
+          "width": 348,
+          "height": 175,
+          "visible": true
+        },
+        "playerHpFill": {
+          "top": 312.984375,
+          "bottom": 317.984375,
+          "left": 16,
+          "right": 344,
+          "width": 328,
+          "height": 5,
+          "visible": true
+        },
+        "battleNarrativeBox": {
+          "top": 346.59375,
+          "bottom": 380.59375,
+          "left": 6,
+          "right": 354,
+          "width": 348,
+          "height": 34,
+          "visible": true
+        },
+        "btnOpenSwitch": {
+          "top": 390.59375,
+          "bottom": 420.59375,
+          "left": 12,
+          "right": 348,
+          "width": 336,
+          "height": 30,
+          "visible": true
+        },
+        "movesGrid": {
+          "top": 425.59375,
+          "bottom": 526.59375,
+          "left": 12,
+          "right": 348,
+          "width": 336,
+          "height": 101,
+          "visible": true
+        }
+      },
+      "moves": [
+        {
+          "top": 425.59375,
+          "bottom": 473.59375,
+          "left": 12,
+          "right": 177.5,
+          "visible": true
+        },
+        {
+          "top": 425.59375,
+          "bottom": 473.59375,
+          "left": 182.5,
+          "right": 348,
+          "visible": true
+        },
+        {
+          "top": 478.59375,
+          "bottom": 526.59375,
+          "left": 12,
+          "right": 177.5,
+          "visible": true
+        },
+        {
+          "top": 478.59375,
+          "bottom": 526.59375,
+          "left": 182.5,
+          "right": 348,
+          "visible": true
+        }
+      ],
+      "allCriticalVisible": true
+    },
+    "390x844": {
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollY": 0,
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "bodyOverflow": "hidden",
+      "columns": "180.5px 180.5px",
+      "elements": {
+        "futureModuleView": {
+          "top": 0,
+          "bottom": 844,
+          "left": 0,
+          "right": 390,
+          "width": 390,
+          "height": 844,
+          "visible": true
+        },
+        "btnExitBattle": {
+          "top": 8,
+          "bottom": 40,
+          "left": 12,
+          "right": 52,
+          "width": 40,
+          "height": 32,
+          "visible": true
+        },
+        "enemyHpFill": {
+          "top": 75.1875,
+          "bottom": 80.1875,
+          "left": 16,
+          "right": 374,
+          "width": 358,
+          "height": 5,
+          "visible": true
+        },
+        "battleStage": {
+          "top": 109.796875,
+          "bottom": 337.671875,
+          "left": 6,
+          "right": 384,
+          "width": 378,
+          "height": 227.875,
+          "visible": true
+        },
+        "playerHpFill": {
+          "top": 370.859375,
+          "bottom": 375.859375,
+          "left": 16,
+          "right": 374,
+          "width": 358,
+          "height": 5,
+          "visible": true
+        },
+        "battleNarrativeBox": {
+          "top": 405.46875,
+          "bottom": 441.46875,
+          "left": 6,
+          "right": 384,
+          "width": 378,
+          "height": 36,
+          "visible": true
+        },
+        "btnOpenSwitch": {
+          "top": 452.46875,
+          "bottom": 482.46875,
+          "left": 12,
+          "right": 378,
+          "width": 366,
+          "height": 30,
+          "visible": true
+        },
+        "movesGrid": {
+          "top": 487.46875,
+          "bottom": 596.46875,
+          "left": 12,
+          "right": 378,
+          "width": 366,
+          "height": 109,
+          "visible": true
+        }
+      },
+      "moves": [
+        {
+          "top": 487.46875,
+          "bottom": 539.46875,
+          "left": 12,
+          "right": 192.5,
+          "visible": true
+        },
+        {
+          "top": 487.46875,
+          "bottom": 539.46875,
+          "left": 197.5,
+          "right": 378,
+          "visible": true
+        },
+        {
+          "top": 544.46875,
+          "bottom": 596.46875,
+          "left": 12,
+          "right": 192.5,
+          "visible": true
+        },
+        {
+          "top": 544.46875,
+          "bottom": 596.46875,
+          "left": 197.5,
+          "right": 378,
+          "visible": true
+        }
+      ],
+      "allCriticalVisible": true
+    },
+    "412x915": {
+      "innerWidth": 412,
+      "innerHeight": 915,
+      "scrollY": 0,
+      "scrollHeight": 915,
+      "scrollWidth": 412,
+      "bodyOverflow": "hidden",
+      "columns": "191.5px 191.5px",
+      "elements": {
+        "futureModuleView": {
+          "top": 0,
+          "bottom": 915,
+          "left": 0,
+          "right": 412,
+          "width": 412,
+          "height": 915,
+          "visible": true
+        },
+        "btnExitBattle": {
+          "top": 8,
+          "bottom": 40,
+          "left": 12,
+          "right": 52,
+          "width": 40,
+          "height": 32,
+          "visible": true
+        },
+        "enemyHpFill": {
+          "top": 75.1875,
+          "bottom": 80.1875,
+          "left": 16,
+          "right": 396,
+          "width": 380,
+          "height": 5,
+          "visible": true
+        },
+        "battleStage": {
+          "top": 109.796875,
+          "bottom": 344.796875,
+          "left": 6,
+          "right": 406,
+          "width": 400,
+          "height": 235,
+          "visible": true
+        },
+        "playerHpFill": {
+          "top": 377.984375,
+          "bottom": 382.984375,
+          "left": 16,
+          "right": 396,
+          "width": 380,
+          "height": 5,
+          "visible": true
+        },
+        "battleNarrativeBox": {
+          "top": 412.59375,
+          "bottom": 448.59375,
+          "left": 6,
+          "right": 406,
+          "width": 400,
+          "height": 36,
+          "visible": true
+        },
+        "btnOpenSwitch": {
+          "top": 459.59375,
+          "bottom": 489.59375,
+          "left": 12,
+          "right": 400,
+          "width": 388,
+          "height": 30,
+          "visible": true
+        },
+        "movesGrid": {
+          "top": 494.59375,
+          "bottom": 603.59375,
+          "left": 12,
+          "right": 400,
+          "width": 388,
+          "height": 109,
+          "visible": true
+        }
+      },
+      "moves": [
+        {
+          "top": 494.59375,
+          "bottom": 546.59375,
+          "left": 12,
+          "right": 203.5,
+          "visible": true
+        },
+        {
+          "top": 494.59375,
+          "bottom": 546.59375,
+          "left": 208.5,
+          "right": 400,
+          "visible": true
+        },
+        {
+          "top": 551.59375,
+          "bottom": 603.59375,
+          "left": 12,
+          "right": 203.5,
+          "visible": true
+        },
+        {
+          "top": 551.59375,
+          "bottom": 603.59375,
+          "left": 208.5,
+          "right": 400,
+          "visible": true
+        }
+      ],
+      "allCriticalVisible": true
+    }
+  },
+  "teams": [
+    [
+      "ampharos",
+      "heracross",
+      "lapras"
+    ],
+    [
+      "delphox",
+      "centiskorch",
+      "metagross"
+    ],
+    [
+      "dragonite",
+      "scizor",
+      "cinderace"
+    ],
+    [
+      "quaquaval",
+      "inteleon",
+      "kommo-o"
+    ],
+    [
+      "emboar",
+      "samurott",
+      "golisopod"
+    ],
+    [
+      "empoleon",
+      "lokix",
+      "chesnaught"
+    ],
+    [
+      "blaziken",
+      "meowscarada",
+      "luxray"
+    ],
+    [
+      "corviknight",
+      "serperior",
+      "swampert"
+    ],
+    [
+      "houndoom",
+      "excadrill",
+      "staraptor"
+    ],
+    [
+      "blastoise",
+      "galvantula",
+      "sceptile"
+    ]
+  ],
+  "uniqueSpecies10": 30,
+  "beforeProfile": "{\"version\":1,\"trainerId\":\"272bc56f-687e-439f-b9fd-f29a326356f1\",\"displayName\":\"Treinador\",\"avatarPreset\":\"default\",\"companionPokemonId\":null,\"stats\":{\"battlesPlayed\":0,\"wins\":0,\"losses\":0,\"winRate\":0,\"currentWinStreak\":0,\"bestWinStreak\":0,\"lastBattleAt\":null,\"leaderUsage\":{}},\"recentBattles\":[]}",
+  "afterExit": {
+    "state": "READY",
+    "battleState": null,
+    "immersive": false,
+    "overflow": "hidden auto",
+    "profile": "{\"version\":1,\"trainerId\":\"272bc56f-687e-439f-b9fd-f29a326356f1\",\"displayName\":\"Treinador\",\"avatarPreset\":\"default\",\"companionPokemonId\":null,\"stats\":{\"battlesPlayed\":0,\"wins\":0,\"losses\":0,\"winRate\":0,\"currentWinStreak\":0,\"bestWinStreak\":0,\"lastBattleAt\":null,\"leaderUsage\":{}},\"recentBattles\":[]}"
+  },
+  "profileUnchanged": true,
+  "consoleErrors": [],
+  "failedRequests": [
+    {
+      "url": "25EEF5F6D5DD345847E0495DDD7A9790",
+      "error": "net::ERR_ABORTED"
+    }
+  ]
+}

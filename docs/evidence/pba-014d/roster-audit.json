@@ -1,0 +1,443 @@
+{
+  "summary": {
+    "species": 72,
+    "valid": 72,
+    "fourMoves": 72,
+    "unsupported": [],
+    "moveRequests": 73
+  },
+  "results": [
+    {
+      "id": 3,
+      "name": "venusaur",
+      "apiName": "venusaur",
+      "supported": 4
+    },
+    {
+      "id": 6,
+      "name": "charizard",
+      "apiName": "charizard",
+      "supported": 4
+    },
+    {
+      "id": 9,
+      "name": "blastoise",
+      "apiName": "blastoise",
+      "supported": 4
+    },
+    {
+      "id": 26,
+      "name": "raichu",
+      "apiName": "raichu",
+      "supported": 4
+    },
+    {
+      "id": 68,
+      "name": "machamp",
+      "apiName": "machamp",
+      "supported": 4
+    },
+    {
+      "id": 94,
+      "name": "gengar",
+      "apiName": "gengar",
+      "supported": 4
+    },
+    {
+      "id": 131,
+      "name": "lapras",
+      "apiName": "lapras",
+      "supported": 4
+    },
+    {
+      "id": 149,
+      "name": "dragonite",
+      "apiName": "dragonite",
+      "supported": 4
+    },
+    {
+      "id": 154,
+      "name": "meganium",
+      "apiName": "meganium",
+      "supported": 4
+    },
+    {
+      "id": 157,
+      "name": "typhlosion",
+      "apiName": "typhlosion",
+      "supported": 4
+    },
+    {
+      "id": 160,
+      "name": "feraligatr",
+      "apiName": "feraligatr",
+      "supported": 4
+    },
+    {
+      "id": 181,
+      "name": "ampharos",
+      "apiName": "ampharos",
+      "supported": 4
+    },
+    {
+      "id": 212,
+      "name": "scizor",
+      "apiName": "scizor",
+      "supported": 4
+    },
+    {
+      "id": 214,
+      "name": "heracross",
+      "apiName": "heracross",
+      "supported": 4
+    },
+    {
+      "id": 229,
+      "name": "houndoom",
+      "apiName": "houndoom",
+      "supported": 4
+    },
+    {
+      "id": 248,
+      "name": "tyranitar",
+      "apiName": "tyranitar",
+      "supported": 4
+    },
+    {
+      "id": 254,
+      "name": "sceptile",
+      "apiName": "sceptile",
+      "supported": 4
+    },
+    {
+      "id": 257,
+      "name": "blaziken",
+      "apiName": "blaziken",
+      "supported": 4
+    },
+    {
+      "id": 260,
+      "name": "swampert",
+      "apiName": "swampert",
+      "supported": 4
+    },
+    {
+      "id": 282,
+      "name": "gardevoir",
+      "apiName": "gardevoir",
+      "supported": 4
+    },
+    {
+      "id": 286,
+      "name": "breloom",
+      "apiName": "breloom",
+      "supported": 4
+    },
+    {
+      "id": 330,
+      "name": "flygon",
+      "apiName": "flygon",
+      "supported": 4
+    },
+    {
+      "id": 350,
+      "name": "milotic",
+      "apiName": "milotic",
+      "supported": 4
+    },
+    {
+      "id": 376,
+      "name": "metagross",
+      "apiName": "metagross",
+      "supported": 4
+    },
+    {
+      "id": 389,
+      "name": "torterra",
+      "apiName": "torterra",
+      "supported": 4
+    },
+    {
+      "id": 392,
+      "name": "infernape",
+      "apiName": "infernape",
+      "supported": 4
+    },
+    {
+      "id": 395,
+      "name": "empoleon",
+      "apiName": "empoleon",
+      "supported": 4
+    },
+    {
+      "id": 398,
+      "name": "staraptor",
+      "apiName": "staraptor",
+      "supported": 4
+    },
+    {
+      "id": 405,
+      "name": "luxray",
+      "apiName": "luxray",
+      "supported": 4
+    },
+    {
+      "id": 407,
+      "name": "roserade",
+      "apiName": "roserade",
+      "supported": 4
+    },
+    {
+      "id": 445,
+      "name": "garchomp",
+      "apiName": "garchomp",
+      "supported": 4
+    },
+    {
+      "id": 461,
+      "name": "weavile",
+      "apiName": "weavile",
+      "supported": 4
+    },
+    {
+      "id": 497,
+      "name": "serperior",
+      "apiName": "serperior",
+      "supported": 4
+    },
+    {
+      "id": 500,
+      "name": "emboar",
+      "apiName": "emboar",
+      "supported": 4
+    },
+    {
+      "id": 503,
+      "name": "samurott",
+      "apiName": "samurott",
+      "supported": 4
+    },
+    {
+      "id": 530,
+      "name": "excadrill",
+      "apiName": "excadrill",
+      "supported": 4
+    },
+    {
+      "id": 553,
+      "name": "krookodile",
+      "apiName": "krookodile",
+      "supported": 4
+    },
+    {
+      "id": 596,
+      "name": "galvantula",
+      "apiName": "galvantula",
+      "supported": 4
+    },
+    {
+      "id": 609,
+      "name": "chandelure",
+      "apiName": "chandelure",
+      "supported": 4
+    },
+    {
+      "id": 612,
+      "name": "haxorus",
+      "apiName": "haxorus",
+      "supported": 4
+    },
+    {
+      "id": 652,
+      "name": "chesnaught",
+      "apiName": "chesnaught",
+      "supported": 4
+    },
+    {
+      "id": 655,
+      "name": "delphox",
+      "apiName": "delphox",
+      "supported": 4
+    },
+    {
+      "id": 658,
+      "name": "greninja",
+      "apiName": "greninja",
+      "supported": 4
+    },
+    {
+      "id": 663,
+      "name": "talonflame",
+      "apiName": "talonflame",
+      "supported": 4
+    },
+    {
+      "id": 681,
+      "name": "aegislash-shield",
+      "apiName": "aegislash-shield",
+      "supported": 4
+    },
+    {
+      "id": 700,
+      "name": "sylveon",
+      "apiName": "sylveon",
+      "supported": 4
+    },
+    {
+      "id": 701,
+      "name": "hawlucha",
+      "apiName": "hawlucha",
+      "supported": 4
+    },
+    {
+      "id": 706,
+      "name": "goodra",
+      "apiName": "goodra",
+      "supported": 4
+    },
+    {
+      "id": 724,
+      "name": "decidueye",
+      "apiName": "decidueye",
+      "supported": 4
+    },
+    {
+      "id": 727,
+      "name": "incineroar",
+      "apiName": "incineroar",
+      "supported": 4
+    },
+    {
+      "id": 730,
+      "name": "primarina",
+      "apiName": "primarina",
+      "supported": 4
+    },
+    {
+      "id": 745,
+      "name": "lycanroc-midday",
+      "apiName": "lycanroc-midday",
+      "supported": 4
+    },
+    {
+      "id": 750,
+      "name": "mudsdale",
+      "apiName": "mudsdale",
+      "supported": 4
+    },
+    {
+      "id": 768,
+      "name": "golisopod",
+      "apiName": "golisopod",
+      "supported": 4
+    },
+    {
+      "id": 778,
+      "name": "mimikyu-disguised",
+      "apiName": "mimikyu-disguised",
+      "supported": 4
+    },
+    {
+      "id": 784,
+      "name": "kommo-o",
+      "apiName": "kommo-o",
+      "supported": 4
+    },
+    {
+      "id": 812,
+      "name": "rillaboom",
+      "apiName": "rillaboom",
+      "supported": 4
+    },
+    {
+      "id": 815,
+      "name": "cinderace",
+      "apiName": "cinderace",
+      "supported": 4
+    },
+    {
+      "id": 818,
+      "name": "inteleon",
+      "apiName": "inteleon",
+      "supported": 4
+    },
+    {
+      "id": 823,
+      "name": "corviknight",
+      "apiName": "corviknight",
+      "supported": 4
+    },
+    {
+      "id": 849,
+      "name": "toxtricity-amped",
+      "apiName": "toxtricity-amped",
+      "supported": 4
+    },
+    {
+      "id": 851,
+      "name": "centiskorch",
+      "apiName": "centiskorch",
+      "supported": 4
+    },
+    {
+      "id": 858,
+      "name": "hatterene",
+      "apiName": "hatterene",
+      "supported": 4
+    },
+    {
+      "id": 887,
+      "name": "dragapult",
+      "apiName": "dragapult",
+      "supported": 4
+    },
+    {
+      "id": 908,
+      "name": "meowscarada",
+      "apiName": "meowscarada",
+      "supported": 4
+    },
+    {
+      "id": 911,
+      "name": "skeledirge",
+      "apiName": "skeledirge",
+      "supported": 4
+    },
+    {
+      "id": 914,
+      "name": "quaquaval",
+      "apiName": "quaquaval",
+      "supported": 4
+    },
+    {
+      "id": 920,
+      "name": "lokix",
+      "apiName": "lokix",
+      "supported": 4
+    },
+    {
+      "id": 923,
+      "name": "pawmot",
+      "apiName": "pawmot",
+      "supported": 4
+    },
+    {
+      "id": 959,
+      "name": "tinkaton",
+      "apiName": "tinkaton",
+      "supported": 4
+    },
+    {
+      "id": 983,
+      "name": "kingambit",
+      "apiName": "kingambit",
+      "supported": 4
+    },
+    {
+      "id": 998,
+      "name": "baxcalibur",
+      "apiName": "baxcalibur",
+      "supported": 4
+    }
+  ]
+}

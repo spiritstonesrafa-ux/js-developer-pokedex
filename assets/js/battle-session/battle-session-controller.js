@@ -250,7 +250,7 @@
         this.playerTeam = await this.hydrator.hydrateTeam(teamIds);
 
         // 2. Constrói e hidrata o time adversário
-        this.enemyTeam = await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride);
+        this.enemyTeam = await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride, { playerTeamIds: teamIds });
 
         // Preflight de Compatibilidade com o Engine (PBA-014C-HARDENING):
         // Se qualquer Pokémon tiver 0 golpes suportados (ex: Ditto com Transform, Wobbuffet com Counter/Mirror Coat),
@@ -594,6 +594,16 @@
       return this.prepareBattle().then(() => this.startBattle());
     }
 
+    abandonBattle() {
+      this.leaveBattle();
+      return this.checkTeamAndInit();
+    }
+
+    returnToPreparation() {
+      this.leaveBattle();
+      return this.checkTeamAndInit();
+    }
+
     /**
      * Cancela recursos ativos e reseta o controlador ao sair da aba ou reiniciar.
      */
@@ -606,6 +616,10 @@
       if (this.compositeAdapter && typeof this.compositeAdapter.cancel === 'function') {
         this.compositeAdapter.cancel();
         this.compositeAdapter.reset();
+      }
+      if (this.view) {
+        if (typeof this.view.closeModal === 'function') this.view.closeModal();
+        if (typeof this.view.setImmersiveMode === 'function') this.view.setImmersiveMode(false);
       }
       this.battleState = null;
       this.uiState = BATTLE_UI_STATES.NO_TEAM;

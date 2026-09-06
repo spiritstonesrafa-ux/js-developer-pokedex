@@ -33,6 +33,11 @@
       this.isReplacementModalOpen = false;
       this.isMuted = false;
       this.activeModal = null;
+      this.activeModalCanClose = true;
+      this.savedScrollY = 0;
+      this.keydownHandler = (event) => {
+        if (event.key === 'Escape' && this.activeModal && this.activeModalCanClose) this.closeModal();
+      };
     }
 
     init() {
@@ -41,6 +46,10 @@
       }
       if (this.sessionController) {
         this.sessionController.setView(this);
+      }
+      if (typeof document !== 'undefined' && !this.hasKeyboardListener) {
+        document.addEventListener('keydown', this.keydownHandler);
+        this.hasKeyboardListener = true;
       }
     }
 
@@ -59,6 +68,7 @@
      */
     renderState(state, data = {}, battleState = null) {
       if (!this.container) return;
+      this.setImmersiveMode(['BATTLE', 'AWAITING_PLAYER_ACTION', 'RESOLVING', 'AWAITING_PLAYER_REPLACEMENT', 'VICTORY', 'DEFEAT'].includes(state));
 
       switch (state) {
         case 'NO_TEAM':
@@ -89,6 +99,44 @@
       }
     }
 
+    setImmersiveMode(active) {
+      if (typeof document === 'undefined') return;
+      if (active) {
+        if (!document.body.classList.contains('battle-immersive-active')) this.savedScrollY = window.scrollY || 0;
+        document.documentElement.classList.add('battle-immersive-active');
+        document.body.classList.add('battle-immersive-active');
+        window.scrollTo(0, 0);
+      } else {
+        document.documentElement.classList.remove('battle-immersive-active');
+        document.body.classList.remove('battle-immersive-active');
+      }
+    }
+
+    requestExitBattle() {
+      const state = this.sessionController ? this.sessionController.uiState : null;
+      const completed = state === 'VICTORY' || state === 'DEFEAT';
+      if (!completed && typeof window !== 'undefined' && !window.confirm('Sair da batalha atual? O resultado não será registrado.')) return false;
+      if (this.sessionController && typeof this.sessionController.abandonBattle === 'function') this.sessionController.abandonBattle();
+      return true;
+    }
+
+    returnToPreparation() {
+      if (this.sessionController && typeof this.sessionController.returnToPreparation === 'function') this.sessionController.returnToPreparation();
+    }
+
+    toggleBattleAudio() {
+      const controller = this.sessionController && this.sessionController.compositeAdapter ? this.sessionController.compositeAdapter.audioController : null;
+      const mixer = controller && controller.mixer;
+      if (!mixer || typeof mixer.setMute !== 'function') return;
+      this.isMuted = !this.isMuted;
+      mixer.setMute(this.isMuted);
+      const button = typeof document !== 'undefined' ? document.getElementById('battleAudioToggle') : null;
+      if (button) {
+        button.setAttribute('aria-pressed', String(this.isMuted));
+        button.setAttribute('aria-label', this.isMuted ? 'Ativar áudio' : 'Silenciar áudio');
+        button.innerHTML = '<i class="fa-solid ' + (this.isMuted ? 'fa-volume-xmark' : 'fa-volume-high') + '"></i>';
+      }
+    }
     /**
      * Resolve o contrato unificado de metadados visuais para qualquer combatente ou membro de equipe.
      * Prioridade estrita de renderização:
@@ -385,19 +433,23 @@
       }).join('');
 
       this.container.innerHTML = `
-        <div class="battle-view-container">
+        <div class="battle-view-container battle-immersive-shell">
           <div class="battle-arena-layout">
             <!-- Barra Superior com Utilitários -->
             <div class="battle-top-bar">
-              <div class="team-status-dots" id="playerTeamDots" title="Status da sua equipe">
-                <i class="fa-solid fa-user" style="font-size: 0.8rem; color: #94a3b8; margin-right: 4px;"></i>
-                ${renderDots(player.team, player.activeIndex)}
+              <button id="btnExitBattle" class="battle-exit-btn" onclick="if(window.battleView) window.battleView.requestExitBattle();" aria-label="Sair da batalha">
+                <i class="fa-solid fa-arrow-left"></i><span>SAIR</span>
+              </button>
+              <div class="team-status-dots" id="playerTeamDots" title="Status da sua equipe" aria-label="Status da sua equipe">
+                <i class="fa-solid fa-user"></i>${renderDots(player.team, player.activeIndex)}
               </div>
               <span id="turnIndicator" class="battle-turn-tag">Turno ${battleState.turn}</span>
-              <div class="team-status-dots" id="enemyTeamDots" title="Status da equipe adversária">
-                ${renderDots(enemy.team, enemy.activeIndex)}
-                <i class="fa-solid fa-robot" style="font-size: 0.8rem; color: #94a3b8; margin-left: 4px;"></i>
+              <div class="team-status-dots" id="enemyTeamDots" title="Status da equipe adversária" aria-label="Status da equipe adversária">
+                ${renderDots(enemy.team, enemy.activeIndex)}<i class="fa-solid fa-robot"></i>
               </div>
+              <button id="battleAudioToggle" class="battle-audio-toggle-btn" onclick="if(window.battleView) window.battleView.toggleBattleAudio();" aria-label="Silenciar áudio" aria-pressed="false">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
             </div>
 
             <!-- HUD do Pokémon Adversário -->
@@ -712,6 +764,8 @@
       if (this.activeModal && this.activeModal.parentNode) {
         this.activeModal.parentNode.removeChild(this.activeModal);
         this.activeModal = null;
+        this.activeModalCanClose = true;
+
       }
     }
 
@@ -727,7 +781,7 @@
       this.closeModal();
 
       this.container.innerHTML = `
-        <div class="battle-view-container">
+        <div class="battle-view-container battle-immersive-shell battle-result-shell">
           <div class="battle-card-panel battle-result-card">
             <div class="battle-panel-icon" style="background: ${isVictory ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #b91c1c)'};">
               <i class="fa-solid ${icon}"></i>
@@ -743,8 +797,8 @@
               <button id="btnRematch" class="btn-battle-action-primary" onclick="if(window.battleSessionController) window.battleSessionController.rematch();">
                 <i class="fa-solid fa-rotate-right"></i> Jogar Novamente
               </button>
-              <button id="btnBackToTeam" class="btn-battle-action-secondary" onclick="if(window.switchAppTab) window.switchAppTab('team');">
-                <i class="fa-solid fa-users"></i> Voltar para Meu Time
+              <button id="btnBackToBattle" class="btn-battle-action-secondary" onclick="if(window.battleView) window.battleView.returnToPreparation();">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
               </button>
             </div>
           </div>

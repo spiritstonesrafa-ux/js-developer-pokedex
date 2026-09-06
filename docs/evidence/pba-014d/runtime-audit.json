@@ -1,0 +1,530 @@
+{
+  "summary": {
+    "species": 72,
+    "fourMoves": 72,
+    "unsupported": [],
+    "warmPrepMs": 44,
+    "switchModal": {
+      "visible": true,
+      "focused": false,
+      "items": 3
+    },
+    "replacementModal": {
+      "exists": true,
+      "items": 3
+    },
+    "resultView": {
+      "rematchVisible": true,
+      "backVisible": true,
+      "scrollY": 0,
+      "scrollHeight": 915,
+      "immersive": true
+    }
+  },
+  "audit": [
+    {
+      "id": 3,
+      "name": "venusaur",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 6,
+      "name": "charizard",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 9,
+      "name": "blastoise",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 26,
+      "name": "raichu",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 68,
+      "name": "machamp",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 94,
+      "name": "gengar",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 131,
+      "name": "lapras",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 149,
+      "name": "dragonite",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 154,
+      "name": "meganium",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 157,
+      "name": "typhlosion",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 160,
+      "name": "feraligatr",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 181,
+      "name": "ampharos",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 212,
+      "name": "scizor",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 214,
+      "name": "heracross",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 229,
+      "name": "houndoom",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 248,
+      "name": "tyranitar",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 254,
+      "name": "sceptile",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 257,
+      "name": "blaziken",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 260,
+      "name": "swampert",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 282,
+      "name": "gardevoir",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 286,
+      "name": "breloom",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 330,
+      "name": "flygon",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 350,
+      "name": "milotic",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 376,
+      "name": "metagross",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 389,
+      "name": "torterra",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 392,
+      "name": "infernape",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 395,
+      "name": "empoleon",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 398,
+      "name": "staraptor",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 405,
+      "name": "luxray",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 407,
+      "name": "roserade",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 445,
+      "name": "garchomp",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 461,
+      "name": "weavile",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 497,
+      "name": "serperior",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 500,
+      "name": "emboar",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 503,
+      "name": "samurott",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 530,
+      "name": "excadrill",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 553,
+      "name": "krookodile",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 596,
+      "name": "galvantula",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 609,
+      "name": "chandelure",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 612,
+      "name": "haxorus",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 652,
+      "name": "chesnaught",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 655,
+      "name": "delphox",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 658,
+      "name": "greninja",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 663,
+      "name": "talonflame",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 681,
+      "name": "aegislash-shield",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 700,
+      "name": "sylveon",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 701,
+      "name": "hawlucha",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 706,
+      "name": "goodra",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 724,
+      "name": "decidueye",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 727,
+      "name": "incineroar",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 730,
+      "name": "primarina",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 745,
+      "name": "lycanroc-midday",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 750,
+      "name": "mudsdale",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 768,
+      "name": "golisopod",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 778,
+      "name": "mimikyu-disguised",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 784,
+      "name": "kommo-o",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 812,
+      "name": "rillaboom",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 815,
+      "name": "cinderace",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 818,
+      "name": "inteleon",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 823,
+      "name": "corviknight",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 849,
+      "name": "toxtricity-amped",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 851,
+      "name": "centiskorch",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 858,
+      "name": "hatterene",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 887,
+      "name": "dragapult",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 908,
+      "name": "meowscarada",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 911,
+      "name": "skeledirge",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 914,
+      "name": "quaquaval",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 920,
+      "name": "lokix",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 923,
+      "name": "pawmot",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 959,
+      "name": "tinkaton",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 983,
+      "name": "kingambit",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    },
+    {
+      "id": 998,
+      "name": "baxcalibur",
+      "moves": 4,
+      "source": "API_MOVESET",
+      "reason": "NONE"
+    }
+  ]
+}

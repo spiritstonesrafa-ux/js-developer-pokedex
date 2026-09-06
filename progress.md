@@ -539,7 +539,7 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `ELIGIBLE_SPECIES_4_MOVE_RATE = 100%`
   - `SPECIAL_LIMITED_SPECIES_SUPPORTED = YES`
   - `STATUS_MOVES = NOT_YET`
-  - `MOVESET_HUMAN_ACCEPTANCE = PENDING`
+  - `MOVESET_HUMAN_ACCEPTANCE = PASS`
   - `PBA_015 = NOT_STARTED`
 
 - **Working Tree**: Homologado tecnicamente com PBA-014C-CLOSE: classificação estrita de suporte a golpes complexos (`hidden-power` como `UNSUPPORTED_DYNAMIC_TYPE` / `DYNAMIC_TYPE_FROM_IVS`, `eruption` e `water-spout` como `UNSUPPORTED_VARIABLE_DAMAGE` / `POWER_FROM_USER_HP`), Unown (#201) com 0 golpes suportados e bloqueado com segurança no preflight da sessão, Kanto pool 13/13 com 4 golpes preservado, e 521 testes automatizados 100% passando.
@@ -549,9 +549,32 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
 ## 7. Próxima Fase Planejada
 
 ```text
-NEXT_PHASE = PBA-015 — Campaign Mode
+NEXT_STEP = WAIT_FOR_HUMAN_PBA_014D_TEST
 ```
 
 *(Atenção: A Fase PBA-015 NÃO deve ser iniciada automaticamente; aguardar validação humana de jogabilidade e solicitação explícita do usuário).*
 
+- **PBA-014D Battle UX & Quick Battle Variety — Technical Acceptance**:
+  - PBA_014C = PASS
+  - MOVESET_HUMAN_ACCEPTANCE = PASS
+  - PBA_014D_TECHNICAL = PASS
+  - IMMERSIVE_BATTLE_VIEW = PASS
+  - DESKTOP_NO_SCROLL = PASS
+  - MOBILE_NO_SCROLL = PASS
+  - MOBILE_MOVES_GRID = 2X2
+  - QUICK_ROSTER_SIZE_BEFORE = 13
+  - QUICK_ROSTER_SIZE = 72
+  - QUICK_ROSTER_GENERATIONS = 9
+  - QUICK_ROSTER_TYPES = 18/18
+  - ROSTER_SPECIES_WITH_4_MOVES = 72/72
+  - OPPONENT_ROTATION = PASS
+  - RECENT_ANTI_REPEAT = PASS
+  - UNIQUE_SPECIES_30_BATTLES = 69
+  - EXACT_TEAM_REPEATS_30_BATTLES = 0
+  - ROSTER_COVERAGE_100_BATTLES = 95.83%
+  - REAL_BROWSER_10_TEAMS_UNIQUE_SPECIES = 30/30
+  - BATTLE_UX_HUMAN_ACCEPTANCE = PENDING
+  - OPPONENT_VARIETY_HUMAN_ACCEPTANCE = PENDING
+  - PBA_015 = NOT_STARTED
 
+- **Working Tree**: PBA-014D technical implementada na mesma SPA; aguarda testes humanos de UX e variedade antes de declarar PBA_014D = PASS.
