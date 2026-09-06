@@ -97,7 +97,9 @@ A regra de suporte a golpes estabelece que **`damageClass === 'physical'|'specia
 - `UNSUPPORTED_STATUS`: Golpes sem dano direto (`status`).
 - `UNSUPPORTED_DYNAMIC_TYPE`: Golpes cujo tipo depende de fatores em tempo de execução ou atributos individuais fora do modelo atual.
   - **`hidden-power`**: Tipo dinâmico derivado dos IVs do Pokémon (`DYNAMIC_TYPE_FROM_IVS`). Status: **DEFERRED**. Não é aceito como ataque normal estático.
-- `UNSUPPORTED_VARIABLE_DAMAGE`: Golpes cujo poder base é variável e dependente de mecânicas complexas não modeladas (quando `power === null` na PokéAPI: *Low Kick*, *Grass Knot*, *Flail*, *Reversal*, *Counter*, *Mirror Coat*).
+- `UNSUPPORTED_VARIABLE_DAMAGE`: Golpes cujo poder base é variável e dependente de mecânicas complexas não modeladas (quando `power === null` na PokéAPI: *Low Kick*, *Grass Knot*, *Flail*, *Reversal*, *Counter*, *Mirror Coat*, ou quando o poder na PokéAPI é positivo mas depende de runtime dinâmico não modelado):
+  - **`eruption`**: Poder proporcional à razão de HP atual do usuário $\lfloor 150 \times \text{currentHp} / \text{maxHp} \rfloor$ (`POWER_FROM_USER_HP`). Status: **DEFERRED**. Não é aceito como poder constante 150.
+  - **`water-spout`**: Poder proporcional à razão de HP atual do usuário $\lfloor 150 \times \text{currentHp} / \text{maxHp} \rfloor$ (`POWER_FROM_USER_HP`). Status: **DEFERRED**. Não é aceito como poder constante 150.
 
 ### 7.2 Consequência para Unown (#201)
 Como *Hidden Power* é o único golpe da biblioteca de Unown na PokéAPI, e *Hidden Power* é classificado como `UNSUPPORTED_DYNAMIC_TYPE`:

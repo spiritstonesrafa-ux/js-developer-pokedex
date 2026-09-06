@@ -510,8 +510,14 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `PBA_014C_TECHNICAL = PASS`
   - `PBA_014C_HARDENING = PASS`
   - `PBA_014C_FINAL_HARDENING = PASS`
+  - `PBA_014C_CLOSE = PASS`
   - `HIDDEN_POWER_SUPPORTED = NO`
   - `HIDDEN_POWER_DYNAMIC_TYPE_UNMODELED = YES`
+  - `ERUPTION_SUPPORTED = NO`
+  - `ERUPTION_REASON = POWER_FROM_USER_HP`
+  - `WATER_SPOUT_SUPPORTED = NO`
+  - `WATER_SPOUT_REASON = POWER_FROM_USER_HP`
+  - `UNSUPPORTED_COMPLEX_MOVE_CLASSIFICATION = PASS`
   - `UNOWN_SUPPORTED_OFFENSIVE_MOVES = 0`
   - `UNOWN_BATTLE_COMPATIBLE = NO`
   - `UNOWN_FAKE_MOVE_INJECTED = NO`
@@ -536,7 +542,7 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `MOVESET_HUMAN_ACCEPTANCE = PENDING`
   - `PBA_015 = NOT_STARTED`
 
-- **Working Tree**: Homologado tecnicamente com PBA-014C-FINAL-HARDENING: classificação estrita de suporte a golpes (physical/special + power > 0 insuficiente sem compatibilidade mecânica), Hidden Power classificado como `UNSUPPORTED_DYNAMIC_TYPE` (`DYNAMIC_TYPE_FROM_IVS`), Unown (#201) com 0 golpes suportados e bloqueado com segurança no preflight da sessão, Kanto pool 13/13 com 4 golpes preservado, e 518 testes automatizados 100% passando.
+- **Working Tree**: Homologado tecnicamente com PBA-014C-CLOSE: classificação estrita de suporte a golpes complexos (`hidden-power` como `UNSUPPORTED_DYNAMIC_TYPE` / `DYNAMIC_TYPE_FROM_IVS`, `eruption` e `water-spout` como `UNSUPPORTED_VARIABLE_DAMAGE` / `POWER_FROM_USER_HP`), Unown (#201) com 0 golpes suportados e bloqueado com segurança no preflight da sessão, Kanto pool 13/13 com 4 golpes preservado, e 521 testes automatizados 100% passando.
 
 ---
 

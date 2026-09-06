@@ -69,11 +69,15 @@
       ZERO_SUPPORTED_ENGINE_MOVES: 'ZERO_SUPPORTED_ENGINE_MOVES',
       NETWORK_FALLBACK: 'NETWORK_FALLBACK'
     },
-    UNSUPPORTED_COMPLEX_MOVES: { 'hidden-power': { category: 'UNSUPPORTED_DYNAMIC_TYPE', reason: 'DYNAMIC_TYPE_FROM_IVS' } },
+    UNSUPPORTED_COMPLEX_MOVES: {
+      'hidden-power': { category: 'UNSUPPORTED_DYNAMIC_TYPE', reason: 'DYNAMIC_TYPE_FROM_IVS' },
+      'eruption': { category: 'UNSUPPORTED_VARIABLE_DAMAGE', reason: 'POWER_FROM_USER_HP' },
+      'water-spout': { category: 'UNSUPPORTED_VARIABLE_DAMAGE', reason: 'POWER_FROM_USER_HP' }
+    },
     isMechanicallySupportedMove: (m) => {
       if (!m) return false;
       const n = String(m.name || '').toLowerCase();
-      if (n === 'hidden-power') return false;
+      if (n === 'hidden-power' || n === 'eruption' || n === 'water-spout') return false;
       const dc = String(m.damageClass || m.damage_class?.name || '').toLowerCase();
       return (dc === 'physical' || dc === 'special') && Number(m.power) > 0;
     }

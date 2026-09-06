@@ -53,6 +53,8 @@ const MOCK_MOVE_DB = {
   counter: { id: 68, name: 'counter', type: 'fighting', power: null, accuracy: 100, pp: 20, damageClass: 'physical' },
   flail: { id: 175, name: 'flail', type: 'normal', power: null, accuracy: 100, pp: 15, damageClass: 'physical' },
   'hidden-power': { id: 237, name: 'hidden-power', type: 'normal', power: 60, accuracy: 100, pp: 15, damageClass: 'special' },
+  eruption: { id: 284, name: 'eruption', type: 'fire', power: 150, accuracy: 100, pp: 5, damageClass: 'special' },
+  'water-spout': { id: 323, name: 'water-spout', type: 'water', power: 150, accuracy: 100, pp: 5, damageClass: 'special' },
   // Offensive moves
   tackle: { id: 33, name: 'tackle', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' },
   scratch: { id: 10, name: 'scratch', type: 'normal', power: 40, accuracy: 100, pp: 35, damageClass: 'physical' },
@@ -868,6 +870,76 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
       controller.incompatibilityError.includes('Unown ainda não é compatível com a Battle Arena'),
       `Mensagem deve ser específica e amigável: ${controller.incompatibilityError}`
     );
+  });
+
+  it('ERUPTION-01 — Eruption Classification: special with power 150 is rejected as unsupported variable damage', () => {
+    const eruptionMock = {
+      id: 284,
+      name: 'eruption',
+      damageClass: 'special',
+      power: 150,
+      accuracy: 100,
+      pp: 5,
+      type: 'fire'
+    };
+
+    assert.strictEqual(
+      isMechanicallySupportedMove(eruptionMock),
+      false,
+      'Eruption NÃO deve ser aceito como golpe simples porque seu dano depende do HP restante do usuário'
+    );
+    assert.ok(UNSUPPORTED_COMPLEX_MOVES['eruption'], 'eruption deve constar em UNSUPPORTED_COMPLEX_MOVES');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['eruption'].category, 'UNSUPPORTED_VARIABLE_DAMAGE');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['eruption'].reason, 'POWER_FROM_USER_HP');
+  });
+
+  it('WATER-SPOUT-01 — Water Spout Classification: special with power 150 is rejected as unsupported variable damage', () => {
+    const waterSpoutMock = {
+      id: 323,
+      name: 'water-spout',
+      damageClass: 'special',
+      power: 150,
+      accuracy: 100,
+      pp: 5,
+      type: 'water'
+    };
+
+    assert.strictEqual(
+      isMechanicallySupportedMove(waterSpoutMock),
+      false,
+      'Water Spout NÃO deve ser aceito como golpe simples porque seu dano depende do HP restante do usuário'
+    );
+    assert.ok(UNSUPPORTED_COMPLEX_MOVES['water-spout'], 'water-spout deve constar em UNSUPPORTED_COMPLEX_MOVES');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['water-spout'].category, 'UNSUPPORTED_VARIABLE_DAMAGE');
+    assert.strictEqual(UNSUPPORTED_COMPLEX_MOVES['water-spout'].reason, 'POWER_FROM_USER_HP');
+  });
+
+  it('LOADOUT-REGRESSION-HP-RATIO-01 — Species with Eruption/Water Spout ignores them and still selects 4 supported moves', async () => {
+    const mockApi = createMockApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+
+    // Typhlosion-like mock com Eruption e 5 outros ataques suportados
+    const firePokemon = {
+      id: 157,
+      name: 'typhlosion',
+      types: ['fire'],
+      stats: { hp: 78, attack: 84, defense: 78, specialAttack: 109, specialDefense: 85, speed: 100 },
+      moves: [
+        { name: 'eruption' },
+        { name: 'flamethrower' },
+        { name: 'ember' },
+        { name: 'fire-punch' },
+        { name: 'swift' },
+        { name: 'scratch' }
+      ]
+    };
+
+    const hydrated = await hydrator.hydratePokemon(firePokemon);
+
+    assert.strictEqual(hydrated.moves.length, 4, 'Deve selecionar exatamente 4 ataques suportados');
+    assert.ok(!hydrated.moves.some(m => m.name === 'eruption'), 'Eruption não deve estar no loadout final');
+    assert.strictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.API_MOVESET);
+    assert.strictEqual(hydrated.moveLoadoutReason, MOVESET_LIMIT_REASON.NONE);
   });
 
 });

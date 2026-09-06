@@ -65,15 +65,27 @@
 
   /**
    * Catálogo de golpes ofensivos cuja mecânica especial de dano/tipo não pode ser representada
-   * pelo modelo de batalha atual (PBA-014C-FINAL-HARDENING).
+   * pelo modelo de batalha atual (PBA-014C-FINAL-HARDENING / PBA-014C-CLOSE).
    * Motivos:
    * - 'hidden-power': tipo dinâmico derivado dos IVs do Pokémon (DYNAMIC_TYPE_FROM_IVS).
+   * - 'eruption': poder variável dependente do HP restante do usuário (POWER_FROM_USER_HP).
+   * - 'water-spout': poder variável dependente do HP restante do usuário (POWER_FROM_USER_HP).
    */
   const UNSUPPORTED_COMPLEX_MOVES = Object.freeze({
     'hidden-power': Object.freeze({
       name: 'hidden-power',
       category: 'UNSUPPORTED_DYNAMIC_TYPE',
       reason: 'DYNAMIC_TYPE_FROM_IVS'
+    }),
+    'eruption': Object.freeze({
+      name: 'eruption',
+      category: 'UNSUPPORTED_VARIABLE_DAMAGE',
+      reason: 'POWER_FROM_USER_HP'
+    }),
+    'water-spout': Object.freeze({
+      name: 'water-spout',
+      category: 'UNSUPPORTED_VARIABLE_DAMAGE',
+      reason: 'POWER_FROM_USER_HP'
     })
   });
 
