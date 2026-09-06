@@ -535,7 +535,10 @@
               result: isVictory ? 'VICTORY' : 'DEFEAT',
               turns: this.battleState && this.battleState.turn ? this.battleState.turn : 1,
               leaderId,
-              opponentName: oppName
+              opponentName: oppName,
+              mode: this.sessionOptions?.metadata?.mode === 'CAMPAIGN' ? 'CAMPAIGN' : 'QUICK',
+              campaignKind: this.sessionOptions?.metadata?.kind || null,
+              campaignChallengeId: this.sessionOptions?.metadata?.id || null
             });
           }
         } catch (err) {
@@ -647,3 +650,4 @@
     Object.assign(window.PBABattleSession, exportsObj);
   }
 })();
+

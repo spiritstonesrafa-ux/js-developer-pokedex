@@ -33,8 +33,12 @@
  const MASTERS=Object.freeze(M.map(([type,trainerName,trainerTitle,badgeName,difficulty,team])=>Object.freeze({challengeId:`master-${type}`,type,trainerName,trainerTitle,badgeName,difficulty,description:`Enfrente ${trainerName}, ${trainerTitle}.`,team:Object.freeze(team.map(x=>p(x[0],x[1],x[2],x[3],null)))})));
  const MASTER_SPECIES=Object.freeze(MASTERS.flatMap(m=>m.team));
  // Elite trio intentionally comes from the objective master ranking; it is a rematch roster, not a separate recruit catalog.
- const SUPER_TEAM=Object.freeze([p(887,'dragapult',['dragon','ghost'],600,9),p(376,'metagross',['steel','psychic'],600,3),p(149,'dragonite',['dragon','flying'],600,1)]);
+ const SUPER_TEAM=Object.freeze([p(493,'arceus',['normal'],720,4),p(890,'eternatus',['poison','dragon'],690,8),p(150,'mewtwo',['psychic'],680,1)]);
+ const SUPER_AUDIT=Object.freeze([{id:493,name:'arceus',bst:720,attack:120,specialAttack:120,speed:120,selected:true,reason:'GLOBAL_RANK_1'},{id:890,name:'eternatus',bst:690,attack:85,specialAttack:145,speed:130,selected:true,reason:'GLOBAL_RANK_2'},{id:150,name:'mewtwo',bst:680,attack:110,specialAttack:154,speed:130,selected:true,reason:'GLOBAL_RANK_3'},{id:384,name:'rayquaza',bst:680,attack:150,specialAttack:150,speed:95,selected:false,reason:'LOWER_TIEBREAK'},{id:249,name:'lugia',bst:680,attack:90,specialAttack:90,speed:110,selected:false,reason:'LOWER_TIEBREAK'},{id:250,name:'ho-oh',bst:680,attack:130,specialAttack:110,speed:90,selected:false,reason:'LOWER_TIEBREAK'},{id:382,name:'kyogre',bst:670,attack:100,specialAttack:150,speed:90,selected:false,reason:'LOWER_BST'},{id:383,name:'groudon',bst:670,attack:150,specialAttack:100,speed:90,selected:false,reason:'LOWER_BST'},{id:289,name:'slaking',bst:670,attack:160,specialAttack:95,speed:100,selected:false,reason:'LOWER_BST'},{id:635,name:'hydreigon',bst:600,attack:105,specialAttack:125,speed:98,selected:false,reason:'LOWER_BST'}]);
  const ALL=Object.freeze([...DRAFT,...MASTER_SPECIES]); const byId=id=>ALL.find(x=>x.id===Number(id))||SUPER_TEAM.find(x=>x.id===Number(id))||null;
- const api=Object.freeze({DRAFT,MASTERS,MASTER_SPECIES,SUPER_TEAM,byId,allMasterIds:MASTER_SPECIES.map(x=>x.id),startingStats:{min:Math.min(...DRAFT.map(x=>x.bst)),max:Math.max(...DRAFT.map(x=>x.bst)),average:Math.round(DRAFT.reduce((s,x)=>s+x.bst,0)/DRAFT.length)}});
+ const api=Object.freeze({DRAFT,MASTERS,MASTER_SPECIES,SUPER_TEAM,SUPER_AUDIT,byId,allMasterIds:MASTER_SPECIES.map(x=>x.id),startingStats:{min:Math.min(...DRAFT.map(x=>x.bst)),max:Math.max(...DRAFT.map(x=>x.bst)),average:Math.round(DRAFT.reduce((s,x)=>s+x.bst,0)/DRAFT.length)}});
  if(typeof module!=='undefined'&&module.exports)module.exports=api; else {window.PBACampaign=window.PBACampaign||{};Object.assign(window.PBACampaign,api);}
 })();
+
+
+

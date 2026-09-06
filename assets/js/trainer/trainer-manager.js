@@ -403,6 +403,9 @@
         turns,
         leaderId,
         opponentName,
+        mode: battleSummary.mode === 'CAMPAIGN' ? 'CAMPAIGN' : 'QUICK',
+        campaignKind: typeof battleSummary.campaignKind === 'string' ? battleSummary.campaignKind : null,
+        campaignChallengeId: typeof battleSummary.campaignChallengeId === 'string' ? battleSummary.campaignChallengeId : null,
         date: 'Hoje',
         timestamp: Date.now()
       };
@@ -478,3 +481,4 @@
     }
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this);
+

@@ -1,9 +1,7 @@
 # Circuito dos Mestres
 
-A Campanha é uma jornada independente de `team.current`. O jogador escolhe exatamente seis Pokémon do draft de 36 espécies (quatro de cada geração) e os mantém até o reset. Os dezoito Mestres ficam livres desde o início; cada primeira vitória concede uma insígnia e abre uma escolha de um recruta entre a equipe derrotada. O elenco é derivado: 6 iniciais + 18 recrutas + 1 elite.
+The campaign is independent from `team.current`: choose six of the 36 starters, earn one chosen recruit from each Master, then one Super recruit for a maximum roster of 25. `campaign.progress` is versioned, sanitizes invalid data, bounds idempotent battle IDs, and reset removes only campaign progress.
 
-`campaign.progress` (versão 1) mantém apenas IDs e estado. JSON inválido, versões desconhecidas, IDs fora do catálogo e recompensas inconsistentes retornam a um estado seguro. Resultados usam `battleId` e uma janela de 96 IDs para idempotência. Reset remove somente essa chave.
+CampaignBattleCoordinator supplies the existing BattleSessionController with IDs, metadata and optional modifiers. Campaign results return to Campaign and pending rewards survive reload. Super victory uses champion context before recruit choice. Claiming it reveals the final Shadow challenge once. Shadow reuses the Super team and applies only `max(2, base multiplier)` to enemy attacks; player effectiveness remains canonical.
 
-A CampaignBattleCoordinator fornece times, metadata e modificadores à BattleSessionController existente; não há segunda arena ou engine. Depois das 18 insígnias e recompensas, o Super Treinador usa as três espécies de BST 600 mais altas no ranking dos Mestres, com desempate por maior atributo ofensivo, Speed e ID. Após a recompensa há uma revelação final; o mesmo trio volta com Shadow Aura, que altera somente a efetividade ofensiva inimiga: `max(2, multiplicador-base)`. O jogador permanece na tabela normal. Vitória conclui a jornada sem novo recruta.
-
-O Perfil registra as batalhas concluídas via o mesmo `battleId`; abandono não registra progresso nem estatísticas.
+Trainer history supports optional campaign mode/kind/challenge fields without breaking old Quick records.

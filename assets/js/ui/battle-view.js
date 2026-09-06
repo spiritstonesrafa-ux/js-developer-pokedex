@@ -124,6 +124,11 @@
       if (this.sessionController && typeof this.sessionController.returnToPreparation === 'function') this.sessionController.returnToPreparation();
     }
 
+    returnToCampaign() {
+      if (this.sessionController) this.sessionController.leaveBattle();
+      if (typeof window !== 'undefined' && window.switchAppTab) window.switchAppTab('campaign');
+    }
+
     toggleBattleAudio() {
       const controller = this.sessionController && this.sessionController.compositeAdapter ? this.sessionController.compositeAdapter.audioController : null;
       const mixer = controller && controller.mixer;
@@ -774,7 +779,9 @@
      */
     renderResultView(state, data = {}, battleState = null) {
       const isVictory = state === 'VICTORY';
-      const title = isVictory ? 'VITÓRIA!' : 'DERROTA!';
+      const campaignMeta = this.sessionController?.sessionOptions?.metadata;
+      const campaignBattle = campaignMeta?.mode === 'CAMPAIGN';
+      const title = isVictory ? (campaignBattle && campaignMeta.kind === 'SUPER' ? 'SUPER TREINADOR DERROTADO!' : 'VITÓRIA!') : 'DERROTA!';
       const badgeClass = isVictory ? 'victory' : 'defeat';
       const icon = isVictory ? 'fa-trophy' : 'fa-heart-crack';
 
@@ -794,12 +801,7 @@
             </p>
 
             <div class="battle-result-buttons-row">
-              <button id="btnRematch" class="btn-battle-action-primary" onclick="if(window.battleSessionController) window.battleSessionController.rematch();">
-                <i class="fa-solid fa-rotate-right"></i> Jogar Novamente
-              </button>
-              <button id="btnBackToBattle" class="btn-battle-action-secondary" onclick="if(window.battleView) window.battleView.returnToPreparation();">
-                <i class="fa-solid fa-arrow-left"></i> Voltar
-              </button>
+              ${campaignBattle ? `<button id="btnCampaignReturn" class="btn-battle-action-primary" onclick="if(window.battleView) window.battleView.returnToCampaign();"><i class="fa-solid fa-trophy"></i> ${isVictory ? 'ESCOLHER RECOMPENSA' : 'VOLTAR À CAMPANHA'}</button>` : `<button id="btnRematch" class="btn-battle-action-primary" onclick="if(window.battleSessionController) window.battleSessionController.rematch();"><i class="fa-solid fa-rotate-right"></i> Jogar Novamente</button><button id="btnBackToBattle" class="btn-battle-action-secondary" onclick="if(window.battleView) window.battleView.returnToPreparation();"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`}
             </div>
           </div>
         </div>
@@ -920,3 +922,4 @@
     Object.assign(window.PBABattleUi, exportsObj);
   }
 })();
+
