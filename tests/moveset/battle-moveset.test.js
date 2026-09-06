@@ -626,4 +626,136 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
     assert.strictEqual(rate, 100, `Taxa de 4 golpes para espécies elegíveis deve ser 100% (atual: ${rate}%)`);
   });
 
+  it('ZERO-SUPPORTED-01 — Zero-Supported Engine Moves: API OK with 100% unsupported moves yields moves=[], UNSUPPORTED_ENGINE_MOVESET, ZERO_SUPPORTED_ENGINE_MOVES, zero fake moves', async () => {
+    // Fixture: API responde normalmente com candidatos Transform, Growl, Protect
+    // Todos resolvidos com sucesso pela API. Todos incompatíveis com o Engine.
+    const mockApi = createMockApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+
+    const zeroSupportedMon = {
+      id: 132,
+      name: 'ditto',
+      types: ['normal'],
+      stats: { hp: 48, attack: 48, defense: 48, specialAttack: 48, specialDefense: 48, speed: 48 },
+      moves: [
+        { name: 'transform' }, // status move
+        { name: 'growl' },     // status move
+        { name: 'protect' }    // status move
+      ]
+    };
+
+    const hydrated = await hydrator.hydratePokemon(zeroSupportedMon);
+
+    assert.strictEqual(hydrated.moves.length, 0, 'Moves deve ser array vazio quando 0 golpes suportados');
+    assert.strictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET, 'Source deve ser UNSUPPORTED_ENGINE_MOVESET');
+    assert.strictEqual(hydrated.moveLoadoutReason, MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES, 'Reason deve ser ZERO_SUPPORTED_ENGINE_MOVES');
+    assert.notStrictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.NETWORK_FALLBACK_MOVESET, 'Não pode utilizar NETWORK_FALLBACK_MOVESET quando API respondeu com sucesso');
+    assert.ok(!hydrated.moves.some(m => m.name === 'tackle'), 'NÃO pode injetar Tackle artificialmente');
+
+    const diag = hydrator.lastLoadoutDiagnostic;
+    assert.ok(diag, 'Deve expor diagnóstico de resolução');
+    assert.strictEqual(diag.candidateCount, 3);
+    assert.strictEqual(diag.moveDetailSuccesses, 3);
+    assert.strictEqual(diag.moveDetailFailures, 0);
+    assert.strictEqual(diag.supportedCount, 0);
+    assert.strictEqual(diag.source, MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET);
+    assert.strictEqual(diag.reason, MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES);
+  });
+
+  it('NETWORK-FALLBACK-01 — Genuine Network Failure: Real network error triggers NETWORK_FALLBACK_MOVESET', async () => {
+    // Fixture: Todas as chamadas de rede falham
+    const mockApi = createMockApi({
+      tackle: 'FAIL',
+      growl: 'FAIL',
+      scratch: 'FAIL'
+    });
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+
+    const netFailMon = {
+      id: 999,
+      name: 'network-fail-mon',
+      types: ['water'],
+      stats: { hp: 50, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 },
+      moves: [
+        { name: 'growl' },
+        { name: 'scratch' }
+      ]
+    };
+
+    const hydrated = await hydrator.hydratePokemon(netFailMon);
+
+    assert.ok(hydrated.moves.length >= 1, 'Deve possuir golpes de fallback de contingência');
+    assert.strictEqual(hydrated.moveLoadoutSource, MOVESET_LOADOUT_SOURCE.NETWORK_FALLBACK_MOVESET);
+    assert.strictEqual(hydrated.moveLoadoutReason, MOVESET_LIMIT_REASON.NETWORK_FALLBACK);
+
+    const diag = hydrator.lastLoadoutDiagnostic;
+    assert.ok(diag, 'Deve expor diagnóstico de resolução');
+    assert.strictEqual(diag.moveDetailSuccesses, 0);
+    assert.ok(diag.moveDetailFailures > 0, 'Deve registrar falhas de rede');
+    assert.strictEqual(diag.source, MOVESET_LOADOUT_SOURCE.NETWORK_FALLBACK_MOVESET);
+    assert.strictEqual(diag.reason, MOVESET_LIMIT_REASON.NETWORK_FALLBACK);
+  });
+
+  it('SESSION-PREFLIGHT-01 — Session Blocks Zero-Supported Combatant: startBattle aborted cleanly without engine call', async () => {
+    const { BattleSessionController } = require('../../assets/js/battle-session/battle-session-controller.js');
+    const mockApi = createMockApi();
+    const hydrator = new BattleTeamHydrator({ api: mockApi });
+
+    let engineCalled = false;
+    const mockEngine = {
+      createTeamBattle: () => {
+        engineCalled = true;
+        return { player: { team: [] }, enemy: { team: [] } };
+      }
+    };
+
+    // Equipe: 2 compatíveis (Pikachu #25, Charmander #4) e 1 incompatível (Ditto com 0 golpes suportados)
+    const customTeam = [
+      { id: 25, name: 'pikachu', types: ['electric'], stats: { hp: 50, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 }, moves: [{ name: 'thunderbolt' }, { name: 'tackle' }, { name: 'quick-attack' }, { name: 'thunder-punch' }] },
+      { id: 132, name: 'ditto', types: ['normal'], stats: { hp: 48, attack: 48, defense: 48, specialAttack: 48, specialDefense: 48, speed: 48 }, moves: [], moveLoadoutSource: MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET, moveLoadoutReason: MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES },
+      { id: 4, name: 'charmander', types: ['fire'], stats: { hp: 50, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 }, moves: [{ name: 'ember' }, { name: 'flamethrower' }, { name: 'scratch' }, { name: 'fire-punch' }] }
+    ];
+
+    const mockTeamStore = {
+      load: () => [25, 132, 4]
+    };
+
+    const customHydrator = {
+      async hydrateTeam(ids) {
+        return customTeam;
+      }
+    };
+
+    const mockOpponentFactory = {
+      async createOpponentTeam() {
+        return [
+          { id: 3, name: 'venusaur', types: ['grass'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'vine-whip', power: 45, pp: 25, type: 'grass', damageClass: 'physical' }] },
+          { id: 6, name: 'charizard', types: ['fire'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'flamethrower', power: 90, pp: 15, type: 'fire', damageClass: 'special' }] },
+          { id: 9, name: 'blastoise', types: ['water'], stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 }, moves: [{ name: 'water-gun', power: 40, pp: 25, type: 'water', damageClass: 'special' }] }
+        ];
+      }
+    };
+
+    const controller = new BattleSessionController({
+      hydrator: customHydrator,
+      teamStore: mockTeamStore,
+      engine: mockEngine,
+      opponentFactory: mockOpponentFactory
+    });
+
+    let renderedStates = [];
+    controller.onStateChange((st, data) => {
+      renderedStates.push({ st, data });
+    });
+
+    // Tenta iniciar a batalha com Ditto incompatível
+    await controller.startBattle();
+
+    assert.strictEqual(engineCalled, false, 'BattleEngine NUNCA deve ser chamado para equipe incompatível');
+    assert.strictEqual(controller.battleState, null, 'battleState deve permanecer nulo');
+    assert.strictEqual(controller.uiState, 'READY', 'UI state deve retornar para READY com alerta');
+    assert.ok(controller.incompatibilityError, 'Deve registrar mensagem de incompatibilidade');
+    assert.ok(controller.incompatibilityError.includes('Ditto ainda não é compatível com a Battle Arena'), `Mensagem deve ser controlada: ${controller.incompatibilityError}`);
+  });
+
 });

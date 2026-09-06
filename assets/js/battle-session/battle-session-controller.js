@@ -58,7 +58,12 @@
     audioControllerModule = window.PBABattleAudio || {};
   }
 
-  const { BATTLE_UI_STATES, SESSION_CONFIG } = sessionConstants || {
+  const {
+    BATTLE_UI_STATES,
+    SESSION_CONFIG,
+    MOVESET_LOADOUT_SOURCE,
+    MOVESET_LIMIT_REASON
+  } = sessionConstants || {
     BATTLE_UI_STATES: {
       NO_TEAM: 'NO_TEAM',
       READY: 'READY',
@@ -71,7 +76,19 @@
       DEFEAT: 'DEFEAT',
       ERROR: 'ERROR'
     },
-    SESSION_CONFIG: { TEAM_SIZE: 3 }
+    SESSION_CONFIG: { TEAM_SIZE: 3 },
+    MOVESET_LOADOUT_SOURCE: {
+      API_MOVESET: 'API_MOVESET',
+      LIMITED_API_MOVESET: 'LIMITED_API_MOVESET',
+      UNSUPPORTED_ENGINE_MOVESET: 'UNSUPPORTED_ENGINE_MOVESET',
+      NETWORK_FALLBACK_MOVESET: 'NETWORK_FALLBACK_MOVESET'
+    },
+    MOVESET_LIMIT_REASON: {
+      NONE: 'NONE',
+      ENGINE_CAPABILITY_LIMIT: 'ENGINE_CAPABILITY_LIMIT',
+      ZERO_SUPPORTED_ENGINE_MOVES: 'ZERO_SUPPORTED_ENGINE_MOVES',
+      NETWORK_FALLBACK: 'NETWORK_FALLBACK'
+    }
   };
 
   /**
@@ -235,6 +252,36 @@
         // 2. Constrói e hidrata o time adversário
         this.enemyTeam = await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride);
 
+        // Preflight de Compatibilidade com o Engine (PBA-014C-HARDENING):
+        // Se qualquer Pokémon tiver 0 golpes suportados (ex: Ditto com Transform, Wobbuffet com Counter/Mirror Coat),
+        // bloqueia a batalha de forma controlada sem crashar e sem acionar o BattleEngine.
+        const incompatiblePlayer = (this.playerTeam || []).find(
+          p => !p.moves || p.moves.length === 0 || p.moveLoadoutReason === MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES
+        );
+        const incompatibleEnemy = (this.enemyTeam || []).find(
+          p => !p.moves || p.moves.length === 0 || p.moveLoadoutReason === MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES
+        );
+
+        if (incompatiblePlayer || incompatibleEnemy) {
+          const incompatibleMon = incompatiblePlayer || incompatibleEnemy;
+          const rawName = incompatibleMon.name || 'Pokémon';
+          const capitalizedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+          const errorMessage = `${capitalizedName} ainda não é compatível com a Battle Arena porque seus golpes dependem de mecânicas que ainda não são suportadas.`;
+
+          this.battleState = null;
+          this.incompatibilityError = errorMessage;
+          this.notifyState(BATTLE_UI_STATES.READY, {
+            prepared: false,
+            incompatibilityError: errorMessage,
+            incompatiblePokemon: incompatibleMon,
+            playerTeam: this.playerTeam,
+            enemyTeam: this.enemyTeam
+          });
+          return null;
+        }
+
+        this.incompatibilityError = null;
+
         // 3. Cria a batalha 3x3 no Battle Engine
         this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam);
 
@@ -278,6 +325,11 @@
     async startBattle() {
       if (!this.battleState) {
         await this.prepareBattle();
+      }
+
+      if (!this.battleState) {
+        // Preflight de compatibilidade bloqueou a batalha ou preparação falhou
+        return;
       }
 
       // Tenta desbloquear áudio se disponível no navegador

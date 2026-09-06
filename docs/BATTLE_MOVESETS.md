@@ -72,17 +72,34 @@ Após a obtenção da pool de candidatos válidos, o seletor pontua cada golpe s
 
 ---
 
-## 6. Tratamento de Espécies Especiais e Limitadas
-Espécies que comprovadamente não possuem 4 ataques suportados pelo Battle Engine (ex: Metapod e Kakuna com apenas *Bug Bite* e *Electroweb*; Magikarp com *Tackle*, *Hydro Pump* e *Bounce*; Ditto com apenas *Transform*):
-- **Não recebem golpes inventados** (ex: proibido injetar Tackle em Metapod apenas para fechar 4).
-- Moveset final possui exatamente a quantidade de ataques suportados (`< 4`).
-- Metadados explícitos registrados no combatente:
-  - `moveLoadoutSource: 'LIMITED_API_MOVESET'`
-  - `moveLoadoutReason: 'ENGINE_CAPABILITY_LIMIT'`
+## 6. Estados e Razões de Moveset (PBA-014C-HARDENING)
+O sistema estabelece uma separação semântica estrita entre **limitação do Engine** e **falha real de rede**:
+
+### 6.1 Fontes (`moveLoadoutSource`)
+- `API_MOVESET`: Obteve o alvo completo de 4 golpes válidos a partir da PokéAPI.
+- `LIMITED_API_MOVESET`: A espécie possui entre 1 e 3 golpes ofensivos suportados pelo Engine na totalidade da biblioteca da PokéAPI (ex: Metapod com 2). Zero golpes falsos injetados.
+- `UNSUPPORTED_ENGINE_MOVESET`: A PokéAPI respondeu corretamente, mas 100% dos golpes da espécie dependem de mecânicas ainda não suportadas pelo Engine (ex: *Transform* em Ditto, *Counter*/*Mirror Coat* em Wobbuffet, *Sketch* em Smeargle). O combatente recebe `moves = []`. Zero golpes falsos injetados.
+- `NETWORK_FALLBACK_MOVESET`: Ocorre **estritamente** quando há evidência de falha de rede/PokéAPI indisponível. Requer `NETWORK_OR_API_FAILURE_DETECTED = YES`.
+
+### 6.2 Motivos (`moveLoadoutReason`)
+- `NONE`: Carga completa e normal de 4 golpes.
+- `ENGINE_CAPABILITY_LIMIT`: Espécie com 1 a 3 golpes suportados na PokéAPI.
+- `ZERO_SUPPORTED_ENGINE_MOVES`: Espécie com 0 golpes suportados no Engine atual.
+- `NETWORK_FALLBACK`: Contingência por indisponibilidade de rede ou falha total de requisições.
 
 ---
 
-## 7. Desempenho de Rede e Cache em Memória
+## 7. Preflight de Compatibilidade e Proteção da Arena (Battle Session Preflight)
+Para manter a integridade das regras de combate sem enfraquecer ou crashar o Battle Engine:
+- Se qualquer Pokémon escalado na equipe do jogador ou do adversário possuir `moves.length === 0` ou `moveLoadoutReason === ZERO_SUPPORTED_ENGINE_MOVES`:
+  - A camada `BattleSessionController.prepareBattle()` e `startBattle()` bloqueia o início da batalha de forma controlada.
+  - O `BattleEngine.createTeamBattle()` **não é executado**.
+  - A UI exibe mensagem clara e amigável ao jogador (ex: *"Ditto ainda não é compatível com a Battle Arena porque seus golpes dependem de mecânicas que ainda não são suportadas."*).
+  - O jogador recebe um botão direto *"Voltar para Meu Time"*, mantendo o Pokémon normalmente utilizável na Pokédex, detalhes e favoritos.
+
+---
+
+## 8. Desempenho de Rede e Cache em Memória
 - O cache em memória `pokeApi.moveDetailCache` é compartilhado entre todas as espécies hidratadas na mesma sessão.
 - Durante a hidratação de 6 combatentes (3 do jogador + 3 do oponente), golpes comuns (como *Tackle*, *Double-Edge*, *Body Slam*, *Hydro Pump*, *Flamethrower*) são buscados na rede apenas uma vez.
 - O tempo médio de hidratação das equipes é de $\approx 1.2$ a $1.8$ segundos na primeira execução e inferior a $100\text{ ms}$ com cache preenchido.

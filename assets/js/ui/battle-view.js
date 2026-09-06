@@ -235,6 +235,31 @@
         }).join('');
       }
 
+      const incompatibilityError = data.incompatibilityError || (this.sessionController && this.sessionController.incompatibilityError) || null;
+
+      let actionAreaHtml = '';
+      if (incompatibilityError) {
+        actionAreaHtml = `
+          <div class="prebattle-incompatibility-box" style="margin-top: 20px; padding: 16px 20px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.05rem; font-weight: 600; color: #fca5a5; margin-bottom: 8px;">
+              <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Pokémon Incompatível com o Engine
+            </div>
+            <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; margin: 0 0 16px 0;">
+              ${incompatibilityError}
+            </p>
+            <button id="btnBackToTeamIncompatible" class="btn-battle-action-primary" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin: 0 auto; display: inline-flex;" onclick="if(window.switchAppTab) window.switchAppTab('team');">
+              <i class="fa-solid fa-users" style="margin-right: 8px;"></i> Voltar para Meu Time
+            </button>
+          </div>
+        `;
+      } else {
+        actionAreaHtml = `
+          <button id="btnStartBattle" class="btn-battle-action-primary" onclick="if(window.battleSessionController) window.battleSessionController.startBattle();">
+            <i class="fa-solid fa-play"></i> INICIAR BATALHA
+          </button>
+        `;
+      }
+
       this.container.innerHTML = `
         <div class="battle-view-container">
           <div class="battle-card-panel">
@@ -275,9 +300,7 @@
               </div>
             </div>
 
-            <button id="btnStartBattle" class="btn-battle-action-primary" onclick="if(window.battleSessionController) window.battleSessionController.startBattle();">
-              <i class="fa-solid fa-play"></i> INICIAR BATALHA
-            </button>
+            ${actionAreaHtml}
           </div>
         </div>
       `;

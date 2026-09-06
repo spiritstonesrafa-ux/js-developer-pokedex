@@ -318,6 +318,9 @@
       const initialBudget = Math.max(windowSize, Number(SESSION_CONFIG.MOVE_DISCOVERY_INITIAL_BUDGET || 24));
       const maxLoadoutTarget = Number(SESSION_CONFIG.MOVE_LOADOUT_TARGET || 4);
 
+      let moveDetailSuccesses = 0;
+      let moveDetailFailures = 0;
+
       // Descoberta progressiva em janelas
       let currentIndex = 0;
       const totalCandidates = prioritizedCandidates.length;
@@ -331,14 +334,25 @@
         const detailPromises = windowChunk.map(async (cand) => {
           try {
             if (cand.power !== undefined && cand.damageClass !== undefined) {
+              moveDetailSuccesses++;
               return cand;
             }
             if (this.api && typeof this.api.getMoveDetail === 'function') {
-              return await this.api.getMoveDetail(cand);
+              const res = await this.api.getMoveDetail(cand);
+              if (res) {
+                moveDetailSuccesses++;
+                return res;
+              } else {
+                moveDetailFailures++;
+                return null;
+              }
             }
+            // Sem API disponível: falha de resolução de rede/serviço
+            moveDetailFailures++;
             return null;
           } catch {
-            // Falhas de rede individuais são toleradas (MQ12)
+            // Falhas de rede individuais são contabilizadas
+            moveDetailFailures++;
             return null;
           }
         });
@@ -403,9 +417,40 @@
         }
       }
 
-      // Se nenhum golpe suportado foi encontrado após a busca
+      // Se nenhum golpe suportado foi encontrado após a busca:
       if (validPool.length === 0) {
-        return this.createNetworkFallback(normalizedTypes);
+        // Distinção Semântica Estrita (PBA-014C-HARDENING):
+        // Se houve requisições e TODAS falharam por erro de rede (ou se a lista era puramente de rede e zero responderam),
+        // trata-se de falha real de rede -> NETWORK_FALLBACK_MOVESET.
+        // Se a API respondeu e detalhes foram obtidos com sucesso, mas nenhum golpe ofensivo é suportado pelo Engine,
+        // trata-se de limitação do Engine -> UNSUPPORTED_ENGINE_MOVESET com moves = [] (sem injeção de golpes falsos).
+        const hadCandidates = totalCandidates > 0;
+        const totalAttempts = moveDetailSuccesses + moveDetailFailures;
+        const isNetworkFailure = totalAttempts > 0 && moveDetailSuccesses === 0 && moveDetailFailures > 0;
+
+        if (isNetworkFailure || !hadCandidates) {
+          const fallback = this.createNetworkFallback(normalizedTypes);
+          this.lastLoadoutDiagnostic = {
+            candidateCount: totalCandidates,
+            moveDetailSuccesses,
+            moveDetailFailures,
+            supportedCount: 0,
+            source: fallback.source,
+            reason: fallback.reason
+          };
+          return fallback;
+        }
+
+        const unsupported = this.createUnsupportedLoadout();
+        this.lastLoadoutDiagnostic = {
+          candidateCount: totalCandidates,
+          moveDetailSuccesses,
+          moveDetailFailures,
+          supportedCount: 0,
+          source: unsupported.source,
+          reason: unsupported.reason
+        };
+        return unsupported;
       }
 
       // Aplica Seletor de Qualidade Heurístico Determinístico (STAB, afinidade, cobertura, acurácia)
@@ -424,7 +469,28 @@
       selectedMoves.reason = reason;
       selectedMoves.moves = selectedMoves;
 
+      this.lastLoadoutDiagnostic = {
+        candidateCount: totalCandidates,
+        moveDetailSuccesses,
+        moveDetailFailures,
+        supportedCount: validPool.length,
+        source,
+        reason
+      };
+
       return selectedMoves;
+    }
+
+    /**
+     * Cria resultado para espécies cujos golpes são todos incompatíveis com o Engine atual.
+     * Retorna moves vazio SEM injetar fake moves (Tackle, etc.).
+     */
+    createUnsupportedLoadout() {
+      const emptyMoves = [];
+      emptyMoves.source = MOVESET_LOADOUT_SOURCE.UNSUPPORTED_ENGINE_MOVESET;
+      emptyMoves.reason = MOVESET_LIMIT_REASON.ZERO_SUPPORTED_ENGINE_MOVES;
+      emptyMoves.moves = emptyMoves;
+      return emptyMoves;
     }
 
     /**

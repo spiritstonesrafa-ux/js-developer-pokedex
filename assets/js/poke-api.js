@@ -227,20 +227,35 @@ pokeApi.getMoveDetail = async (moveOrIdOrUrl) => {
   const rawData = await response.json();
 
   let normalizedMove;
-  if (typeof window !== 'undefined' && window.PBABattle && window.PBABattle.MoveModel) {
-    normalizedMove = window.PBABattle.MoveModel.convertPokeApiMove(rawData);
-  } else if (typeof require !== 'undefined') {
-    const MoveModel = require('./battle/move-model.js');
-    normalizedMove = MoveModel.convertPokeApiMove(rawData);
-  } else {
+  try {
+    if (typeof window !== 'undefined' && window.PBABattle && window.PBABattle.MoveModel) {
+      normalizedMove = window.PBABattle.MoveModel.convertPokeApiMove(rawData);
+    } else if (typeof require !== 'undefined') {
+      const MoveModel = require('./battle/move-model.js');
+      normalizedMove = MoveModel.convertPokeApiMove(rawData);
+    } else {
+      normalizedMove = {
+        id: rawData.id,
+        name: rawData.name,
+        type: rawData.type?.name,
+        power: rawData.power,
+        accuracy: rawData.accuracy,
+        pp: rawData.pp,
+        damageClass: rawData.damage_class?.name
+      };
+    }
+  } catch (err) {
+    // Se o MoveModel rejeitou por ser status move ou power nulo,
+    // retornamos os metadados brutos resolvidos com sucesso da API para que
+    // a camada de hidratação saiba que a API respondeu normalmente.
     normalizedMove = {
       id: rawData.id,
       name: rawData.name,
-      type: rawData.type?.name,
+      type: rawData.type?.name || 'normal',
       power: rawData.power,
       accuracy: rawData.accuracy,
       pp: rawData.pp,
-      damageClass: rawData.damage_class?.name
+      damageClass: rawData.damage_class?.name || 'status'
     };
   }
 

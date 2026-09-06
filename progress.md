@@ -508,6 +508,15 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `AVERAGE_NEUTRAL_HITS_TO_KO_AFTER = 4.67`
   - `HUMAN_BALANCE_ACCEPTANCE = PASS`
   - `PBA_014C_TECHNICAL = PASS`
+  - `PBA_014C_HARDENING = PASS`
+  - `ZERO_SUPPORTED_API_OK_USES_NETWORK_FALLBACK = NO`
+  - `NETWORK_FALLBACK_REQUIRES_FAILURE = YES`
+  - `API_OK_FINAL_MOVES_ALL_FROM_API = YES`
+  - `FAKE_MOVE_INJECTION_WITH_API_OK = 0`
+  - `UNSUPPORTED_ENGINE_MOVESET_STATE = YES`
+  - `ZERO_SUPPORTED_ENGINE_MOVES_REASON = YES`
+  - `SESSION_BLOCKS_ZERO_MOVE_COMBATANT = YES`
+  - `CONTROLLED_USER_MESSAGE = YES`
   - `MOVESET_TARGET = 4`
   - `FIRST_8_TRUNCATION_FIXED = YES`
   - `FULL_CANDIDATE_DISCOVERY = PASS`
@@ -517,7 +526,7 @@ A Game Engine determina quem ataca, qual golpe é desferido, quanto dano ocorreu
   - `MOVESET_HUMAN_ACCEPTANCE = PENDING`
   - `PBA_015 = NOT_STARTED`
 
-- **Working Tree**: Homologado tecnicamente com descoberta progressiva de golpes da PokéAPI, eliminação do truncamento dos primeiros 8, preservação de metadados ricos (version_group_details), heurística de qualidade de movesets (STAB, afinidade de ataque, diversidade de tipos, acurácia), gates MQ01–MQ40 aprovados e 512 testes automatizados 100% passando.
+- **Working Tree**: Homologado tecnicamente com PBA-014C-HARDENING: distinção semântica estrita entre `UNSUPPORTED_ENGINE_MOVESET` e `NETWORK_FALLBACK_MOVESET`, preflight de compatibilidade na camada de sessão sem crash ou acionamento indevido do Battle Engine, auditoria real de PokéAPI para Ditto, Wobbuffet, Smeargle e Unown, 0 injeções artificiais de Tackle quando API responde com sucesso, e 515 testes automatizados 100% passando.
 
 ---
 
