@@ -204,9 +204,18 @@ pokeApi.getMoveDetail = async (moveOrIdOrUrl) => {
   let cacheKey;
   let url;
 
-  if (typeof moveOrIdOrUrl === 'object' && moveOrIdOrUrl !== null && moveOrIdOrUrl.url) {
-    url = moveOrIdOrUrl.url;
-    cacheKey = String(moveOrIdOrUrl.name || url).toLowerCase();
+  if (typeof moveOrIdOrUrl === 'object' && moveOrIdOrUrl !== null) {
+    if (moveOrIdOrUrl.url) {
+      url = moveOrIdOrUrl.url;
+      cacheKey = String(moveOrIdOrUrl.name || url).toLowerCase();
+    } else if (moveOrIdOrUrl.name || moveOrIdOrUrl.id) {
+      const identifier = String(moveOrIdOrUrl.name || moveOrIdOrUrl.id).trim().toLowerCase();
+      cacheKey = identifier;
+      url = `https://pokeapi.co/api/v2/move/${identifier}`;
+    } else {
+      cacheKey = String(moveOrIdOrUrl).trim().toLowerCase();
+      url = `https://pokeapi.co/api/v2/move/${cacheKey}`;
+    }
   } else if (typeof moveOrIdOrUrl === 'string' && moveOrIdOrUrl.startsWith('http')) {
     url = moveOrIdOrUrl;
     cacheKey = url.toLowerCase();
