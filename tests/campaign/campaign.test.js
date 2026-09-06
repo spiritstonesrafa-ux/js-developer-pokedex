@@ -11,3 +11,24 @@ test('Super global audit is deterministic and disjoint',()=>{assert.equal(K.SUPE
 
 
 test('full campaign progression persists false ending, reveal and completion',()=>{let m=fresh();start(m);for(const master of K.MASTERS){assert.equal(m.recordBattle({battleId:'e'+master.challengeId,kind:'MASTER',id:master.challengeId,winner:'player'}).processed,true);const candidate=m.getRewardCandidates().find(x=>x.selectable);assert.ok(candidate);assert.equal(m.claimReward(candidate.id).ok,true)}assert.equal(m.getBadgeCount(),18);assert.equal(m.getRosterIds().length,24);assert.equal(m.canChallenge('SUPER'),true);m.recordBattle({battleId:'esuper',kind:'SUPER',winner:'player'});assert.equal(m.getState().superTrainer.victorySeen,false);assert.equal(m.acknowledgeSuperVictory(),true);assert.equal(m.getState().superTrainer.victorySeen,true);const elite=m.getRewardCandidates().find(x=>x.selectable);assert.equal(m.claimReward(elite.id).ok,true);assert.equal(m.getRosterIds().length,25);assert.equal(m.getState().shadowTrainer.revealed,true);assert.equal(m.getState().shadowTrainer.revealSeen,false);assert.equal(m.acknowledgeShadowReveal(),true);assert.equal(m.getState().shadowTrainer.revealSeen,true);m.recordBattle({battleId:'eshadow',kind:'SHADOW',winner:'player'});assert.equal(m.getState().status,'COMPLETED')});
+
+const TypeGuide=require('../../assets/js/campaign/campaign-type-guide');
+test('CP81–CP105 canonical campaign metadata has no placeholders and preserves required spot checks',()=>{
+  const oldDraft=[3,6,9,143,154,157,160,181,254,257,260,282,389,392,395,461,497,500,503,596,652,655,658,706,724,745,784,733,812,815,818,823,908,911,914,959];
+  assert.equal(K.DRAFT.length,144);assert.ok(oldDraft.every(id=>K.DRAFT.some(p=>p.id===id)));
+  for(const p of K.DRAFT){assert.doesNotMatch(p.name,/^pokemon-\d+$/i);assert.ok(p.types.length);assert.ok(p.bst>0);assert.ok(p.generation>=1&&p.generation<=9);assert.ok(p.sprite);assert.equal(p.legendary,false);assert.equal(p.mythical,false)}
+  const expected={6:['charizard',['fire','flying'],534,1],65:['alakazam',['psychic'],500,1],131:['lapras',['water','ice'],535,1],242:['blissey',['normal'],540,2],248:['tyranitar',['rock','dark'],600,2],350:['milotic',['water'],540,3],384:['rayquaza',['dragon','flying'],680,3]};
+  for(const [id,[name,types,bst,generation]] of Object.entries(expected)){const p=K.byId(id);assert.equal(p.name,name);assert.deepEqual(p.types,types);assert.equal(p.bst,bst);assert.equal(p.generation,generation)}assert.equal(K.DRAFT.some(p=>p.id===384),false);
+});
+test('CP106–CP118 type guide derives strengths and weaknesses from TypeChart',()=>{
+  const examples={water:[['fire','ground','rock'],['electric','grass']],fire:[['grass','ice','bug','steel'],['water','ground','rock']],electric:[['water','flying'],['ground']],normal:[[],['fighting']]};
+  for(const [type,[strong,weak]] of Object.entries(examples)){const guide=TypeGuide.getTypeGuide(type);assert.deepEqual(guide.offensiveStrengths,strong);assert.deepEqual(guide.defensiveWeaknesses,weak);assert.equal(guide.label,TypeGuide.TYPE_LABELS[type])}
+});
+test('CP119–CP128 legacy active campaign keeps a formerly eligible canonical roster',()=>{
+  const raw={version:C.VERSION,status:'ACTIVE',startedAt:'2026-01-01T00:00:00.000Z',startingRosterIds:[384,3,6,9,143,154],challenges:{},superTrainer:{},shadowTrainer:{},processedBattleIds:[]};
+  const restored=S.sanitize(raw);assert.deepEqual(restored.startingRosterIds,raw.startingRosterIds);mem.set(C.STORAGE_KEY,JSON.stringify(raw));const manager=new CampaignManager(S);const rayquaza=manager.getRoster().find(p=>p.id===384);assert.deepEqual(rayquaza.types,['dragon','flying']);assert.equal(rayquaza.bst,680);assert.equal(manager.isStarted(),true);
+});
+test('CP129–CP136 reward sources and view structure retain readable names and separated CTA',()=>{
+  assert.deepEqual(K.MASTERS.find(m=>m.type==='water').team.map(p=>p.name),['lapras','milotic','gastrodon']);assert.deepEqual(K.MASTERS.find(m=>m.type==='normal').team.map(p=>p.name),['blissey','linoone','zangoose']);assert.deepEqual(K.MASTERS.find(m=>m.type==='fire').team.map(p=>p.name),['ninetales','arcanine','chandelure']);
+  const fs=require('node:fs'),path=require('node:path'),source=fs.readFileSync(path.join(__dirname,'../../assets/js/campaign/campaign-view.js'),'utf8'),css=fs.readFileSync(path.join(__dirname,'../../assets/css/campaign.css'),'utf8');assert.match(source,/GUIA DO TIPO/);assert.match(source,/Tipos secundários podem alterar essas relações\./);assert.match(css,/\.campaign-mon strong,\.campaign-mon small/);
+});

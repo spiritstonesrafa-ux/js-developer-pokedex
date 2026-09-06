@@ -12,3 +12,31 @@
 
 (function(){const View=window.PBACampaign&&window.PBACampaign.CampaignView;if(!View)return;const original=View.prototype.render;View.prototype.render=function(){const d=this.manager.getState();if(d.status==='SUPER_REWARD_PENDING'&&!d.superTrainer.victorySeen){this.container.innerHTML='<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">SUPER TREINADOR DERROTADO</p><h2>18 / 18 INSÍGNIAS</h2><p>VOCÊ É O CAMPEÃO DO CIRCUITO</p><button id="receiveElite" class="campaign-primary">RECEBER RECOMPENSA</button></div></section>';this.container.querySelector('#receiveElite').onclick=()=>this.manager.acknowledgeSuperVictory();return}return original.call(this)};})();
 (function(){const View=window.PBACampaign&&window.PBACampaign.CampaignView;if(!View)return;const prior=View.prototype.render;View.prototype.render=function(){const d=this.manager.getState();if(d.status==='SHADOW_AVAILABLE'&&d.shadowTrainer.revealed&&!d.shadowTrainer.revealSeen){this.container.innerHTML='<section class="campaign-shell shadow-reveal"><div class="campaign-hero"><p class="eyebrow">...</p><h2>ANOMALIA DETECTADA</h2><p>O DESAFIO AINDA NÃO TERMINOU</p><h2>SHADOW SUPER TRAINER</h2><button id="ackShadowReveal" class="campaign-danger">ENFRENTAR O DESAFIO FINAL</button></div></section>';this.container.querySelector('#ackShadowReveal').onclick=()=>this.manager.acknowledgeShadowReveal();return}return prior.call(this)};View.prototype.renderComplete=function(){const d=this.manager.getState(),attempts=Object.values(d.challenges).reduce((n,x)=>n+(x.attempts||0),0)+(d.superTrainer.attempts||0)+(d.shadowTrainer.attempts||0);this.container.innerHTML=`<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">CAMPEÃO DO CIRCUITO</p><h2>CAMPANHA 100% CONCLUÍDA</h2><p>Insígnias: ${this.manager.getBadgeCount()} / 18</p><p>Mestres derrotados: ${this.manager.getBadgeCount()} / 18</p><p>Elenco final: ${this.manager.getRosterIds().length} Pokémon</p><p>Super Trainer: DERROTADO</p><p>Shadow Super Trainer: DERROTADO</p><p>Tentativas da campanha: ${attempts}</p></div><button id="campaignReset" class="campaign-reset">Resetar campanha</button></section>`;this.container.querySelector('#campaignReset').onclick=()=>{if(confirm('Resetar somente a campanha?'))this.manager.reset()}}})();
+
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  View.prototype.renderPicker = function () {
+    const C = window.PBACampaign, roster = this.manager.getRoster();
+    const master = this.pending && this.pending.kind === 'MASTER' ? this.manager.getMaster(this.pending.id) : null;
+    const guide = master ? C.getTypeGuide(master.type) : null;
+    const typeList = types => types.length
+      ? `<div class="type-guide-list">${types.map(type => `<span class="type-guide-chip type-${type}">${C.TYPE_ICONS[type]} ${C.TYPE_LABELS[type]}</span>`).join('')}</div>`
+      : '<p class="type-guide-empty">Normal não possui vantagem Super Efetiva por tipo.</p>';
+    const context = master ? `<section class="master-context"><p class="eyebrow">PREPARAR DESAFIO</p><h2>${master.trainerName}</h2><p>${master.trainerTitle}</p><p><strong>Tipo:</strong> ${C.TYPE_LABELS[master.type]} · <strong>${master.badgeName}</strong></p></section><section class="type-guide" aria-label="Guia do tipo ${guide.label}"><h3>GUIA DO TIPO — ${guide.label.toUpperCase()}</h3><p><strong>${guide.label} é forte contra:</strong></p>${typeList(guide.offensiveStrengths)}<p><strong>${guide.label} é fraca contra:</strong></p>${typeList(guide.defensiveWeaknesses)}<p class="type-guide-disclaimer">Tipos secundários podem alterar essas relações.</p></section>` : `<div class="campaign-hero"><p class="eyebrow">PREPARAR DESAFIO</p><h2>${this.pending?.kind === 'SHADOW' ? 'Desafio Final' : 'Super Treinador'}</h2></div>`;
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button>${context}<div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(p => this.card(p, this.pick.includes(p.id))).join('')}</div><button id="startCampaignBattle" class="campaign-primary" ${this.pick.length === 3 ? '' : 'disabled'}>Iniciar batalha</button></section>`;
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.render(); };
+    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => {
+      const id = Number(button.dataset.id);
+      this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick);
+      this.render();
+    });
+    this.container.querySelector('#startCampaignBattle').onclick = async () => {
+      try {
+        await this.coordinator.start(this.pending.kind, this.pending.id, this.pick);
+        this.pending = null;
+        window.switchAppTab('battle');
+      } catch (error) { alert(error.message); }
+    };
+  };
+})();
