@@ -8,7 +8,8 @@ PBA-015 adds a presentation-only infrastructure for the eighteen Circuit Masters
 - \`assets/js/campaign/campaign-trainer-visuals.js\` owns the canonical descriptor catalog.
 - Every descriptor contains \`id\`, \`avatarKey\`, \`displayName\`, \`type\`, \`avatarSrc\`, \`alt\`, \`initials\`, and \`variant\`.
 - \`assets/js/campaign/trainer-avatar-view.js\` renders the descriptor for Master cards, preparation, rewards, special reveals, and campaign battle metadata.
-- Stage 1 is fallback-first: all \`avatarSrc\` values are \`null\`, so it renders no image element and makes no portrait network request.
+- Final art currently covers **6 / 20** identities: Aster, Kael, Marina, Volt, Flora, and Yara. Their descriptors use local PNG paths; the other 12 Masters and both special trainers remain fallback-first with \`avatarSrc: null\`.
+- The renderer makes no remote portrait request; final art remains local under \`assets/images/trainers/\`.
 - When final local art is later assigned, a controlled image error hides the image and restores the same fallback.
 
 ## Visual behavior

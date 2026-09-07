@@ -7,51 +7,72 @@ const Avatar = require('../../assets/js/campaign/trainer-avatar-view.js');
 const Catalog = require('../../assets/js/campaign/campaign-catalog.js');
 const { CampaignManager } = require('../../assets/js/campaign/campaign-manager.js');
 
-test('trainer avatar catalog covers the canonical eighteen Masters and two special variants', () => {
+const FINAL_ART = Object.freeze({
+  'master-normal':'assets/images/trainers/aster.png',
+  'master-fire':'assets/images/trainers/kael.png',
+  'master-water':'assets/images/trainers/marina.png',
+  'master-electric':'assets/images/trainers/volt.png',
+  'master-grass':'assets/images/trainers/flora.png',
+  'master-ice':'assets/images/trainers/yara.png'
+});
+
+test('trainer avatar catalog maps the six approved Masters and preserves canonical identities', () => {
   assert.equal(Visuals.MASTER_TRAINER_VISUALS.length, 18);
   assert.equal(new Set(Visuals.MASTER_TRAINER_VISUALS.map(x => x.avatarKey)).size, 18);
   Catalog.MASTERS.forEach(master => {
     const visual = Visuals.getMasterVisual(master.challengeId);
-    assert.deepEqual(
-      Object.keys(visual).sort(),
-      ['alt', 'avatarKey', 'avatarSrc', 'displayName', 'id', 'initials', 'type', 'variant'].sort()
-    );
+    assert.deepEqual(Object.keys(visual).sort(), ['alt', 'avatarKey', 'avatarSrc', 'displayName', 'id', 'initials', 'type', 'variant'].sort());
     assert.equal(visual.displayName, master.trainerName);
     assert.equal(visual.type, master.type);
-    assert.equal(visual.avatarSrc, master.challengeId === 'master-water' ? 'assets/images/trainers/marina.png' : null);
+    assert.equal(visual.avatarSrc, FINAL_ART[master.challengeId] || null);
   });
-  assert.equal(Visuals.getSpecialTrainerVisual('SUPER').avatarKey, 'super-trainer');
-  assert.equal(Visuals.getSpecialTrainerVisual('SHADOW').avatarKey, 'super-trainer-shadow');
+  assert.equal(Visuals.getSpecialTrainerVisual('SUPER').avatarSrc, null);
+  assert.equal(Visuals.getSpecialTrainerVisual('SHADOW').avatarSrc, null);
 });
 
-test('trainer avatar renderer is fallback-first and recovers from a controlled local image', () => {
-  const marina = Visuals.getMasterVisual('master-water');
-  assert.equal(marina.avatarSrc, 'assets/images/trainers/marina.png');
-  const imageFromCatalog = Avatar.renderTrainerAvatar(marina, { size: 'medium', shape: 'circle' });
-  assert.match(imageFromCatalog, /src="assets\/images\/trainers\/marina.png"/);
-  const fallback = Avatar.renderTrainerAvatar({ ...marina, avatarSrc: null }, { size: 'medium', shape: 'circle' });
-  assert.match(fallback, /data-avatar-key="marina"/);
-  assert.match(fallback, /trainer-avatar__fallback/);
-  assert.doesNotMatch(fallback, /<img/);
+test('trainer avatar final-art counts and local asset contract are exact', () => {
+  const mastersWithArt = Visuals.MASTER_TRAINER_VISUALS.filter(x => x.avatarSrc);
+  const mastersWithFallback = Visuals.MASTER_TRAINER_VISUALS.filter(x => !x.avatarSrc);
+  const special = Object.values(Visuals.SPECIAL_TRAINER_VISUALS);
+  assert.equal(mastersWithArt.length, 6);
+  assert.equal(mastersWithFallback.length, 12);
+  assert.equal(special.filter(x => x.avatarSrc).length, 0);
+  assert.equal(special.filter(x => !x.avatarSrc).length, 2);
+  assert.deepEqual(mastersWithArt.map(x => x.avatarKey).sort(), ['aster','flora','kael','marina','volt','yara']);
+  mastersWithArt.forEach(visual => {
+    assert.match(visual.avatarSrc, /^assets\/images\/trainers\/[a-z-]+\.png$/);
+    assert.equal(fs.existsSync(visual.avatarSrc), true);
+    assert.doesNotMatch(visual.avatarSrc, /^(https?:|data:)/);
+  });
+});
 
-  const image = Avatar.renderTrainerAvatar({ ...marina, avatarSrc: 'assets/images/trainers/marina.png' }, { loading: 'eager' });
-  assert.match(image, /<img class="trainer-avatar__image"/);
-  assert.match(image, /loading="eager"/);
-  assert.match(image, /onerror=/);
-  assert.match(image, /trainer-avatar__fallback" hidden/);
-  assert.doesNotMatch(image, /https?:\/\//);
+test('trainer avatar renderer uses image mode for approved art and fallback for remaining Masters', () => {
+  Visuals.MASTER_TRAINER_VISUALS.filter(x => x.avatarSrc).forEach(visual => {
+    const image = Avatar.renderTrainerAvatar(visual, { size: 'medium', shape: 'circle', loading: 'eager' });
+    assert.match(image, /<img class="trainer-avatar__image"/);
+    assert.ok(image.includes('src="' + visual.avatarSrc + '"'));
+    assert.match(image, /trainer-avatar__fallback" hidden/);
+    assert.match(image, /onerror=/);
+  });
+  Visuals.MASTER_TRAINER_VISUALS.filter(x => !x.avatarSrc).forEach(visual => {
+    const fallback = Avatar.renderTrainerAvatar(visual, { size: 'medium', shape: 'circle' });
+    assert.match(fallback, /trainer-avatar__fallback/);
+    assert.doesNotMatch(fallback, /<img/);
+  });
 });
 
 test('campaign battle metadata carries only the matching trainer visual descriptor', () => {
   const manager = new CampaignManager();
   manager.getRosterIds = () => [1, 2, 3];
   manager.canChallenge = () => true;
-  const master = manager.getBattleConfig('MASTER', 'master-water', [1, 2, 3]);
+  ['master-normal','master-fire','master-water','master-electric','master-grass','master-ice'].forEach(id => {
+    const config = manager.getBattleConfig('MASTER', id, [1, 2, 3]);
+    assert.equal(config.metadata.opponentTrainer.avatarSrc, FINAL_ART[id]);
+  });
   const superBattle = manager.getBattleConfig('SUPER', null, [1, 2, 3]);
   const shadow = manager.getBattleConfig('SHADOW', null, [1, 2, 3]);
-  assert.equal(master.metadata.opponentTrainer.avatarKey, 'marina');
-  assert.equal(superBattle.metadata.opponentTrainer.avatarKey, 'super-trainer');
-  assert.equal(shadow.metadata.opponentTrainer.avatarKey, 'super-trainer-shadow');
+  assert.equal(superBattle.metadata.opponentTrainer.avatarSrc, null);
+  assert.equal(shadow.metadata.opponentTrainer.avatarSrc, null);
   assert.deepEqual(shadow.modifiers, { SHADOW_AURA: true });
 });
 
