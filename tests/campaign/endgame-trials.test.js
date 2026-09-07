@@ -52,3 +52,9 @@ test('PBA-015E trial Pokémon hydrate through canonical offline battle fallbacks
   assert.deepEqual(team.map(p=>p.id),[145,245,381,151,385,494]);
   for(const combatant of team){assert.ok(combatant.moves.length>=1);assert.ok(combatant.baseStats.hp>0);assert.ok(combatant.types.length>0)}
 });
+test('PBA-015F boss presentation keeps canonical previews and player selector contracts',()=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const source=fs.readFileSync(path.join(__dirname,'../../assets/js/campaign/campaign-view.js'),'utf8');
+  const css=fs.readFileSync(path.join(__dirname,'../../assets/css/campaign.css'),'utf8');
+  assert.match(source,/campaign-preparation--super/);assert.match(source,/campaign-preparation--trial/);assert.match(source,/opponent-team-preview/);assert.match(source,/C\.SUPER_TEAM/);assert.match(source,/C\.LEGENDARY_TRIAL_TEAM/);assert.match(source,/C\.MYTHICAL_TRIAL_TEAM/);assert.match(source,/this\.pick\.length < 3/);assert.match(source,/getSpecialTrainerVisual\('SUPER'\)/);assert.match(css,/\.endgame-super__portrait/);assert.match(css,/\.campaign-preparation--super/);assert.match(css,/@media\(max-width:600px\)/);
+});

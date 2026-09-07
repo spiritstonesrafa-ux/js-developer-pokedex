@@ -145,3 +145,48 @@
     this.container.querySelectorAll('.campaign-mon:not(:disabled)').forEach(button => button.onclick = () => { if (confirm('Confirmar este recruta?')) this.manager.claimReward(Number(button.dataset.id)); });
   };
 })();
+/* PBA-015F — presentation-only endgame boss headers. */
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  const C = window.PBACampaign;
+  const cap = value => String(value).replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  const preview = (team, className = '') => `<section class="opponent-team-preview ${className}" aria-label="Equipe adversária"><p class="eyebrow">EQUIPE ADVERSÁRIA</p><div class="opponent-team-preview__grid">${team.map(pokemon => `<article class="opponent-preview-card"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>BST ${pokemon.bst}</small></article>`).join('')}</div></section>`;
+  const portrait = () => C.renderTrainerAvatar(C.getSpecialTrainerVisual('SUPER'), { size: 'LARGE', shape: 'PORTRAIT', decorative: true });
+
+  const renderHome = View.prototype.renderHome;
+  View.prototype.renderHome = function () {
+    renderHome.call(this);
+    const boss = this.container.querySelector('.endgame-super');
+    if (!boss) return;
+    boss.innerHTML = `<div class="endgame-super__portrait">${portrait()}</div><div class="endgame-super__content"><p class="eyebrow">DESAFIO FINAL</p><h2>SUPER TREINADOR</h2><p>O Mestre dos Mais Fortes.</p><strong class="boss-difficulty">DIFICULDADE: EXTREMA</strong>${preview(C.SUPER_TEAM, 'opponent-team-preview--compact')}<button id="superSpotlight" class="campaign-primary">ENFRENTAR SUPER TREINADOR</button></div>`;
+    this.container.querySelector('#superSpotlight').onclick = () => { this.pending = { kind: 'SUPER', id: null }; this.pick = []; this.render(); };
+  };
+
+  const previousPicker = View.prototype.renderPicker;
+  View.prototype.renderPicker = function () {
+    const kind = this.pending && this.pending.kind;
+    if (kind !== 'SUPER' && kind !== 'LEGENDARY_TRIAL' && kind !== 'MYTHICAL_TRIAL') return previousPicker.call(this);
+    const roster = this.manager.getRoster();
+    const trial = kind === 'LEGENDARY_TRIAL'
+      ? { title: 'PROVA LENDÁRIA', team: C.LEGENDARY_TRIAL_TEAM }
+      : kind === 'MYTHICAL_TRIAL'
+        ? { title: 'PROVA MÍTICA', team: C.MYTHICAL_TRIAL_TEAM }
+        : null;
+    const isSuper = kind === 'SUPER';
+    const header = isSuper
+      ? `<section class="campaign-preparation campaign-preparation--super">${portrait()}<div class="campaign-preparation__copy"><p class="eyebrow">PREPARAR DESAFIO FINAL</p><h2>SUPER TREINADOR</h2><p>O Mestre dos Mais Fortes</p><strong class="boss-difficulty">DIFICULDADE: EXTREMA</strong></div>${preview(C.SUPER_TEAM)}</section>`
+      : `<section class="campaign-preparation campaign-preparation--trial"><div class="campaign-preparation__copy"><p class="eyebrow">PROVA ESPECIAL</p><h2>${trial.title}</h2><p>Equipe adversária possui múltiplos tipos.</p></div>${preview(trial.team)}</section>`;
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button>${header}<div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(pokemon => this.card(pokemon, this.pick.includes(pokemon.id))).join('')}</div><button id="startCampaignBattle" class="campaign-primary" ${this.pick.length === 3 ? '' : 'disabled'}>Iniciar batalha</button></section>`;
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.render(); };
+    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => {
+      const id = Number(button.dataset.id);
+      this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick);
+      this.render();
+    });
+    this.container.querySelector('#startCampaignBattle').onclick = async () => {
+      try { await this.coordinator.start(this.pending.kind, this.pending.id, this.pick); this.pending = null; window.switchAppTab('battle'); }
+      catch (error) { alert(error.message); }
+    };
+  };
+})();
