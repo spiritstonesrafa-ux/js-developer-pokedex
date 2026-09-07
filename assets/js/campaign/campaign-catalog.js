@@ -58,11 +58,23 @@
     {id:289,name:'slaking',bst:670,attack:160,specialAttack:95,speed:100,selected:false,reason:'LOWER_BST'},
     {id:635,name:'hydreigon',bst:600,attack:105,specialAttack:125,speed:98,selected:false,reason:'LOWER_BST'}
   ].map(Object.freeze));
+  const trialRecords = Object.freeze([
+    {id:145,name:'zapdos',types:['electric','flying'],bst:580,generation:1,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/145.png',legendary:true,mythical:false},
+    {id:245,name:'suicune',types:['water'],bst:580,generation:2,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/245.png',legendary:true,mythical:false},
+    {id:381,name:'latios',types:['dragon','psychic'],bst:600,generation:3,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/381.png',legendary:true,mythical:false},
+    {id:151,name:'mew',types:['psychic'],bst:600,generation:1,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png',legendary:false,mythical:true},
+    {id:385,name:'jirachi',types:['steel','psychic'],bst:600,generation:3,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/385.png',legendary:false,mythical:true},
+    {id:494,name:'victini',types:['psychic','fire'],bst:600,generation:5,sprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/494.png',legendary:false,mythical:true}
+  ].map(freeze => Object.freeze({...freeze,types:Object.freeze(freeze.types)})));
+  const trialById = Object.freeze(Object.fromEntries(trialRecords.map(entry => [entry.id,entry])));
+  const allById = Object.freeze({...Static.byId,...trialById});
+  const LEGENDARY_TRIAL_TEAM = Object.freeze([145,245,381].map(id => allById[id]));
+  const MYTHICAL_TRIAL_TEAM = Object.freeze([151,385,494].map(id => allById[id]));
   const api = Object.freeze({
-    DRAFT, MASTERS, MASTER_SPECIES, SUPER_TEAM, SUPER_AUDIT,
+    DRAFT, MASTERS, MASTER_SPECIES, SUPER_TEAM, SUPER_AUDIT, LEGENDARY_TRIAL_TEAM, MYTHICAL_TRIAL_TEAM,
     DRAFT_IDS_BY_GENERATION: draftIdsByGeneration,
-    CANONICAL_BY_ID: Static.byId,
-    byId: id => Static.byId[Number(id)] || null,
+    CANONICAL_BY_ID: allById,
+    byId: id => allById[Number(id)] || null,
     allMasterIds: MASTER_SPECIES.map(entry => entry.id),
     startingStats: Object.freeze({
       min: Math.min(...DRAFT.map(entry => entry.bst)),

@@ -93,3 +93,55 @@
     return result;
   };
 })();
+(function(){const V=window.PBACampaign&&window.PBACampaign.CampaignView;if(!V)return;const prior=V.prototype.renderHome;V.prototype.renderHome=function(){prior.call(this);if(this.manager.getBadgeCount()!==18)return;const C=window.PBACampaign,d=this.manager.getState(),trials=d.endgameTrials||{};const card=(kind,label,copy)=>{const t=trials[kind==='LEGENDARY_TRIAL'?'legendary':'mythical']||{};const state=t.rewardClaimed?'CONCLUÍDA':t.completed?'VITÓRIA — RECOMPENSA PENDENTE':'RECOMPENSA DISPONÍVEL';return '<article class="endgame-trial"><h3>'+label+'</h3><p>'+copy+'</p><strong>'+state+'</strong><button class="campaign-secondary" data-trial="'+kind+'">'+(t.rewardClaimed?'REENFRENTAR':t.completed?'ESCOLHER RECOMPENSA':'ENFRENTAR')+'</button></article>'};const superAvatar=C.renderTrainerAvatar(C.getSpecialTrainerVisual('SUPER'),{size:'LARGE',shape:'PORTRAIT',decorative:true});const html='<section class="campaign-endgame"><div class="endgame-super">'+superAvatar+'<div><p class="eyebrow">DESAFIO FINAL</p><h2>SUPER TREINADOR</h2><p>O Mestre dos Mais Fortes. Arceus, Eternatus e Mewtwo aguardam.</p><strong>DIFICULDADE: EXTREMA</strong><button id="superSpotlight" class="campaign-primary">ENFRENTAR SUPER TREINADOR</button></div></div><p class="eyebrow">PREPARE-SE PARA O DESAFIO FINAL</p><div class="endgame-trials">'+card('LEGENDARY_TRIAL','PROVA LENDÁRIA','Derrote Pokémon Lendários e escolha um novo aliado.')+card('MYTHICAL_TRIAL','PROVA MÍTICA','Supere um desafio especial e escolha um Pokémon Mítico.')+'</div></section>';this.container.querySelector('#superChallenge')?.remove();this.container.querySelector('.campaign-grid').insertAdjacentHTML('beforebegin',html);this.container.querySelector('#superSpotlight').onclick=()=>{this.pending={kind:'SUPER',id:null};this.pick=[];this.render()};this.container.querySelectorAll('[data-trial]').forEach(b=>b.onclick=()=>{this.pending={kind:b.dataset.trial,id:null};this.pick=[];this.render()})}})();
+
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  const C = window.PBACampaign;
+  const trialInfo = kind => kind === 'LEGENDARY_TRIAL'
+    ? { title: 'Prova Lendária', team: C.LEGENDARY_TRIAL_TEAM, reward: 'Escolha seu Pokémon Lendário' }
+    : kind === 'MYTHICAL_TRIAL'
+      ? { title: 'Prova Mítica', team: C.MYTHICAL_TRIAL_TEAM, reward: 'Escolha seu Pokémon Mítico' }
+      : null;
+  const portrait = (visual, size = 'LARGE') => visual
+    ? C.renderTrainerAvatar(visual, { size, shape: 'PORTRAIT', decorative: true })
+    : '';
+
+  View.prototype.renderPicker = function () {
+    const roster = this.manager.getRoster();
+    const master = this.pending && this.pending.kind === 'MASTER' ? this.manager.getMaster(this.pending.id) : null;
+    const trial = trialInfo(this.pending && this.pending.kind);
+    const guide = master ? C.getTypeGuide(master.type) : null;
+    const typeList = types => types.length ? `<div class="type-guide-list">${types.map(type => `<span class="type-guide-chip type-${type}">${C.TYPE_ICONS[type]} ${C.TYPE_LABELS[type]}</span>`).join('')}</div>` : '<p class="type-guide-empty">Normal não possui vantagem Super Efetiva por tipo.</p>';
+    let context;
+    if (master) {
+      context = `<section class="master-context">${portrait(C.getMasterVisual(master.challengeId))}<p class="eyebrow">PREPARAR DESAFIO</p><h2>${master.trainerName}</h2><p>${master.trainerTitle}</p><p><strong>Tipo:</strong> ${C.TYPE_LABELS[master.type]} · <strong>${master.badgeName}</strong></p></section><section class="type-guide" aria-label="Guia do tipo ${guide.label}"><h3>GUIA DO TIPO — ${guide.label.toUpperCase()}</h3><p><strong>${guide.label} é forte contra:</strong></p>${typeList(guide.offensiveStrengths)}<p><strong>${guide.label} é fraca contra:</strong></p>${typeList(guide.defensiveWeaknesses)}<p class="type-guide-disclaimer">Tipos secundários podem alterar essas relações.</p></section>`;
+    } else if (trial) {
+      context = `<section class="master-context trial-context"><p class="eyebrow">PROVA ESPECIAL</p><h2>${trial.title}</h2><p>Equipe adversária possui múltiplos tipos.</p><div class="mini-team">${trial.team.map(p => `<img src="${p.sprite}" alt="${this.cap(p.name)}">`).join('')}</div></section>`;
+    } else {
+      const shadow = this.pending && this.pending.kind === 'SHADOW';
+      context = `<div class="campaign-hero">${portrait(C.getSpecialTrainerVisual(shadow ? 'SHADOW' : 'SUPER'))}<p class="eyebrow">PREPARAR DESAFIO</p><h2>${shadow ? 'Desafio Final' : 'Super Treinador'}</h2></div>`;
+    }
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button>${context}<div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(p => this.card(p, this.pick.includes(p.id))).join('')}</div><button id="startCampaignBattle" class="campaign-primary" ${this.pick.length === 3 ? '' : 'disabled'}>Iniciar batalha</button></section>`;
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.render(); };
+    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => {
+      const id = Number(button.dataset.id);
+      this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick);
+      this.render();
+    });
+    this.container.querySelector('#startCampaignBattle').onclick = async () => {
+      try { await this.coordinator.start(this.pending.kind, this.pending.id, this.pick); this.pending = null; window.switchAppTab('battle'); }
+      catch (error) { alert(error.message); }
+    };
+  };
+
+  View.prototype.renderReward = function (reward) {
+    const candidates = this.manager.getRewardCandidates();
+    const trial = trialInfo(reward.kind);
+    const title = trial ? trial.reward : reward.kind === 'SUPER' ? 'Escolha um Pokémon de elite' : 'Escolha seu novo recruta';
+    const visual = reward.kind === 'MASTER' ? C.getMasterVisual(reward.challengeId) : reward.kind === 'SUPER' ? C.getSpecialTrainerVisual('SUPER') : null;
+    this.container.innerHTML = `<section class="campaign-shell"><div class="campaign-hero">${portrait(visual, 'SMALL')}<p class="eyebrow">RECOMPENSA</p><h2>${title}</h2><p>Esta decisão é permanente.</p></div><div class="campaign-grid draft-grid">${candidates.map(candidate => { const p = C.byId(candidate.id); return `<button class="campaign-mon ${candidate.owned ? 'owned' : ''}" data-id="${candidate.id}" ${candidate.owned ? 'disabled' : ''}><img src="${p.sprite}" alt="${this.cap(p.name)}"><strong>${this.cap(p.name)}</strong><span>${p.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>${candidate.owned ? 'JÁ NO ELENCO' : 'Selecionar'}</small></button>`; }).join('')}</div></section>`;
+    this.container.querySelectorAll('.campaign-mon:not(:disabled)').forEach(button => button.onclick = () => { if (confirm('Confirmar este recruta?')) this.manager.claimReward(Number(button.dataset.id)); });
+  };
+})();
