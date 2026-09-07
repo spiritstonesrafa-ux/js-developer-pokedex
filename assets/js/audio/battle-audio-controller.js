@@ -240,7 +240,7 @@
 
       this._isMusicPlaying = true;
       const ctx = this.contextManager.getContext();
-      const musicGain = this.mixer ? this.mixer.getChannelNode(AUDIO_CHANNELS.MUSIC) : ctx.destination;
+      const musicGain = this.mixer ? this.mixer.getChannelNode("MUSIC") : ctx.destination;
 
       // Padrão musical original: Loop procedural de baixo dinâmico e arpejo (não cópia)
       const bpm = 128;
@@ -338,7 +338,7 @@
       if (!this.isUnlocked()) return Promise.resolve();
 
       const ctx = this.contextManager.getContext();
-      const musicGain = this.mixer ? this.mixer.getChannelNode(AUDIO_CHANNELS.MUSIC) : ctx.destination;
+      const musicGain = this.mixer ? this.mixer.getChannelNode("MUSIC") : ctx.destination;
 
       // Arpejo triunfante original (Dó maior -> Sol)
       const chord = [261.63, 329.63, 392.00, 523.25];
@@ -378,7 +378,7 @@
       if (!this.isUnlocked()) return Promise.resolve();
 
       const ctx = this.contextManager.getContext();
-      const musicGain = this.mixer ? this.mixer.getChannelNode(AUDIO_CHANNELS.MUSIC) : ctx.destination;
+      const musicGain = this.mixer ? this.mixer.getChannelNode("MUSIC") : ctx.destination;
 
       // Acorde menor descendente sombrio
       const chord = [220.00, 174.61, 130.81];
@@ -483,4 +483,54 @@
     window.PBABattleAudio = window.PBABattleAudio || {};
     Object.assign(window.PBABattleAudio, controllerModule);
   }
+})();
+
+/* PBA-015J — original procedural theme, scoped to the Shadow Final Stand. */
+(function () {
+  const Controller = typeof module !== 'undefined' && module.exports ? module.exports.BattleAudioController : window.PBABattleAudio?.BattleAudioController;
+  if (!Controller) return;
+  Controller.prototype.startShadowBossTheme = async function () {
+    if (this._shadowThemeActive || !this.isUnlocked()) return;
+    await this.stopBattleMusic();
+    const ctx = this.contextManager.getContext();
+    const channel = this.mixer ? this.mixer.getChannelNode("MUSIC") : ctx.destination;
+    const master = ctx.createGain();
+    const now = ctx.currentTime;
+    master.gain.setValueAtTime(0.001, now);
+    master.gain.linearRampToValueAtTime(0.18, now + 2);
+    master.connect(channel);
+    const nodes = [master];
+    const layer = (frequency, type, volume, filterFrequency) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain(), filter = ctx.createBiquadFilter();
+      osc.type = type; osc.frequency.setValueAtTime(frequency, now);
+      filter.type = 'lowpass'; filter.frequency.setValueAtTime(filterFrequency, now);
+      gain.gain.setValueAtTime(volume, now);
+      osc.connect(filter); filter.connect(gain); gain.connect(master); osc.start(now);
+      nodes.push(osc, filter, gain);
+    };
+    layer(55, 'sine', 0.42, 180);       // drone grave
+    layer(82.41, 'triangle', 0.11, 520); // pad dissonante
+    this._shadowThemeActive = true;
+    let step = 0;
+    const pulse = () => {
+      if (!this._shadowThemeActive) return;
+      const start = ctx.currentTime, osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = step % 4 === 3 ? 'square' : 'sawtooth';
+      osc.frequency.setValueAtTime([73.42, 77.78, 65.41, 58.27][step++ % 4], start);
+      gain.gain.setValueAtTime(0.001, start); gain.gain.exponentialRampToValueAtTime(0.075, start + 0.03); gain.gain.exponentialRampToValueAtTime(0.001, start + 0.42);
+      osc.connect(gain); gain.connect(master); osc.start(start); osc.stop(start + 0.45); nodes.push(osc, gain);
+    };
+    pulse(); this._shadowThemeNodes = nodes; this._shadowThemeIntervalId = setInterval(pulse, 780); // ~77 BPM
+  };
+  Controller.prototype.stopShadowBossTheme = async function () {
+    if (!this._shadowThemeActive) return;
+    this._shadowThemeActive = false;
+    if (this._shadowThemeIntervalId) { clearInterval(this._shadowThemeIntervalId); this._shadowThemeIntervalId = null; }
+    const ctx = this.contextManager.getContext(); const master = this._shadowThemeNodes?.[0];
+    try { master?.gain?.cancelScheduledValues(ctx.currentTime); master?.gain?.linearRampToValueAtTime(0.001, ctx.currentTime + 1.2); } catch {}
+    const nodes = this._shadowThemeNodes || []; this._shadowThemeNodes = [];
+    setTimeout(() => nodes.forEach(node => { try { node.stop?.(); node.disconnect?.(); } catch {} }), 1250);
+  };
+  const cancel = Controller.prototype.cancel;
+  Controller.prototype.cancel = function () { this.stopShadowBossTheme(); return cancel.call(this); };
 })();

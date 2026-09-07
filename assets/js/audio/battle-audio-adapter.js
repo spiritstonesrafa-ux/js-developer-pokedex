@@ -66,7 +66,7 @@
 
       switch (command.type) {
         case PRESENTATION_COMMANDS.BATTLE_INTRO: {
-          await this.audioController.startBattleMusic();
+          if (command.shadowFinalStand) await this.audioController.startShadowBossTheme(); else await this.audioController.startBattleMusic();
           break;
         }
 
@@ -121,6 +121,7 @@
         }
 
         case PRESENTATION_COMMANDS.BATTLE_RESULT: {
+          await this.audioController.stopShadowBossTheme?.();
           if (command.winner === 'player') {
             await this.audioController.playVictory();
           } else if (command.winner === 'enemy') {

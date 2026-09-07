@@ -529,3 +529,21 @@ describe('PHASE PBA-011 — BATTLE AUDIO SYSTEM SUITE (AU01–AU40)', () => {
     assert.ok(executedTypes.includes('HP_TRANSITION'));
   });
 });
+
+test('PBA-015J Shadow theme starts only for Final Stand, prevents duplicates and stops cleanly', async () => {
+  const { BattleAudioController } = require('../../assets/js/audio/battle-audio-controller.js');
+  const { AudioContextManager } = require('../../assets/js/audio/audio-context-manager.js');
+  const { AudioMixer } = require('../../assets/js/audio/audio-mixer.js');
+  const manager = new AudioContextManager({ autoUnlock: true }); await manager.unlock();
+  const shadow = new BattleAudioController({ contextManager: manager, mixer: new AudioMixer(manager) });
+  await shadow.startShadowBossTheme(); await shadow.startShadowBossTheme();
+  assert.equal(shadow._shadowThemeActive, true); assert.ok(shadow._shadowThemeNodes.length >= 3); assert.ok(shadow._shadowThemeIntervalId);
+  await shadow.stopShadowBossTheme(); assert.equal(shadow._shadowThemeActive, false); assert.equal(shadow._shadowThemeIntervalId, null);
+});
+
+test('PBA-015J audio adapter isolates Shadow theme from normal Battle intros', async () => {
+  const calls=[]; const { BattleAudioAdapter }=require('../../assets/js/audio/battle-audio-adapter.js');
+  const adapter=new BattleAudioAdapter({audioController:{startBattleMusic:async()=>calls.push('normal'),startShadowBossTheme:async()=>calls.push('shadow'),stopShadowBossTheme:async()=>calls.push('stop'),playVictory:async()=>{},playDefeat:async()=>{}}});
+  await adapter.execute({type:'BATTLE_INTRO',shadowFinalStand:false}); await adapter.execute({type:'BATTLE_INTRO',shadowFinalStand:true}); await adapter.execute({type:'BATTLE_RESULT',winner:'player'});
+  assert.deepEqual(calls,['normal','shadow','stop']);
+});

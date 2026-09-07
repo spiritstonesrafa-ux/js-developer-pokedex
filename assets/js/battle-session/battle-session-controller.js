@@ -352,7 +352,8 @@
         const introCmd = {
           type: (presentationConstants && presentationConstants.PRESENTATION_COMMANDS && presentationConstants.PRESENTATION_COMMANDS.BATTLE_INTRO) || 'BATTLE_INTRO',
           playerLead: this.battleState.player.team[0]?.name || 'Player',
-          enemyLead: this.battleState.enemy.team[0]?.name || 'Enemy'
+          enemyLead: this.battleState.enemy.team[0]?.name || 'Enemy',
+          shadowFinalStand: this.sessionOptions?.metadata?.battleFormat === 'FINAL_STAND'
         };
         await this.presentationEngine.playCommands([introCmd], { battleState: this.battleState });
       }
