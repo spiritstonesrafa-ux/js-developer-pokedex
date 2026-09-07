@@ -169,3 +169,37 @@ The user verified the following in a real browser:
 `CRITICAL_ACCESSIBILITY_BLOCKERS = 0`.
 
 PBA-016C is closed after its final regression, publication, remote parity, and public GitHub Pages validation. PBA-016 remains in progress; **PBA-016D — Final Performance & Accessibility Validation** is ready to start and PBA-017 remains unstarted.
+## PBA-016D — Final Performance & Accessibility Validation
+
+### Consolidated result
+
+PBA-016A, PBA-016B, and PBA-016C remain valid. This final regression phase made no runtime change: `GAMEPLAY_CHANGED = NO`.
+
+### Representative performance and asset-delivery check
+
+- The public build returns 18 Master-card WebP derivatives (210,914 bytes total). Representative public responses were `aster.webp` at 11,880 bytes and `kael.webp` at 14,072 bytes, retaining the measured PBA-016B visible-card magnitude of 26,552 bytes rather than multi-megabyte PNGs.
+- The renderer selects `assets/images/trainers/thumbs/aster.webp` for the `CARD` surface and the original `assets/images/trainers/aster.png` for preparation; Super and Shadow retain their deliberately full-size PNG portraits.
+- The rendered card source retains `loading="lazy"` and `decoding="async"`. Offscreen probe images remained unrequested, confirming deferred loading is still active.
+- PBA-016B’s controlled Campaign Home cold capture remains the authoritative complete measurement: 2,589,922 bytes after optimization, a 65.7% reduction versus 7,558,275 bytes. No evidence of a PNG-card regression was found.
+- The controlled 37-card Final Stand evidence remains valid: 29 permanent Pokémon plus 8 temporary guests, 288 DOM nodes, and a 2.8 ms synchronous render sample. No visible scroll jank, input delay, or horizontal overflow was found; `VIRTUALIZATION = NOT_JUSTIFIED`.
+- Shadow-theme lifecycle remains covered by its deterministic tests: starts/stops cleanly, prevents duplicates, obeys mute/volume, and has no network audio asset.
+
+### Final accessibility and responsive smoke
+
+Public browser smoke confirmed a native `BUTTON` named “Editar avatar”, a named modal dialog with `aria-modal="true"`, pressed/unpressed campaign cards, and no new console errors, broken images, or horizontal overflow. The active accessibility implementation retains focus-visible controls; profile and battle focus containment; conditional Escape for voluntary versus mandatory battle dialogs; focus return; named HP progressbars; the corrected secondary CTA contrast; 44px mobile switch/audio targets; and reduced-motion Shadow Aura behavior.
+
+Representative viewport, touch, 200% zoom, reduced-motion, and Accessibility-tree checks preserve the PBA-016C results: no blocker or regression. Full deterministic regression also covers Quick Battle, Masters, Trials, Super Trainer, Shadow Final Stand, True Ending, battle dialogs, audio lifecycle, and reduced-motion presentation.
+
+### Known limitations
+
+`SCREEN_READER_REAL = NOT_AVAILABLE`. The closure relies on browser semantic inspection plus the PBA-016C real-browser human keyboard acceptance; it does not claim automated real-screen-reader coverage.
+
+### PBA-016 final status
+
+`PERFORMANCE_FINAL_VALIDATION = PASS`.
+
+`ACCESSIBILITY_FINAL_VALIDATION = PASS`.
+
+`PERFORMANCE_REGRESSION = NO`; `ACCESSIBILITY_REGRESSION = NO`; `GAMEPLAY_REGRESSION = NO`; `CRITICAL_OPEN_ISSUES = 0`.
+
+PBA-016 is complete. PBA-017 is **READY_TO_START** but is not started by this validation phase.
