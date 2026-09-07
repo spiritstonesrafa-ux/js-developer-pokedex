@@ -91,9 +91,9 @@
           <!-- 1. CARTÃO PRINCIPAL DO TREINADOR -->
           <section class="trainer-card" aria-label="Cartão de Treinador">
             <div class="trainer-header">
-              <div class="trainer-avatar-wrapper" id="avatarWrapperClickable" style="background: ${avatarDetails.gradient}; border-color: ${avatarDetails.borderColor}; box-shadow: 0 8px 24px ${avatarDetails.glowColor}; cursor: pointer;" title="Clique para trocar de avatar">
+              <button type="button" class="trainer-avatar-wrapper" id="avatarWrapperClickable" style="background: ${avatarDetails.gradient}; border-color: ${avatarDetails.borderColor}; box-shadow: 0 8px 24px ${avatarDetails.glowColor};" aria-label="Editar avatar">
                 <i class="${avatarDetails.icon} trainer-avatar-icon"></i>
-              </div>
+              </button>
               <div class="trainer-identity">
                 <div class="trainer-name-row">
                   <h2 class="trainer-name">${this.escapeHtml(displayName)}</h2>
@@ -179,10 +179,10 @@
 
           <!-- MODAL DE EDIÇÃO DE PERFIL (Nome e Avatar Presets) -->
           <div id="trainerEditModal" class="trainer-modal-overlay" style="display: none;">
-            <div class="trainer-modal-card">
+            <div class="trainer-modal-card" role="dialog" aria-modal="true" aria-labelledby="trainerEditModalTitle">
               <div class="trainer-modal-header">
-                <h3><i class="fa-solid fa-user-pen"></i> Editar Perfil</h3>
-                <button class="trainer-modal-close-btn" id="closeTrainerModalBtn">&times;</button>
+                <h3 id="trainerEditModalTitle"><i class="fa-solid fa-user-pen"></i> Editar Perfil</h3>
+                <button class="trainer-modal-close-btn" id="closeTrainerModalBtn" aria-label="Fechar edição de perfil">&times;</button>
               </div>
               <div class="trainer-modal-body">
                 <label for="editTrainerNameInput" class="trainer-input-label">Nome de Treinador (2 a 24 caracteres):</label>
@@ -217,7 +217,7 @@
       return Object.values(presets).map(p => {
         const isActive = p.id === activePreset;
         return `
-          <button type="button" class="avatar-preset-btn ${isActive ? 'active' : ''}" data-preset-id="${p.id}" style="background: ${p.gradient}; border-color: ${isActive ? p.borderColor : 'transparent'};" title="${this.escapeHtml(p.label)}">
+          <button type="button" class="avatar-preset-btn ${isActive ? 'active' : ''}" data-preset-id="${p.id}" style="background: ${p.gradient}; border-color: ${isActive ? p.borderColor : 'transparent'};" title="${this.escapeHtml(p.label)}" aria-label="${this.escapeHtml(p.label)}" aria-pressed="${isActive}">
             <i class="${p.icon}"></i>
           </button>
         `;
@@ -362,9 +362,11 @@
      */
     attachEventListeners() {
       const editBtn = document.getElementById('editTrainerNameBtn');
+      let modalTrigger = null;
       const avatarWrapper = document.getElementById('avatarWrapperClickable');
 
       const openModal = () => {
+        modalTrigger = document.activeElement;
         this.selectedPresetTemp = this.manager.getAvatarPreset();
         const modal = document.getElementById('trainerEditModal');
         if (modal) {
@@ -385,12 +387,23 @@
       const closeModal = () => {
         const modal = document.getElementById('trainerEditModal');
         if (modal) modal.style.display = 'none';
+        if (modalTrigger && modalTrigger.isConnected) modalTrigger.focus();
       };
 
       const closeBtn = document.getElementById('closeTrainerModalBtn');
       const cancelBtn = document.getElementById('cancelEditProfileBtn');
       if (closeBtn) closeBtn.addEventListener('click', closeModal);
       if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      const profileModal = document.getElementById('trainerEditModal');
+      if (profileModal) profileModal.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; }
+        if (event.key !== 'Tab') return;
+        const focusable = [...profileModal.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])')];
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      });
 
       // Presets de avatar
       const presetButtons = document.querySelectorAll('.avatar-preset-btn');
@@ -398,8 +411,9 @@
         btn.addEventListener('click', () => {
           const presetId = btn.dataset.presetId;
           this.selectedPresetTemp = presetId;
-          presetButtons.forEach(b => b.classList.remove('active'));
+          presetButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
           btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
         });
       });
 

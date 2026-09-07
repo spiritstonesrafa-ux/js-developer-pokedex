@@ -365,6 +365,14 @@
   white-space: nowrap;
 }
 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 3px;
+}
+
 .nav-tab:hover {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.06);
@@ -1256,3 +1264,19 @@
 }
 
 
+
+/* PBA-016C: preserve practical touch targets in the compact battle HUD. */
+@media (max-width: 600px) {
+  .battle-immersive-shell .btn-switch-action {
+    min-height: 44px !important;
+  }
+
+  .battle-immersive-shell .battle-audio-toggle-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+/* PBA-016C: campaign secondary actions meet normal-text contrast on dark surfaces. */
+.campaign-secondary {
+  background: #4657d1 !important;
+}

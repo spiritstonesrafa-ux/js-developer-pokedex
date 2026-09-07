@@ -35,8 +35,16 @@
       this.activeModal = null;
       this.activeModalCanClose = true;
       this.savedScrollY = 0;
+      this.modalTrigger = null;
       this.keydownHandler = (event) => {
-        if (event.key === 'Escape' && this.activeModal && this.activeModalCanClose) this.closeModal();
+        if (!this.activeModal) return;
+        if (event.key === 'Escape' && this.activeModalCanClose) { this.closeModal(); return; }
+        if (event.key !== 'Tab') return;
+        const focusable = [...this.activeModal.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])')];
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       };
     }
 
@@ -643,6 +651,7 @@
      * Abre o modal de troca voluntária de Pokémon.
      */
     openSwitchModal() {
+      this.modalTrigger = typeof document !== 'undefined' ? document.activeElement : null;
       const battleState = this.sessionController ? this.sessionController.battleState : null;
       if (!battleState) return;
 
@@ -691,6 +700,7 @@
      * Abre o modal de substituição forçada após nocaute do ativo.
      */
     openReplacementModal(battleState) {
+      this.modalTrigger = typeof document !== 'undefined' ? document.activeElement : null;
       if (!battleState) return;
 
       const player = battleState.player;
@@ -783,6 +793,9 @@
         this.activeModal.parentNode.removeChild(this.activeModal);
         this.activeModal = null;
         this.activeModalCanClose = true;
+        const trigger = this.modalTrigger;
+        this.modalTrigger = null;
+        if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
 
       }
     }
