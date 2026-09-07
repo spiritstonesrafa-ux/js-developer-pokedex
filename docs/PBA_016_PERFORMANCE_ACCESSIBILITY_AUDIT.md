@@ -125,3 +125,47 @@ Responsive AFTER: Campaign Home was checked at 1366×768, 390×844, 360×700, an
 ### Public GitHub Pages validation
 
 `PUBLIC_BUILD_CURRENT = YES`. GitHub Pages returned HTTP 200 and `Content-Type: image/webp` for `assets/images/trainers/thumbs/aster.webp` (11,880 bytes). A cold public-browser Campaign Home capture loaded `aster.webp` (12,180 transfer bytes), `kael.webp` (14,372), and the intentionally full-size `super-trainer.png` (2,563,370); 16 Master cards remained deferred. `NETWORK_HTTP_ERRORS = 0`, `NEW_CONSOLE_ERRORS = 0`, and `HORIZONTAL_OVERFLOW = 0`.
+## PBA-016C — Accessibility Verification Closure
+
+### Scope and evidence
+
+This closure preserves the accessibility-only implementation: visible native-control focus, campaign selection semantics, accessible profile controls, dialog focus management, contrast correction, and mobile battle touch targets. No Battle Engine, AI, damage, move, type-chart, campaign progression, reward, Super Trainer, Shadow Aura gameplay, Final Stand rule, or storage behavior changed.
+
+### Automated accessibility gates
+
+| Gate | Result |
+| --- | --- |
+| Contrast samples | 13 tested; 1 failure before, 0 after |
+| Campaign secondary CTA | white on `#4657d1`, 5.92:1 |
+| Touch-target sampling | 10 sampled; 2 issues before, 0 after; battle switch/audio are at least 44×44 CSS px on mobile |
+| Touch spacing | No issue confirmed |
+| 200% zoom | No critical blocker |
+| Reduced motion runtime | Pass; Shadow Aura computes to `animation: none` / `0s` under `reduce` |
+| Accessibility tree | Pass; named profile trigger/dialog/presets, selected campaign cards, battle move/dialog, and distinct HP progressbars |
+| Responsive browser smoke | 1366×768, 390×844, 360×700, 412×915: no horizontal overflow, broken images, or new console errors |
+| PBA-016B safety | WebP Master-card thumbnails, full PNG portraits, lazy loading, and async decoding preserved |
+| Audio accessibility | Pass; mute and channel-volume behavior remain optional and gameplay has visual equivalents |
+
+Contrast uses browser-computed styles and WCAG calculation where foreground and background are solid; layered, transparent, or gradient surfaces are honestly recorded as `NOT_MEASURABLE` rather than estimated.
+
+### Keyboard and screen-reader limitations
+
+`REAL_KEYBOARD_AUTOMATION = NOT_AVAILABLE`. In the CDP harness, `CDP_ENTER_RESULT = harness limitation` while `CDP_SPACE_RESULT = verified`; this is not treated as a product failure or as human-test automation. A real screen-reader announcement pass remains `SCREEN_READER_REAL = NOT_AVAILABLE`; semantic inspection used the Chrome Accessibility tree.
+
+### Human keyboard acceptance
+
+The user verified the following in a real browser:
+
+- `PROFILE_HUMAN_VERIFICATION = PASS`: Enter opens Editar avatar; Tab/Shift+Tab stay in the dialog; Escape closes; focus returns to the avatar trigger.
+- `VOLUNTARY_SWITCH_HUMAN_VERIFICATION = PASS`: keyboard opens Trocar Pokémon; focus remains contained; Escape closes and restores the trigger; a reserve can be selected.
+- `MANDATORY_REPLACEMENT_HUMAN_VERIFICATION = PASS`: faint opens the non-dismissible replacement dialog; Tab/Shift+Tab remain contained; Escape does not close it; background remains inactive; keyboard selection continues battle correctly.
+
+`HUMAN_KEYBOARD_VERIFICATION = PASS`.
+
+### PBA-016C final status
+
+`AUTOMATED_ACCESSIBILITY_GATES = PASS`.
+
+`CRITICAL_ACCESSIBILITY_BLOCKERS = 0`.
+
+PBA-016C is closed after its final regression, publication, remote parity, and public GitHub Pages validation. PBA-016 remains in progress; **PBA-016D — Final Performance & Accessibility Validation** is ready to start and PBA-017 remains unstarted.
