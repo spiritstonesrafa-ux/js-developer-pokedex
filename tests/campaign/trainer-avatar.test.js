@@ -18,7 +18,7 @@ test('trainer avatar catalog covers the canonical eighteen Masters and two speci
     );
     assert.equal(visual.displayName, master.trainerName);
     assert.equal(visual.type, master.type);
-    assert.equal(visual.avatarSrc, null);
+    assert.equal(visual.avatarSrc, master.challengeId === 'master-water' ? 'assets/images/trainers/marina.png' : null);
   });
   assert.equal(Visuals.getSpecialTrainerVisual('SUPER').avatarKey, 'super-trainer');
   assert.equal(Visuals.getSpecialTrainerVisual('SHADOW').avatarKey, 'super-trainer-shadow');
@@ -26,12 +26,15 @@ test('trainer avatar catalog covers the canonical eighteen Masters and two speci
 
 test('trainer avatar renderer is fallback-first and recovers from a controlled local image', () => {
   const marina = Visuals.getMasterVisual('master-water');
-  const fallback = Avatar.renderTrainerAvatar(marina, { size: 'medium', shape: 'circle' });
+  assert.equal(marina.avatarSrc, 'assets/images/trainers/marina.png');
+  const imageFromCatalog = Avatar.renderTrainerAvatar(marina, { size: 'medium', shape: 'circle' });
+  assert.match(imageFromCatalog, /src="assets\/images\/trainers\/marina.png"/);
+  const fallback = Avatar.renderTrainerAvatar({ ...marina, avatarSrc: null }, { size: 'medium', shape: 'circle' });
   assert.match(fallback, /data-avatar-key="marina"/);
   assert.match(fallback, /trainer-avatar__fallback/);
   assert.doesNotMatch(fallback, /<img/);
 
-  const image = Avatar.renderTrainerAvatar({ ...marina, avatarSrc: 'assets/images/trainers/marina.webp' }, { loading: 'eager' });
+  const image = Avatar.renderTrainerAvatar({ ...marina, avatarSrc: 'assets/images/trainers/marina.png' }, { loading: 'eager' });
   assert.match(image, /<img class="trainer-avatar__image"/);
   assert.match(image, /loading="eager"/);
   assert.match(image, /onerror=/);
