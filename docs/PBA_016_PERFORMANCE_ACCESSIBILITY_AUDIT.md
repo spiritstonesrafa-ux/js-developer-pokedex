@@ -121,3 +121,7 @@ Campaign Home visible trainer-art transfer fell from 7,558,275 to 2,589,922 byte
 
 The evidence supports the targeted card-thumbnail optimization and does not support virtualization. The next phase is **PBA-016C — Accessibility Verification**, focused on formal contrast, screen-reader announcements, modal focus return, and reduced-motion interaction verification. PBA-017 remains unstarted.
 Responsive AFTER: Campaign Home was checked at 1366×768, 390×844, 360×700, and 412×915. The WebP cards loaded at 84 px desktop / 68 px mobile with 168 px intrinsic width, and horizontal overflow was false at every viewport.
+
+### Public GitHub Pages validation
+
+`PUBLIC_BUILD_CURRENT = YES`. GitHub Pages returned HTTP 200 and `Content-Type: image/webp` for `assets/images/trainers/thumbs/aster.webp` (11,880 bytes). A cold public-browser Campaign Home capture loaded `aster.webp` (12,180 transfer bytes), `kael.webp` (14,372), and the intentionally full-size `super-trainer.png` (2,563,370); 16 Master cards remained deferred. `NETWORK_HTTP_ERRORS = 0`, `NEW_CONSOLE_ERRORS = 0`, and `HORIZONTAL_OVERFLOW = 0`.
