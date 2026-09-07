@@ -44,7 +44,7 @@
   const View = window.PBACampaign && window.PBACampaign.CampaignView;
   if (!View) return;
   const C = window.PBACampaign;
-  const avatar = (visual, size, shape) => C.renderTrainerAvatar(visual, { size, shape, decorative: true });
+  const avatar = (visual, size, shape, surface) => C.renderTrainerAvatar(visual, { size, shape, surface, decorative: true });
 
   const renderHome = View.prototype.renderHome;
   View.prototype.renderHome = function () {
@@ -52,7 +52,7 @@
     this.container.querySelectorAll('.master-card').forEach((card, index) => {
       const master = C.MASTERS[index];
       const visual = C.getMasterVisual(master.challengeId);
-      card.insertAdjacentHTML('afterbegin', avatar(visual, 'MEDIUM', 'CIRCLE'));
+      card.insertAdjacentHTML('afterbegin', avatar(visual, 'MEDIUM', 'CIRCLE', 'CARD'));
     });
   };
 

@@ -93,3 +93,15 @@ test('campaign and battle integrations remain presentation-only and Quick Battle
   assert.doesNotMatch(battleView, /campaign-manager\.js|campaign-catalog\.js/);
   assert.doesNotMatch(sessionController, /opponentTrainer/);
 });
+
+test('master cards use derived WebP thumbnails while portraits retain original PNG art', () => {
+  Visuals.MASTER_TRAINER_VISUALS.forEach(visual => {
+    assert.equal(visual.thumbnailSrc, 'assets/images/trainers/thumbs/' + visual.avatarKey + '.webp');
+    assert.equal(fs.existsSync(visual.thumbnailSrc), true);
+    const card = Avatar.renderTrainerAvatar(visual, { size:'medium', shape:'circle', surface:'CARD' });
+    const portrait = Avatar.renderTrainerAvatar(visual, { size:'large', shape:'portrait' });
+    assert.ok(card.includes('src="' + visual.thumbnailSrc + '"'));
+    assert.ok(portrait.includes('src="' + visual.avatarSrc + '"'));
+    assert.match(card, /decoding="async"/);
+  });
+});
