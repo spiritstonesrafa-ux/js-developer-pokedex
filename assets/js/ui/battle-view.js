@@ -393,6 +393,8 @@
 
       const isResolving = uiState === 'RESOLVING';
       const shadowAura = this.sessionController?.sessionOptions?.metadata?.kind === 'SHADOW' || !!battleState?.modifiers?.SHADOW_AURA;
+      const opponentTrainer = this.sessionController?.sessionOptions?.metadata?.opponentTrainer || null;
+      const trainerAvatarMarkup = opponentTrainer && typeof window !== 'undefined' && window.PBACampaign?.renderTrainerAvatar ? window.PBACampaign.renderTrainerAvatar(opponentTrainer, { size: 'SMALL', shape: 'CIRCLE', decorative: true }) : '';
 
       // Cores para barras de HP
       const playerHpPct = Math.max(0, Math.min(100, Math.round((playerActive.currentHp / playerActive.maxHp) * 100)));
@@ -444,6 +446,7 @@
           ${shadowAura ? '<div class="shadow-aura-indicator" role="status"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></div>' : ''}
             <!-- Barra Superior com Utilitários -->
             <div class="battle-top-bar">
+              ${trainerAvatarMarkup ? '<div class="battle-opponent-trainer">' + trainerAvatarMarkup + '<span class="battle-opponent-trainer__name">' + opponentTrainer.displayName + '</span></div>' : ''}
               <button id="btnExitBattle" class="battle-exit-btn" onclick="if(window.battleView) window.battleView.requestExitBattle();" aria-label="Sair da batalha">
                 <i class="fa-solid fa-arrow-left"></i><span>SAIR</span>
               </button>
@@ -924,5 +927,3 @@
     Object.assign(window.PBABattleUi, exportsObj);
   }
 })();
-
-

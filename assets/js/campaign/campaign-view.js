@@ -40,3 +40,56 @@
     };
   };
 })();
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  const C = window.PBACampaign;
+  const avatar = (visual, size, shape) => C.renderTrainerAvatar(visual, { size, shape, decorative: true });
+
+  const renderHome = View.prototype.renderHome;
+  View.prototype.renderHome = function () {
+    renderHome.call(this);
+    this.container.querySelectorAll('.master-card').forEach((card, index) => {
+      const master = C.MASTERS[index];
+      const visual = C.getMasterVisual(master.challengeId);
+      card.insertAdjacentHTML('afterbegin', avatar(visual, 'MEDIUM', 'CIRCLE'));
+    });
+  };
+
+  const renderPicker = View.prototype.renderPicker;
+  View.prototype.renderPicker = function () {
+    renderPicker.call(this);
+    if (!this.pending) return;
+    const visual = this.pending.kind === 'MASTER'
+      ? C.getMasterVisual(this.pending.id)
+      : C.getSpecialTrainerVisual(this.pending.kind === 'SHADOW' ? 'SHADOW' : 'SUPER');
+    const context = this.container.querySelector('.master-context, .campaign-hero');
+    if (context) context.insertAdjacentHTML('afterbegin', avatar(visual, 'LARGE', 'PORTRAIT'));
+  };
+
+  const renderReward = View.prototype.renderReward;
+  View.prototype.renderReward = function (reward) {
+    renderReward.call(this, reward);
+    const visual = reward && reward.kind === 'MASTER'
+      ? C.getMasterVisual(reward.id)
+      : C.getSpecialTrainerVisual('SUPER');
+    const hero = this.container.querySelector('.campaign-hero');
+    if (hero && visual) hero.insertAdjacentHTML('afterbegin', avatar(visual, 'SMALL', 'CIRCLE'));
+  };
+
+  const render = View.prototype.render;
+  View.prototype.render = function () {
+    const result = render.call(this);
+    const state = this.manager.getState();
+    const superPending = state.status === 'SUPER_REWARD_PENDING' && !state.superTrainer.victorySeen;
+    const shadowReveal = state.status === 'SHADOW_AVAILABLE' && state.shadowTrainer.revealed && !state.shadowTrainer.revealSeen;
+    if (superPending || shadowReveal) {
+      const hero = this.container.querySelector('.campaign-hero');
+      const visual = C.getSpecialTrainerVisual(shadowReveal ? 'SHADOW' : 'SUPER');
+      if (hero && visual && !hero.querySelector('.trainer-avatar')) {
+        hero.insertAdjacentHTML('afterbegin', avatar(visual, 'LARGE', 'PORTRAIT'));
+      }
+    }
+    return result;
+  };
+})();

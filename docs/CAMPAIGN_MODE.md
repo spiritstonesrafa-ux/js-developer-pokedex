@@ -16,3 +16,8 @@ After the elite reward, Shadow is logically unlocked with revealSeen=false. Camp
 New campaigns select six from the static 144-species canonical draft (16 actual species per official generation). Metadata is generated during development from PokéAPI and committed for runtime: no campaign-opening bulk fetch occurs. Legendary/Mythical species and SUPER_TEAM are excluded from new starts; historical valid campaign IDs remain readable so an existing save is never reset silently.
 
 When a Type Master is selected, CampaignView renders the trainer context, badge and a Portuguese Gym Type Guide calculated from battle/type-chart.js. It lists the Master type’s offensive 2× targets and defensive 2× weaknesses, including the dual-type disclaimer.
+
+
+## Trainer avatar infrastructure
+
+Trainer portraits are presentation-only descriptors. PBA-015 Stage 1 uses no portrait files or remote image requests: the campaign uses an accessible type/icon/initials fallback and passes the matching descriptor as campaign battle metadata. Quick Battle remains neutral.
