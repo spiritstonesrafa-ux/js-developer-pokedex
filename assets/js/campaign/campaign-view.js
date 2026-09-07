@@ -233,3 +233,35 @@
     if (definition) this.container.querySelector('.campaign-hero h2').textContent = `Escolha seu Pokémon — ${definition.label}`;
   };
 })();
+/* PBA-015H — Shadow presentation only; no campaign or battle rules are changed. */
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  const C = window.PBACampaign;
+  const cap = value => String(value).replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  const team = C.SUPER_TEAM;
+  const preview = `<section class="opponent-team-preview shadow-team-preview" aria-label="Equipe adversária Shadow"><p class="eyebrow">EQUIPE ADVERSÁRIA</p><div class="opponent-team-preview__grid">${team.map(pokemon => `<article class="opponent-preview-card"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>BST ${pokemon.bst}</small></article>`).join('')}</div></section>`;
+  const portrait = () => C.renderTrainerAvatar(C.getSpecialTrainerVisual('SHADOW'), { size: 'LARGE', shape: 'PORTRAIT', decorative: true });
+  const aura = '<aside class="shadow-aura-callout" role="note"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></aside>';
+  const renderHome = View.prototype.renderHome;
+  View.prototype.renderHome = function () {
+    renderHome.call(this);
+    const state = this.manager.getState();
+    if (!state.shadowTrainer.revealed || state.shadowTrainer.defeated || state.status !== 'SHADOW_AVAILABLE') return;
+    const endgame = this.container.querySelector('.campaign-endgame');
+    if (!endgame) return;
+    endgame.querySelector('.endgame-super')?.classList.add('endgame-super--secondary');
+    endgame.insertAdjacentHTML('afterbegin', `<section class="shadow-spotlight"><div class="shadow-spotlight__portrait">${portrait()}</div><div class="shadow-spotlight__content"><p class="eyebrow">DESAFIO FINAL VERDADEIRO</p><h2>SHADOW SUPER TRAINER</h2><p>O desafio ainda não terminou.</p>${aura}${preview}<button id="shadowSpotlight" class="campaign-danger">ENFRENTAR O DESAFIO FINAL</button></div></section>`);
+    this.container.querySelector('#shadowChallenge')?.remove();
+    this.container.querySelector('#shadowSpotlight').onclick = () => { this.pending = { kind: 'SHADOW', id: null }; this.pick = []; this.render(); };
+  };
+  const renderPicker = View.prototype.renderPicker;
+  View.prototype.renderPicker = function () {
+    if (!this.pending || this.pending.kind !== 'SHADOW') return renderPicker.call(this);
+    const roster = this.manager.getRoster();
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><section class="campaign-preparation campaign-preparation--shadow">${portrait()}<div class="campaign-preparation__copy"><p class="eyebrow">PREPARAR DESAFIO FINAL</p><h2>SHADOW SUPER TRAINER</h2><p>O verdadeiro desafio final.</p>${aura}</div>${preview}</section><div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(pokemon => this.card(pokemon, this.pick.includes(pokemon.id))).join('')}</div><button id="startCampaignBattle" class="campaign-danger" ${this.pick.length === 3 ? '' : 'disabled'}>Iniciar desafio final</button></section>`;
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.render(); };
+    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => { const id = Number(button.dataset.id); this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick); this.render(); });
+    this.container.querySelector('#startCampaignBattle').onclick = async () => { try { await this.coordinator.start(this.pending.kind, this.pending.id, this.pick); this.pending = null; window.switchAppTab('battle'); } catch (error) { alert(error.message); } };
+  };
+})();
