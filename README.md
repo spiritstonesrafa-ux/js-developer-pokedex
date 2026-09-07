@@ -252,8 +252,8 @@ O desenvolvimento do simulador de batalhas segue um planejamento incremental por
 - [x] **PBA-012 Battle Camera & Impact** *(Fase Concluída)*: A Battle Arena agora possui um sistema de impacto audiovisual que coordena screen shake localizado, micro zoom de câmera, hit flash e ênfase baseada no resultado já calculado do golpe (Normal, Super Effective, 4x, Resisted, Miss, Immunity). Totalmente acelerado por hardware (GPU), isolado ao palco da arena (`CAMERA_LAYOUT_THRASHING = NONE`), com prevenção estrita a estroboscópio (`NO_STROBE_EFFECT = YES`), suporte completo a acessibilidade (`reducedMotion`), proteção de concorrência com cancelamento limpo e zero interferência nas regras matemáticas da batalha.
 - [x] **PBA-013 Final Battle UI** *(Fase Concluída)*: Interface gráfica de combate 3x3 totalmente jogável e acessível na aplicação real. Camada Battle Session (`BattleTeamHydrator`, `BattleOpponentFactory`, `BattleRandomSource`, `BattleSessionController`), auto move loadout determinístico de 1 a 4 golpes legais, seleção de golpes e trocas táticas via SMART AI, painel de trocas voluntárias e substituições forçadas por nocaute, barras de HP dinâmicas, sincronização temporal via `BattleUiDomAdapter` integrado ao `CompositeBattleDomAdapter` quíntuplo, telas de vitória/derrota, revanche e responsividade impecável.
 - [ ] **PBA-014 Trainer Profile**: Perfil do treinador, insígnias conquistadas e estatísticas.
-- [ ] **PBA-015 Campaign Mode**: Modo campanha com progressão de ginásios e desafios crescentes.
-- [ ] **PBA-016 Performance & Accessibility**: Otimização de renderização e suporte a `prefers-reduced-motion`.
+- [x] **PBA-015 Campaign Mode**: Circuito completo com 18 Mestres, Trials, Super Trainer, Shadow Final Stand, True Ending e áudio procedural original.
+- [ ] **PBA-016 Performance & Accessibility**: Baseline e auditoria de performance/acessibilidade em andamento.
 - [ ] **PBA-017 Automated Tests**: Testes unitários para cálculos de dano e regras da engine.
 - [ ] **PBA-018 Portfolio Release**: Documentação final, estudo de caso e publicação.
 
