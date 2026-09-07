@@ -55,9 +55,14 @@
 
     render() {
       this.init();
-      if (this.sessionController) {
-        this.sessionController.checkTeamAndInit();
+      if (!this.sessionController) return;
+      const campaignSession = this.sessionController.sessionOptions?.metadata?.mode === 'CAMPAIGN' && this.sessionController.battleState;
+      if (campaignSession) {
+        // Campaign owns its hydrated session; never replace it with the Quick Battle team.current guard.
+        this.renderState(this.sessionController.uiState, { battleState: this.sessionController.battleState }, this.sessionController.battleState);
+        return;
       }
+      this.sessionController.checkTeamAndInit();
     }
 
     /**

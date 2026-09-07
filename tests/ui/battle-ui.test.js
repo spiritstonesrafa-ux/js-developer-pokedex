@@ -819,3 +819,27 @@ describe('PHASE PBA-013-SPRITE-FIX — GATES SPR01–SPR20 (SPRITE RENDERING & B
     assert.ok(!navBtnHtml.toLowerCase().includes('em breve'), 'Button must NOT contain Em breve badge');
   });
 });
+
+describe('PBA-015I-HOTFIX — Campaign session handoff', () => {
+  it('SHADOW_FINAL_STAND_WITH_INCOMPLETE_TEAM_CURRENT keeps an active Campaign session ahead of the Quick 3x3 guard', () => {
+    let guardCalls = 0;
+    const state = { player: { team: Array.from({ length: 37 }, (_, id) => ({ id: id + 1, currentHp: 1 })), activeIndex: 0 }, enemy: { team: [{ id: 493, currentHp: 1 }, { id: 890, currentHp: 1 }, { id: 150, currentHp: 1 }], activeIndex: 0 } };
+    const session = { uiState: 'AWAITING_PLAYER_ACTION', battleState: state, sessionOptions: { metadata: { mode: 'CAMPAIGN', kind: 'SHADOW', battleFormat: 'FINAL_STAND' } }, setView() {}, checkTeamAndInit() { guardCalls++; } };
+    const view = new BattleView({ container: {}, sessionController: session });
+    let rendered = null;
+    view.renderState = (uiState, data, battleState) => { rendered = { uiState, battleState }; };
+    view.render();
+    assert.equal(guardCalls, 0);
+    assert.equal(rendered.uiState, 'AWAITING_PLAYER_ACTION');
+    assert.equal(rendered.battleState.player.team.length, 37);
+    assert.equal(rendered.battleState.enemy.team.length, 3);
+    assert.equal(session.sessionOptions.metadata.kind, 'SHADOW');
+    assert.equal(session.sessionOptions.metadata.battleFormat, 'FINAL_STAND');
+  });
+  it('Quick Battle without a Campaign session still invokes the 3x3 guard', () => {
+    let guardCalls = 0;
+    const session = { uiState: 'NO_TEAM', battleState: null, sessionOptions: null, setView() {}, checkTeamAndInit() { guardCalls++; } };
+    new BattleView({ container: {}, sessionController: session }).render();
+    assert.equal(guardCalls, 1);
+  });
+});
