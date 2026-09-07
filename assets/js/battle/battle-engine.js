@@ -250,7 +250,7 @@
      * @returns {Array<Object>} Lista de 3 combatentes normalizados.
      * @throws {Error} Se o tamanho for diferente de 3 ou houver espécies duplicadas.
      */
-    function validateAndCreateTeam(rawTeam, label = 'team') {
+    function validateAndCreateTeam(rawTeam, label = 'team', options = {}) {
       if (!Array.isArray(rawTeam)) {
         throw new Error(`Equipe "${label}" inválida: deve ser um array com exatamente ${BATTLE_CONFIG.TEAM_SIZE} membros.`);
       }
@@ -993,4 +993,25 @@
     window.PBABattle = window.PBABattle || {};
     window.PBABattle.BattleEngine = BattleEngine;
   }
+})();
+
+/* PBA-015I — Adapter over the same BattleEngine state model for Shadow Final Stand only. */
+(function () {
+  const Engine = typeof module !== 'undefined' && module.exports ? module.exports : (window.PBABattle && window.PBABattle.BattleEngine);
+  if (!Engine) return;
+  const regularCreateTeamBattle = Engine.createTeamBattle;
+  Engine.createTeamBattle = function (playerTeamInput, enemyTeamInput, options = {}) {
+    if (options.battleFormat !== 'FINAL_STAND') return regularCreateTeamBattle(playerTeamInput, enemyTeamInput, options);
+    if (!Array.isArray(playerTeamInput) || playerTeamInput.length < 1) throw new Error('Final Stand requer ao menos um Pokémon do jogador.');
+    if (!Array.isArray(enemyTeamInput) || enemyTeamInput.length !== 3) throw new Error('A equipe Shadow deve manter exatamente três Pokémon.');
+    const normalize = (team, label) => {
+      const seen = new Set();
+      return team.map(raw => {
+        const mon = Engine.createCombatant(raw);
+        if (seen.has(mon.id)) throw new Error(`Espécie duplicada na equipe "${label}".`);
+        seen.add(mon.id); return mon;
+      });
+    };
+    return { version: 2, status: 'IN_PROGRESS', turn: 1, player: { activeIndex: 0, team: normalize(playerTeamInput, 'player') }, enemy: { activeIndex: 0, team: normalize(enemyTeamInput, 'enemy') }, winner: null, modifiers: options.modifiers || {}, metadata: options.metadata || null };
+  };
 })();

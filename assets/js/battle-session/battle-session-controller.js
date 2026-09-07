@@ -238,9 +238,11 @@
     async prepareBattle(options = {}) {
       const teamIds = Array.isArray(options.playerTeamIds) ? options.playerTeamIds.map(Number) : this.getPlayerTeamIds();
 
-      if (teamIds.length !== SESSION_CONFIG.TEAM_SIZE) {
+      const isFinalStand = options.metadata?.battleFormat === 'FINAL_STAND';
+      const teamIsValid = isFinalStand ? teamIds.length >= 1 : teamIds.length === SESSION_CONFIG.TEAM_SIZE;
+      if (!teamIsValid) {
         this.notifyState(BATTLE_UI_STATES.NO_TEAM, { teamSize: teamIds.length });
-        throw new Error(`Time incompleto: requer exatamente ${SESSION_CONFIG.TEAM_SIZE} Pokémon.`);
+        throw new Error(isFinalStand ? 'O Final Stand requer ao menos um Pokémon disponível.' : `Time incompleto: requer exatamente ${SESSION_CONFIG.TEAM_SIZE} Pokémon.`);
       }
 
       this.notifyState(BATTLE_UI_STATES.PREPARING);
@@ -285,7 +287,7 @@
         this.incompatibilityError = null;
 
         // 3. Cria a batalha 3x3 no Battle Engine
-        this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam, { modifiers: options.modifiers || {}, metadata: options.metadata || null });
+        this.battleState = this.engine.createTeamBattle(this.playerTeam, this.enemyTeam, { modifiers: options.modifiers || {}, metadata: options.metadata || null, battleFormat: options.metadata?.battleFormat || null });
 
         // 4. Sincroniza metadados visuais e sonoros nos combatentes do estado de batalha
         if (this.battleState && this.battleState.player && Array.isArray(this.battleState.player.team)) {

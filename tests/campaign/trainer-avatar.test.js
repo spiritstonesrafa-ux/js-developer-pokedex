@@ -69,14 +69,14 @@ test('trainer avatar renderer uses image mode for all final art and retains erro
 
 test('campaign battle metadata maps all Masters, Super, and Shadow to their correct final visual', () => {
   const manager = new CampaignManager();
-  manager.getRosterIds = () => [1, 2, 3];
+  manager.getRosterIds = () => [3, 6, 9];
   manager.canChallenge = () => true;
   Object.keys(MASTER_ART).forEach(id => {
-    const config = manager.getBattleConfig('MASTER', id, [1, 2, 3]);
+    const config = manager.getBattleConfig('MASTER', id, [3, 6, 9]);
     assert.equal(config.metadata.opponentTrainer.avatarSrc, MASTER_ART[id]);
   });
-  const superBattle = manager.getBattleConfig('SUPER', null, [1, 2, 3]);
-  const shadow = manager.getBattleConfig('SHADOW', null, [1, 2, 3]);
+  const superBattle = manager.getBattleConfig('SUPER', null, [3, 6, 9]);
+  const shadow = manager.getBattleConfig('SHADOW', null, [3, 6, 9]);
   assert.equal(superBattle.metadata.opponentTrainer.avatarSrc, SPECIAL_ART.SUPER);
   assert.equal(shadow.metadata.opponentTrainer.avatarSrc, SPECIAL_ART.SHADOW);
   assert.notEqual(superBattle.metadata.opponentTrainer.avatarSrc, shadow.metadata.opponentTrainer.avatarSrc);

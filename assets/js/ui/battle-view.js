@@ -393,6 +393,9 @@
 
       const isResolving = uiState === 'RESOLVING';
       const shadowAura = this.sessionController?.sessionOptions?.metadata?.kind === 'SHADOW' || !!battleState?.modifiers?.SHADOW_AURA;
+      const finalStand = this.sessionController?.sessionOptions?.metadata?.battleFormat === 'FINAL_STAND';
+      const playerRemaining = player.team.filter(p => p.currentHp > 0).length;
+      const enemyRemaining = enemy.team.filter(p => p.currentHp > 0).length;
       const opponentTrainer = this.sessionController?.sessionOptions?.metadata?.opponentTrainer || null;
       const trainerAvatarMarkup = opponentTrainer && typeof window !== 'undefined' && window.PBACampaign?.renderTrainerAvatar ? window.PBACampaign.renderTrainerAvatar(opponentTrainer, { size: 'SMALL', shape: 'CIRCLE', decorative: true }) : '';
 
@@ -442,7 +445,7 @@
 
       this.container.innerHTML = `
         <div class="battle-view-container battle-immersive-shell">
-          <div class="battle-arena-layout ${shadowAura ? 'shadow-aura-active' : ''}">
+          <div class="battle-arena-layout ${shadowAura ? 'shadow-aura-active' : ''} ${finalStand ? 'final-stand-active' : ''}">
           ${shadowAura ? '<div class="shadow-aura-indicator" role="status"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></div>' : ''}
             <!-- Barra Superior com Utilitários -->
             <div class="battle-top-bar">
@@ -453,7 +456,7 @@
               <div class="team-status-dots" id="playerTeamDots" title="Status da sua equipe" aria-label="Status da sua equipe">
                 <i class="fa-solid fa-user"></i>${renderDots(player.team, player.activeIndex)}
               </div>
-              <span id="turnIndicator" class="battle-turn-tag">Turno ${battleState.turn}</span>
+              <span id="turnIndicator" class="battle-turn-tag">${finalStand ? `SEU EXÉRCITO ${playerRemaining} · SHADOW ${enemyRemaining}` : `Turno ${battleState.turn}`}</span>
               <div class="team-status-dots" id="enemyTeamDots" title="Status da equipe adversária" aria-label="Status da equipe adversária">
                 ${renderDots(enemy.team, enemy.activeIndex)}<i class="fa-solid fa-robot"></i>
               </div>
@@ -511,7 +514,7 @@
                 <div class="combatant-slot enemy-slot" data-pokemon-target="enemy" id="enemyCombatantTarget">
                   <img
                     id="enemySpriteImg"
-                    class="combatant-sprite-img ${enemyActive.currentHp === 0 ? 'fainted' : ''}"
+                    class="combatant-sprite-img ${enemyActive.currentHp === 0 ? 'fainted' : ''} ${finalStand ? 'shadow-pokemon-aura' : ''}"
                     src="${enemyVisual.spriteUrl}"
                     data-primary-src="${enemyVisual.spriteUrl}"
                     data-fallback-src="${enemyVisual.artworkUrl}"

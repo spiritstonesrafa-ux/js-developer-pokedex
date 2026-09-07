@@ -265,3 +265,45 @@
     this.container.querySelector('#startCampaignBattle').onclick = async () => { try { await this.coordinator.start(this.pending.kind, this.pending.id, this.pick); this.pending = null; window.switchAppTab('battle'); } catch (error) { alert(error.message); } };
   };
 })();
+/* PBA-015I — Final Stand narrative and one-leader preparation. */
+(function () {
+  const View = window.PBACampaign && window.PBACampaign.CampaignView;
+  if (!View) return;
+  const C = window.PBACampaign;
+  const cap = value => String(value).replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  const portrait = () => C.renderTrainerAvatar(C.getSpecialTrainerVisual('SHADOW'), { size: 'LARGE', shape: 'PORTRAIT', decorative: true });
+  const aura = '<aside class="shadow-aura-callout" role="note"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></aside>';
+  const enemyPreview = () => `<section class="opponent-team-preview shadow-team-preview" aria-label="Equipe adversária Shadow"><p class="eyebrow">EQUIPE ADVERSÁRIA</p><div class="opponent-team-preview__grid">${C.SUPER_TEAM.map(pokemon => `<article class="opponent-preview-card"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span></article>`).join('')}</div></section>`;
+  const render = View.prototype.render;
+  View.prototype.render = function () {
+    const state = this.manager.getState();
+    if (state.status === 'SHADOW_AVAILABLE' && state.shadowTrainer.revealed && state.shadowTrainer.revealSeen && !state.shadowTrainer.reinforcementsSeen && !this.pending) {
+      const guests = this.manager.getShadowGuests();
+      this.container.innerHTML = `<section class="campaign-shell shadow-reinforcements"><section class="campaign-preparation campaign-preparation--shadow">${portrait()}<div class="campaign-preparation__copy"><p class="eyebrow">ANOMALIA CRÍTICA</p><h2>REFORÇOS CHEGARAM</h2><p>Os Pokémon das Provas retornaram para lutar ao seu lado.</p>${aura}</div></section><section class="final-stand-rule" role="note"><strong>BATALHA FINAL — REGRA ESPECIAL</strong><span>Todos os Pokémon do seu elenco poderão lutar. Quando um cair, escolha o próximo.</span></section><h3>REFORÇOS TEMPORÁRIOS — ${guests.length}</h3><div class="campaign-grid draft-grid guest-grid">${guests.map(pokemon => `<article class="campaign-mon guest-card"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>REFORÇO TEMPORÁRIO · ${pokemon.trialLabel}</small></article>`).join('') || '<p>Nenhuma Prova concluída ainda. Seu elenco permanente continua disponível.</p>'}</div><button id="ackShadowReinforcements" class="campaign-danger">PREPARAR O FINAL STAND</button></section>`;
+      this.container.querySelector('#ackShadowReinforcements').onclick = () => this.manager.acknowledgeShadowReinforcements();
+      return;
+    }
+    return render.call(this);
+  };
+  const renderHome = View.prototype.renderHome;
+  View.prototype.renderHome = function () {
+    renderHome.call(this);
+    const state = this.manager.getState();
+    if (state.status !== 'SHADOW_AVAILABLE' || state.shadowTrainer.defeated) return;
+    const spotlight = this.container.querySelector('.shadow-spotlight');
+    if (spotlight) spotlight.querySelector('.shadow-spotlight__content')?.insertAdjacentHTML('beforeend', `<p class="shadow-reinforcement-count">REFORÇOS DISPONÍVEIS: ${this.manager.getShadowGuests().length}</p>`);
+  };
+  const renderPicker = View.prototype.renderPicker;
+  View.prototype.renderPicker = function () {
+    if (!this.pending || this.pending.kind !== 'SHADOW') return renderPicker.call(this);
+    const permanent = this.manager.getRoster();
+    const guests = this.manager.getShadowGuests();
+    const army = [...permanent, ...guests];
+    const selected = this.pick[0];
+    const armyCard = pokemon => `<button class="campaign-mon ${selected === pokemon.id ? 'selected' : ''} ${pokemon.temporary ? 'guest-card' : ''}" data-id="${pokemon.id}"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>${pokemon.temporary ? `REFORÇO · ${pokemon.trialLabel}` : 'ELENCO PERMANENTE'}</small></button>`;
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><section class="campaign-preparation campaign-preparation--shadow">${portrait()}<div class="campaign-preparation__copy"><p class="eyebrow">PREPARAR DESAFIO FINAL</p><h2>SHADOW SUPER TRAINER</h2><p>O verdadeiro desafio final.</p>${aura}</div>${enemyPreview()}</section><section class="final-stand-army"><p class="eyebrow">SEU EXÉRCITO</p><strong>Pokémon permanentes: ${permanent.length}</strong><strong>Reforços temporários: ${guests.length}</strong><strong>Total disponível: ${army.length}</strong></section><div class="campaign-hero picker-choice"><h2>ESCOLHA SEU LÍDER</h2><p>Todos os demais Pokémon disponíveis entrarão como reservas. ${selected ? 'Líder selecionado.' : 'Selecione 1 Pokémon.'}</p></div><div class="campaign-grid draft-grid final-stand-army-grid">${army.map(armyCard).join('')}</div><button id="startCampaignBattle" class="campaign-danger" ${selected ? '' : 'disabled'}>INICIAR FINAL STAND</button></section>`;
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.pick = []; this.render(); };
+    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => { this.pick = [Number(button.dataset.id)]; this.render(); });
+    this.container.querySelector('#startCampaignBattle').onclick = async () => { try { await this.coordinator.start('SHADOW', null, this.pick); this.pending = null; window.switchAppTab('battle'); } catch (error) { alert(error.message); } };
+  };
+})();

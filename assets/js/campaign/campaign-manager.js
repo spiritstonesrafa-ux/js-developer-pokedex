@@ -12,3 +12,73 @@
  CampaignManager.prototype.claimReward=function(pokemonId){const p=this.data.pendingReward;if(!(p&&(p.kind==='LEGENDARY_TRIAL'||p.kind==='MYTHICAL_TRIAL'||p.kind==='TITANS_TRIAL'||p.kind==='CELESTIAL_TRIAL')))return previousClaim.call(this,pokemonId);const d=trialDefinition[p.kind],id=Number(pokemonId),t=trials(this)[d.key];if(!d.team.some(x=>x.id===id)||this.getRosterIds().includes(id))return {ok:false,reason:'ALREADY_OWNED'};if(t.rewardClaimed)return {ok:false,reason:'REWARD_ALREADY_CLAIMED'};t.rewardPokemonId=id;t.rewardClaimed=true;this.data.pendingReward=null;this.save('TRIAL_REWARD_CLAIMED');return {ok:true}};
  const api={CampaignManager};if(typeof module!=='undefined'&&module.exports)module.exports=api;else{window.PBACampaign=window.PBACampaign||{};Object.assign(window.PBACampaign,api)}
 })();
+
+/* PBA-015I — Shadow Final Stand: guests are derived at runtime from canonical trial teams. */
+(function () {
+  let CampaignManager, Catalog, C, Visuals;
+  if (typeof module !== 'undefined' && module.exports) {
+    CampaignManager = module.exports.CampaignManager;
+    Catalog = require('./campaign-catalog.js');
+    C = require('./campaign-constants.js');
+    Visuals = require('./campaign-trainer-visuals.js');
+  } else {
+    CampaignManager = window.PBACampaign && window.PBACampaign.CampaignManager;
+    Catalog = window.PBACampaign;
+    C = window.PBACampaign;
+    Visuals = window.PBACampaign;
+  }
+  if (!CampaignManager) return;
+  const trialPools = Object.freeze([
+    { key: 'legendary', label: 'Prova Lendária', team: () => Catalog.LEGENDARY_TRIAL_TEAM || [] },
+    { key: 'mythical', label: 'Prova Mítica', team: () => Catalog.MYTHICAL_TRIAL_TEAM || [] },
+    { key: 'titans', label: 'Prova dos Titãs', team: () => Catalog.TITANS_TRIAL_TEAM || [] },
+    { key: 'celestial', label: 'Prova Celestial', team: () => Catalog.CELESTIAL_TRIAL_TEAM || [] }
+  ]);
+  CampaignManager.prototype.getShadowGuests = function () {
+    const trials = this.data.endgameTrials || {};
+    const owned = new Set(this.getRosterIds());
+    const guests = [];
+    for (const definition of trialPools) {
+      const progress = trials[definition.key] || {};
+      if (!progress.completed || !progress.rewardClaimed || !Number.isInteger(Number(progress.rewardPokemonId))) continue;
+      for (const pokemon of definition.team()) {
+        if (pokemon.id === Number(progress.rewardPokemonId) || owned.has(pokemon.id) || guests.some(guest => guest.id === pokemon.id)) continue;
+        guests.push({ ...pokemon, temporary: true, trialKey: definition.key, trialLabel: definition.label });
+      }
+    }
+    return guests;
+  };
+  CampaignManager.prototype.getShadowFinalStandArmy = function (leaderId) {
+    const permanent = this.getRosterIds().map(Catalog.byId).filter(Boolean);
+    const candidates = [...permanent, ...this.getShadowGuests()];
+    const unique = candidates.filter((pokemon, index, all) => all.findIndex(other => other.id === pokemon.id) === index);
+    const leader = unique.find(pokemon => pokemon.id === Number(leaderId));
+    if (!leader) throw new Error('Escolha um líder disponível para o Final Stand.');
+    return [leader, ...unique.filter(pokemon => pokemon.id !== leader.id)];
+  };
+  CampaignManager.prototype.acknowledgeShadowReinforcements = function () {
+    if (!this.data.shadowTrainer?.revealed || this.data.shadowTrainer?.reinforcementsSeen) return false;
+    this.data.shadowTrainer.reinforcementsSeen = true;
+    this.save('SHADOW_REINFORCEMENTS_SEEN');
+    return true;
+  };
+  const previousBattleConfig = CampaignManager.prototype.getBattleConfig;
+  CampaignManager.prototype.getBattleConfig = function (kind, id, teamIds) {
+    if (kind !== 'SHADOW') return previousBattleConfig.call(this, kind, id, teamIds);
+    if (!this.canChallenge(kind, id)) throw new Error('Desafio indisponível.');
+    const leaders = [...new Set((teamIds || []).map(Number))];
+    if (leaders.length < 1) throw new Error('Escolha exatamente um líder para o Final Stand.');
+    const army = this.getShadowFinalStandArmy(leaders[0]);
+    return {
+      playerTeamIds: army.map(pokemon => pokemon.id),
+      enemyTeamIds: Catalog.SUPER_TEAM.map(pokemon => pokemon.id),
+      metadata: {
+        mode: 'CAMPAIGN', kind: 'SHADOW', battleFormat: 'FINAL_STAND',
+        opponentName: 'Shadow Super Trainer', opponentTrainer: Visuals.getSpecialTrainerVisual('SHADOW'),
+        permanentRosterCount: this.getRosterIds().length, temporaryGuestCount: this.getShadowGuests().length
+      },
+      modifiers: { SHADOW_AURA: true }
+    };
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports.CampaignManager = CampaignManager;
+})();
