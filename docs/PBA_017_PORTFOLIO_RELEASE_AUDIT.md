@@ -95,3 +95,35 @@ The public application and its regression suite are release-capable. GitHub Rele
 `FULL_REGRESSION = PASS`.
 
 PBA-017A is complete. **PBA-017B — Portfolio Presentation & Release Hardening** should address the P1 README gaps, P2 metadata, and owner-controlled license/disclaimer decisions without changing gameplay or architecture. PBA-017 itself remains in progress.
+## PBA-017B — Portfolio Presentation Hardening
+
+PBA-017B resolved the P1/P2 presentation findings without changing gameplay or runtime logic.
+
+### Resolved findings
+
+- README now identifies the product as **Pokédex Pro + Pokémon Battle Arena**, gives the live demo prominence, preserves DIO attribution, and presents the journey from Pokédex to release candidate.
+- The completed Campaign is represented as a first-class feature: 18 Type Masters, custom trainer art, badge/roster progression, four endgame trials, Super Trainer, false ending, Shadow Super Trainer, Shadow Aura, Shadow Final Stand, temporary reinforcements, True Ending, and procedural Shadow boss theme.
+- The Testing section documents a validated PowerShell command, the v1.0 release-candidate baseline of 575 pass / 0 fail / 0 cancelled / 21 suites, and coverage areas without making a code-coverage claim.
+- The performance section accurately scopes the measured trainer-art delivery reduction, WebP thumbnails, preserved full portraits, and Final Stand validation.
+- The accessibility section records keyboard, focus/dialog, semantic, contrast/touch/zoom/reduced-motion evidence and explicitly retains the real-screen-reader limitation.
+- HTML metadata now represents the complete product rather than a Pokédex-only challenge.
+- A concise factual Pokémon/PokéAPI/fan-project disclaimer and conservative trainer-art note were added. No license, screenshot, social preview, tag, or release was created.
+- README links now surface the architecture, Campaign, performance/accessibility, and portfolio-audit documents.
+
+### Status
+
+`README_PORTFOLIO_READINESS = PASS`.
+
+`README_CAMPAIGN_VISIBILITY = PASS`.
+
+`CAMPAIGN_README_COVERAGE = COMPLETE`.
+
+`TEST_COMMAND_DOCUMENTED = YES`.
+
+`TEST_COMMAND_VALIDATED = YES`.
+
+`HTML_TITLE_CURRENT = YES`; `HTML_DESCRIPTION_CURRENT = YES`; `PROJECT_NAMING_CONSISTENT = YES`.
+
+`IP_DISCLAIMER_PRESENT = YES`; `TRAINER_ART_DOCUMENTATION = PASS`.
+
+PBA-017B is complete. PBA-017C is ready for owner-controlled portfolio visuals, social-preview, license, version, and release preparation.

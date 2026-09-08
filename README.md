@@ -1,265 +1,132 @@
-# ⚡ Pokédex Pro + Pokémon Battle Arena
+# Pokédex Pro + Pokémon Battle Arena
 
-Uma plataforma web moderna, dinâmica e visualmente rica desenvolvida em **JavaScript Vanilla**, **HTML5 Semântico** e **CSS3 Moderno** consumindo a **PokéAPI REST**.
+Uma experiência web de Pokédex e batalha por turnos construída com JavaScript Vanilla. O projeto começou como um desafio de Pokédex da [Digital Innovation One (DIO)](https://www.dio.me/) e evoluiu para uma plataforma de jogo no navegador com Team Builder, Quick Battle, Campaign persistente e um endgame completo.
 
-Originalmente concebido como desafio prático de JavaScript da **[Digital Innovation One (DIO)](https://www.dio.me/)**, o projeto está em evolução contínua para se tornar uma aplicação de portfólio completa com simulador de batalhas por turnos e gerenciador tático de equipes.
+## Demonstração ao vivo
 
-> **Status Atual**: A **Pokédex Pro**, o **Team Builder (Meu Time)** e a **Pokémon Battle Arena (3x3 contra SMART AI)** estão 100% funcionais, jogáveis e operacionais!
->
-> *"The Pokémon Battle Arena is playable."*
+[**Abrir Pokédex Pro + Pokémon Battle Arena**](https://spiritstonesrafa-ux.github.io/js-developer-pokedex/)
 
-Acesso a Pokedex https://spiritstonesrafa-ux.github.io/js-developer-pokedex/
+## Destaques
 
----
+- Pokédex interativa com busca, filtros, favoritos, detalhes, evoluções e dados da PokéAPI.
+- Team Builder persistente para montar e ordenar equipes de até três Pokémon.
+- Quick Battle 3×3 com seleção de oponentes variada, Battle Engine determinística e SMART AI tática.
+- Pipeline de apresentação separado da regra de jogo: animações, VFX, áudio procedural e câmera de impacto.
+- Campaign persistente com 18 Mestres de Tipo, progressão, endgame e Shadow Final Stand.
+- Performance e acessibilidade verificadas com evidência de entrega de assets, teclado, foco, diálogos, contraste, touch, zoom e reduced motion.
 
-## ✨ Funcionalidades da Pokédex (100% Operacional)
-
-- 🎨 **Design Glassmorphism & UI/UX Premium**: Cards com gradientes dinâmicos de acordo com o tipo primário do Pokémon, efeitos de iluminação e hover 3D tilt.
-- 🌓 **Dark Mode / Light Mode**: Alternância de tema com persistência no `localStorage`.
-- 🔍 **Busca em Tempo Real**: Pesquise instantaneamente por nome ou número (#ID).
-- 🏷️ **Filtros por Tipo & Geração**:
-  - Filtro por todos os 18 tipos Pokémon (Fire, Water, Grass, Electric, Dragon, etc.).
-  - Filtro por Gerações (1ª Geração Kanto até a 9ª Geração Paldea).
-- 📊 **Ordenação Inteligente**: Ordene por ID crescente/decrescente, Ordem Alfabética (A-Z / Z-A) ou por Total de Stats (mais fortes).
-- 💖 **Sistema de Favoritos**: Salve seus Pokémon preferidos no navegador e filtre para visualizá-los a qualquer momento (`pokedex_favorites`).
-- 📱 **Modal de Detalhes Completo**:
-  - Artwork oficial em alta resolução com animações.
-  - **Áudio Real (Pokémon Cry)**: Toque para ouvir o som original do Pokémon disponibilizado pela PokéAPI.
-  - Medidas físicas (Altura, Peso) e lista de Habilidades.
-  - Barras animadas e coloridas com valores de cada Status Base (HP, Attack, Defense, Sp. Atk, Sp. Def, Speed).
-  - Linha evolutiva completa e interativa (Evolution Chain).
-- 🧭 **Navegação de Módulos**: Alternância integrada entre Pokédex, Meu Time e Arena de Batalha.
-- 📱 **100% Responsivo**: Otimizado para smartphones (360px+), tablets e telas widescreen.
-
----
-
-## 🛡️ Team Builder / Meu Time (100% Operacional — PBA-002)
-
-- 👥 **Montagem de Equipe (0 a 3 Pokémon)**: Selecione estrategicamente até 3 Pokémon da Pokédex para compor seu time de combate.
-- 👑 **Definição de Líder (Slot 1)**: O primeiro slot é destacado como Líder da equipe e iniciará as batalhas na arena.
-- 🚫 **Bloqueio a Duplicatas**: Validação estrita para impedir Pokémon repetidos na mesma equipe.
-- 🔄 **Reordenação Acessível**: Botões direcionais (`←` e `→`) para alternar a ordem dos Pokémon no time sem depender de gestos complexos.
-- 💾 **Persistência Confiável no LocalStorage**: O time é salvo sob a chave `team.current`, com sanitização automática contra JSON corrompido ou IDs inválidos.
-- 🏷️ **Indicadores Sincronizados**: Cards da Pokédex exibem a tag `✓ No time` em tempo real e o modal adapta seu botão para `[ Adicionar ]`, `[ No Time (Remover) ]` ou `[ Time Completo (3/3) ]`.
-- 🗑️ **Limpeza Segura**: Opção de limpar a equipe com confirmação em duas etapas para evitar cliques acidentais.
-
----
-
-## ⚔️ Pokémon Battle Arena (100% Jogável e Operacional — PBA-013)
-
-- 🎮 **Batalhas 3x3 Reais em Tempo Real**: Selecione sua equipe de 3 Pokémon no Team Builder e entre diretamente na arena de combate oficial.
-- 🖥️ **Battle View Imersiva**: Durante a luta, a mesma SPA se transforma em uma tela de jogo em 100dvh, sem scroll do documento, com palco e painel lateral no desktop e quatro golpes em grade 2×2 no mobile.
-- 🤖 **Adversário Controlado por SMART AI**: Enfrente equipes selecionadas de um roster curado de 72 espécies das nove gerações, com rotação anti-repeat; a IA continua responsável apenas pelas decisões táticas em combate.
-- 🥊 **Seleção Tática de Golpes (PBA-014C)**: Descoberta progressiva com até 4 golpes ofensivos da PokéAPI por Pokémon, priorizando STAB, afinidade físico/especial, diversidade de tipos elementais e acurácia, com exibição de Power, Categoria, Tipo e PP.
-- 🔄 **Troca Voluntária de Pokémon**: Troque de Pokémon estrategicamente a qualquer turno; a ação de troca tem prioridade sobre ataques normais e preserva o estado exato de HP/PP do combatente recolhido.
-- ⚠️ **Substituição Forçada após Nocaute**: Quando um Pokémon é nocauteado, o modal de substituição força a escolha imediata de um membro vivo do banco para continuar o combate.
-- 💚 **Barras de Vida Animadas e Coloridas**: Transições suaves de HP integradas à Presentation Engine com classes visuais de saúde (`healthy`, `warning`, `danger`) e atributos acessíveis `role="progressbar"`.
-- 🎬 **Pipeline Audiovisual Completo em 5 Dimensões**:
-  - **Pokémon Animations**: Entrada, idle dinâmico, animação de golpe, recuo de dano e nocaute acelerados por GPU.
-  - **Move VFX**: 18 famílias elementais e 8 arquétipos visuais com trajetórias direcionadas e dissipação controlada em Miss/Imunidade.
-  - **Battle Audio**: Síntese procedural de SFX via Web Audio API, música dinâmica de batalha, cries autênticos da PokéAPI e fanfarras de vitória/derrota.
-  - **Battle Camera**: Tremores de tela direcionados (*screen shake*), micro zooms de impacto (*punch-in/out*), flashes de luz e sustentação de impacto.
-  - **Battle UI**: Logs de narrativa (`aria-live="polite"`), mensagens de super efetivo/miss/imunidade e indicadores de status de equipe.
-- 🏆 **Telas de Vitória e Derrota**: Desfecho visual elegante ao nocautear os 3 Pokémon adversários ou ser completamente derrotado, com opção de revanche instantânea (*Rematch*) ou retorno ao Team Builder.
-- ⚖️ **Balanceamento Matemático Level 50 (PBA-014B)**: Atributos de combate normalizados pelas fórmulas canônicas da Generation III+ (Level 50, IV 31, EV 0) e variação de dano da série principal (85% a 100%), eliminando nocautes prematuros em um único golpe (OHKO) em confrontos neutros.
-- ♿ **Acessibilidade e Responsividade**: 100% utilizável via teclado, suporte nativo a `prefers-reduced-motion` e design responsivo impecável testado de 360px a 1366px sem overflow horizontal.
-
----
-
-## 🏗️ Arquitetura do Projeto
-
-O projeto adota uma arquitetura em camadas visando desacoplar totalmente a lógica de negócio das representações visuais:
+## Da Pokédex à Battle Arena
 
 ```text
-Data / API (PokéAPI / TeamStore)
-     ↓
-Domain Model (Pokemon, Move, Team, Trainer)
-     ↓
-Battle Session Layer (TeamHydrator, OpponentFactory, RandomSource, SessionController)
-     ↓
-Game Engine (BattleEngine, TurnManager, DamageCalculator, BattleAI)
-     ↓
-Presentation Engine (CompositeBattleDomAdapter, Scheduler, Timeline)
-     ↓
-Composite Adapters (Battle UI + Animations + Move VFX + Audio + Camera)
-     ↓
-UI (DOM, Battle Arena, Cards, Modais, Team UI)
+Desafio DIO de Pokédex
+  → Pokédex avançada
+  → Team Builder
+  → Battle Engine determinística e sistema de tipos/golpes
+  → batalhas 3×3 e SMART AI
+  → Presentation Engine, animações, VFX, áudio e câmera
+  → Campaign completa
+  → hardening de performance e acessibilidade
 ```
 
-### Regra de Ouro: Game Engine ≠ Presentation Engine
-A **Game Engine** calcula estritamente a matemática do combate (iniciativa por velocidade, dano, STAB, fraquezas/resistências, IA e fluxo de turnos) sem depender de elementos do DOM, CSS ou áudio. A **Presentation Engine** consome os eventos da batalha e coordena simultaneamente os cinco adaptadores irmãos (`BattleUiDomAdapter`, `PokemonAnimationController`, `MoveVfxController`, `BattleAudioController` e `BattleCameraController`).
+## Funcionalidades principais
 
-Para uma visão detalhada das decisões técnicas e fluxo de dados, consulte a [Documentação de Arquitetura](docs/battle-architecture.md).
+### Pokédex e Team Builder
 
----
+A Pokédex consome dados públicos da PokéAPI, oferece filtros por tipo e geração, ordenação, favoritos, detalhes de atributos e evolução. O Team Builder mantém a equipe no navegador, impede duplicatas, permite reordenação acessível e define o líder do combate.
 
-## 🛠️ Tecnologias Utilizadas
+### Battle Arena
 
-- **HTML5** (Semântica e Acessibilidade)
-- **CSS3 Moderno** (Custom Properties, Flexbox, CSS Grid, Glassmorphism, Keyframe Animations)
-- **JavaScript ES6+** (Async/Await, Fetch API, Promises, Classes, LocalStorage, Web Audio API)
-- **[PokéAPI REST](https://pokeapi.co/)** (Dados públicos, cries e sprites)
-- **FontAwesome Icons & Google Fonts (Outfit / Inter)**
+Quick Battle usa equipes 3×3, até quatro golpes ofensivos por Pokémon, PP, STAB, efetividade de tipos, trocas voluntárias e substituições obrigatórias após nocaute. A SMART AI avalia dano esperado, precisão, STAB, imunidades, matchups e reservas válidas.
 
----
+A apresentação é orientada por eventos: a regra de combate produz eventos estruturados, e uma camada independente coordena UI, sprites, VFX, áudio procedural e câmera. HP e PP permanecem canônicos através das trocas; a interface não recalcula dano nem altera o estado de combate.
 
-## 🚀 Como Executar o Projeto
+### Campaign — Circuito dos Mestres
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/spiritstonesrafa-ux/js-developer-pokedex.git
-   ```
+O modo Campaign é uma jornada persistente: draft inicial, elenco que cresce por recompensas, insígnias e **18 Mestres**, um para cada tipo Pokémon. Cada Mestre possui apresentação com arte de treinador criada especificamente para esta experiência de portfólio.
 
-2. Acesse a pasta do projeto:
-   ```bash
-   cd js-developer-pokedex
-   ```
+Depois do circuito, o endgame inclui as provas **Legendary**, **Mythical**, **Titans** e **Celestial**, o **Super Trainer**, uma falsa conclusão e o verdadeiro desafio contra o **Shadow Super Trainer**. O confronto final aplica Shadow Aura e culmina no **Shadow Final Stand**, seguido pelo True Ending.
 
-3. Abra o arquivo `index.html` diretamente em qualquer navegador moderno ou execute um servidor HTTP local simples (como a extensão **Live Server** do VS Code ou `npx serve`).
+O Shadow Final Stand reutiliza a mesma arquitetura de sessão e Battle Engine — não existe um segundo motor de batalha. Ele combina elenco permanente e reforços temporários das provas, chegando ao estado validado de até 37 Pokémon disponíveis contra um trio Shadow fixo. A batalha também inclui uma tema de boss procedural criado em runtime com Web Audio API; não há asset musical externo para esse tema.
 
----
+## Engenharia em destaque
 
-## 📂 Estrutura de Arquivos
+- **Battle Engine determinística:** regras, dano, turnos e estado serializável são independentes de DOM, áudio e rede.
+- **Game Engine ≠ Presentation Engine:** uma timeline de apresentação consome eventos sem interferir na matemática do combate.
+- **SMART AI e aleatoriedade injetável:** decisões táticas reproduzíveis em teste, com RNG isolado do motor e da IA.
+- **Arquitetura compartilhada:** Quick Battle e Campaign reutilizam Battle Session, Engine e Presentation Engine.
+- **Apresentação modular:** animações, VFX, Web Audio procedural e câmera são adaptadores irmãos sob uma composição única.
+- **Hardening baseado em evidência:** thumbnails WebP, carregamento adiado, regressão automatizada e validações de acessibilidade.
+
+## Arquitetura
 
 ```text
-├── .gitignore               # Configurações de exclusão de arquivos
-├── assets/
-│   ├── css/
-│   │   ├── reset.css        # Resets e variáveis de cores dos tipos/temas
-│   │   ├── global.css       # Layout geral, cabeçalho, navegação, controles e Team Builder
-│   │   ├── pokedex.css      # Grid e cards dos pokémons
-│   │   ├── modal.css        # Estilos do modal com estatísticas e evolução
-│   │   ├── battle-animations.css # Animações GPU-accelerated de sprites da arena (PBA-009)
-│   │   ├── move-vfx.css     # Estilização e keyframes dos efeitos visuais de golpes (PBA-010)
-│   │   ├── battle-camera.css # Estilos de câmera, micro-zoom, screen shake e hit flash (PBA-012)
-│   │   └── battle-arena.css  # Arena de batalha 3x3, HUDs, barras de HP e modais (PBA-013)
-│   └── js/
-│       ├── pokemon-model.js # Classe e modelo de dados do Pokémon
-│       ├── poke-api.js      # Integração e requisições HTTP para a PokéAPI
-│       ├── team/
-│       │   ├── team-store.js   # Persistência e validação no LocalStorage (team.current)
-│       │   ├── team-manager.js # Regras de negócio, limites e reordenação
-│       │   └── team-ui.js      # Renderização dos slots e sincronização visual
-│       ├── battle/
-│       │   ├── battle-constants.js     # Estados, eventos, ações e catálogo de tipos
-│       │   ├── type-chart.js           # Matriz completa de efetividade (324 relações)
-│       │   ├── type-effectiveness.js   # Cálculo multiplicativo e validação single/dual-type
-│       │   ├── move-model.js           # Modelo normalizado de golpes (Physical/Special/PP/Accuracy)
-│       │   ├── damage-calculator.js    # Pipeline de dano v2 com Power, STAB e Efetividade
-│       │   ├── turn-manager.js         # Iniciativa por Speed e desempate determinístico
-│       │   ├── battle-engine.js        # Motor 1x1 e 3x3 com Battle State v2, turnos e eventos
-│       │   ├── battle-evaluator.js     # Avaliador puro de dano esperado, STAB e matchups
-│       │   └── battle-ai.js            # Inteligência artificial determinística (SIMPLE e SMART)
-│       ├── presentation/
-│       │   ├── battle-presentation-constants.js # Catálogo de comandos, status e durações padrão
-│       │   ├── battle-presentation-adapter.js   # Interface assíncrona, NullAdapter e RecordingAdapter
-│       │   ├── battle-presentation-scheduler.js # Agendador de delays (ImmediateScheduler e TimerScheduler)
-│       │   ├── battle-presentation-mapper.js    # Mapeamento puro determinístico dos eventos da Engine
-│       │   ├── battle-presentation-engine.js    # Orquestrador de timeline sequencial e cancelamento
-│       │   ├── composite-battle-dom-adapter.js  # Adaptador quíntuplo (UI + Animation + VFX + Audio + Camera)
-│       │   └── animation/
-│       │       ├── pokemon-animation-constants.js   # Catálogo de animações, timings e classes
-│       │       ├── pokemon-animation-registry.js    # Registro de alvos DOM e fallback de sprites
-│       │       ├── pokemon-animation-controller.js  # Controle de ciclo de vida visual, idle e cancel
-│       │       └── pokemon-animation-dom-adapter.js # Adaptador DOM ligando comandos às animações
-│       ├── vfx/
-│       │   ├── move-vfx-constants.js    # 18 Famílias de tipos, 8 arquétipos, intensidades e overrides
-│       │   ├── move-vfx-resolver.js     # Mapeamento puro de golpes para descritores com fallback
-│       │   ├── move-vfx-registry.js     # Registro de palco e combatentes com coordenadas relativas
-│       │   ├── move-vfx-dom-renderer.js # Renderização DOM GPU, partículas leves e impacto/dissipação
-│       │   └── move-vfx-controller.js   # Controle assíncrono de ciclo de vida de VFX e reduced motion
-│       ├── audio/
-│       │   ├── battle-audio-constants.js   # Canais, volumes default, 18 Type Audio Families e arquétipos
-│       │   ├── audio-context-manager.js     # Singleton AudioContext, política de autoplay e unlock
-│       │   ├── audio-mixer.js               # Roteamento de canais, DynamicsCompressor limiter e telemetria
-│       │   ├── procedural-sfx.js            # Síntese procedural de SFX (18 tipos, impactos, miss, immune)
-│       │   ├── battle-audio-resolver.js     # Mapeamento puro de golpes para descritores de áudio
-│       │   ├── battle-audio-controller.js   # Controle de ciclo de vida, música procedural e cues
-│       │   └── battle-audio-adapter.js      # Adaptador DOM/Presentation conectando comandos ao áudio
-│       ├── camera/
-│       │   ├── battle-camera-constants.js   # Catálogo de efeitos, magnitudes de shake, punch e hold
-│       │   ├── battle-camera-resolver.js    # Resolução pura de descritores de câmera a partir de metadata
-│       │   ├── battle-camera-registry.js    # Referências do wrapper, stage e overlay de flash
-│       │   ├── battle-camera-controller.js  # Controle de ciclo de vida de shake, punch, flash e hold
-│       │   └── battle-camera-dom-adapter.js # Adaptador DOM ligando comandos da timeline à câmera
-│       ├── battle-session/
-│       │   ├── battle-session-constants.js  # Estados de UI, limites e pool de oponentes (PBA-013)
-│       │   ├── battle-random-source.js      # Fonte injetável de aleatoriedade externa (accuracy e oponentes)
-│       │   ├── battle-team-hydrator.js      # Hidratação de equipes, auto move loadout e resiliência offline
-│       │   ├── battle-opponent-factory.js   # Fábrica de oponentes 3x3 sem duplicatas para Quick Battle
-│       │   └── battle-session-controller.js # Orquestrador de ciclo de vida da batalha, turnos e AI
-│       ├── ui/
-│       │   ├── battle-ui-adapter.js         # Adaptador DOM da Presentation Engine para UI (PBA-013)
-│       │   └── battle-view.js               # Renderização de estados, HUDs, modais e controles da arena
-│       └── main.js          # Manipulação do DOM, eventos, filtros e navegação
-├── docs/
-│   └── battle-architecture.md # Especificação técnica da Battle Arena
-├── tests/
-│   ├── fixtures/
-│   │   ├── pokemon-fixtures.js      # Fixtures offline com Combatant Model v3 e moves
-│   │   ├── move-fixtures.js         # Catálogo estático de golpes para testes unitários
-│   │   ├── team-fixtures.js         # Fixtures de equipes 3x3 para simulações e trocas
-│   │   └── type-chart-reference.js  # Referência canônica independente para hardening (18x18)
-│   ├── battle/
-│   │   ├── battle-ai.test.js            # Suíte de testes da Battle AI (AI-01-AI-43)
-│   │   ├── team-battle.test.js          # Suíte de testes 3x3 e trocas voluntárias/forçadas (B3-01-B3-35)
-│   │   ├── move-system.test.js          # Suíte de testes do Move System (MV01-MV43)
-│   │   ├── battle-engine.test.js        # Suíte de testes automatizados E01-E18 e TY21-TY25
-│   │   ├── type-effectiveness.test.js   # Suíte de testes dos tipos TY01-TY15 e 324 relações
-│   │   ├── damage-calculator.test.js    # Testes do cálculo de dano e gates TY16-TY20
-│   │   └── turn-manager.test.js         # Testes unitários de ordem de iniciativa
-│   ├── presentation/
-│   │   └── battle-presentation.test.js  # Suíte de testes da Presentation Engine (PR01-PR40)
-│   ├── animation/
-│   │   └── pokemon-animation.test.js    # Suíte de testes das Animações de Pokémon (AN01-AN36)
-│   ├── vfx/
-│   │   └── move-vfx.test.js             # Suíte de testes de Efeitos Visuais de Golpes (VFX01-VFX40)
-│   ├── audio/
-│   │   └── battle-audio.test.js         # Suíte de testes do Audio System (AU01-AU40)
-│   ├── camera/
-│   │   └── battle-camera.test.js        # Suíte de testes da Battle Camera e Impacto (CAM01-CAM40)
-│   ├── session/
-│   │   └── battle-session.test.js       # Suíte de testes da Sessão de Batalha (PBA-013)
-│   ├── ui/
-│   │   └── battle-ui.test.js            # Suíte completa de gates da Battle UI (UI01-UI50)
-│   └── visual/
-│       ├── pokemon-animation-harness.html # Harness visual de animações de sprites
-│       ├── move-vfx-harness.html          # Harness visual de efeitos de golpes (18 tipos, 8 arquétipos)
-│       ├── battle-audio-harness.html      # Harness visual e telemetria do Battle Audio System
-│       └── battle-camera-harness.html     # Harness visual e telemetria do Battle Camera & Impact
-├── index.html               # Estrutura principal da página
-├── progress.md              # Registro contínuo de status e fases para agentes
-└── README.md                # Documentação oficial do projeto
+Data / API
+  ↓
+Domain Model
+  ↓
+Battle Session
+  ↓
+Game Engine
+  ↓
+Presentation Engine
+  ↓
+Adapters
+  ↓
+UI
 ```
 
----
+A regra central é **Game Engine ≠ Presentation Engine**. O Battle Engine resolve a batalha e emite eventos; a Presentation Engine os agenda para os adaptadores de UI, animação, VFX, áudio e câmera. A Campaign fornece contexto e equipes para a mesma sessão de batalha, sem duplicar o motor.
 
-## 🗺️ Pokémon Battle Arena — Roadmap
+Para detalhes, consulte a [arquitetura da Battle Arena](docs/battle-architecture.md).
 
-O desenvolvimento do simulador de batalhas segue um planejamento incremental por fases:
+## Performance e acessibilidade
 
-- [x] **PBA-001 Foundation / Architecture Preparation** *(Fase Concluída)*: Auditoria do projeto existente, documentação técnica de arquitetura, separação conceitual Engine/Presentation, navegação entre módulos e padronização do repositório.
-- [x] **PBA-002 Team Builder** *(Fase Concluída)*: Seleção de time tático (até 3 Pokémon), definição de Líder, reordenação acessível, persistência confiável em `localStorage` (`team.current`) e integração total com Pokédex e modal.
-- [x] **PBA-003 Battle Engine v1** *(Fase Concluída)*: Núcleo matemático de combate 1x1 funcional, determinístico e testável, completamente desacoplado de DOM, PokéAPI e áudio. Gerenciamento de turnos por Speed, cálculo de dano puro, piso de HP em zero e emissão de eventos estruturados.
-- [x] **PBA-004 Type System** *(Fase Concluída)*: Matriz completa dos 18 tipos modernos (324 relações), suporte integral a combatentes single e dual-type (multiplicadores 0, 0.25, 0.5, 1, 2, 4), prevalência absoluta de imunidades, classificação estruturada de eventos e integração matemática com o cálculo de dano.
-- [x] **PBA-005 Move System** *(Fase Concluída)*: O Battle Engine agora utiliza golpes normalizados com Power real, Type, Accuracy determinística, PP (Power Points) e categorias Physical/Special. Introdução de STAB (1.5x), seleção de golpes no turno, eventos estruturados de HIT/MISS e hardening do Type Chart contra referência canônica independente.
-- [x] **PBA-006 Battle 3x3** *(Fase Concluída)*: Suporte a batalhas de equipes (3 vs 3) com Battle State v2, Pokémon ativo vs banco, trocas voluntárias com prioridade sobre ataques (`SWITCH > MOVE`), trocas forçadas após nocaute (`AWAITING_REPLACEMENT` / `REPLACEMENT_REQUIRED`), preservação estrita de HP e PP no banco e condição de vitória por aniquilação completa da equipe adversária (`TEAM_DEFEATED`).
-- [x] **PBA-007 Battle AI** *(Fase Concluída)*: Inteligência artificial adversária desacoplada e 100% determinística com estratégias `SIMPLE` e `SMART`. Avalia dano esperado ponderado por precisão, STAB, fraquezas/resistências, categorias físicas/especiais, administração de PP, descarte de imunidades, trocas voluntárias estratégicas e seleção inteligente de substituto pós-nocaute.
-- [x] **PBA-008 Battle Presentation Engine** *(Fase Concluída)*: O projeto agora possui uma Battle Presentation Engine responsável por transformar eventos do motor de batalha em timelines estruturadas e assíncronas de apresentação. Orquestrador sequencial com suporte a cancelamento, agendador desacoplado (`ImmediateScheduler` e `TimerScheduler`), adaptadores assíncronos (`NullAdapter` e `RecordingAdapter`), proteção contra concorrência e preparação para acessibilidade (`reducedMotion`). 100% de cobertura de eventos do Battle Engine e zero regras de combate na camada visual.
-- [x] **PBA-009 Pokemon Animations** *(Fase Concluída)*: A Battle Arena agora possui um sistema reutilizável de animações de Pokémon integrado à Presentation Engine, incluindo entrada, idle, ataque genérico, reação ao dano, faint, troca e vitória. Suporte completo a aceleração por hardware (GPU), orientações espelhadas para player/enemy, controle automático de idle, cancelamento limpo e acessibilidade com reduced motion.
-- [x] **PBA-010 Move Visual Effects** *(Fase Concluída)*: A Battle Arena agora possui um sistema visual reutilizável para golpes, com famílias de efeitos baseadas nos 18 tipos Pokémon e arquétipos visuais compartilhados (`PROJECTILE`, `BEAM`, `STREAM`, `BURST`, `SLASH`, `IMPACT`, `WAVE`, `AURA`). Resolução pura de descritores visuais com fallback genérico por tipo, classificação por intensidade (`LOW`, `MEDIUM`, `HIGH`), tratamento visual de MISS e IMMUNITY sem impacto de dano, escala aprimorada para Super Effective, renderização acelerada por hardware (GPU) via CSS Variables, controle de concorrência com cancelamento limpo, acessibilidade integral (`reducedMotion`) e orquestração integrada via `CompositeBattleDomAdapter`.
-- [x] **PBA-011 Audio System** *(Fase Concluída)*: A Battle Arena agora possui sistema de áudio modular com mixagem Web Audio API, volumes independentes (`MASTER`, `MUSIC`, `SFX`, `CRY`, `UI`), mute, efeitos procedurais de golpes e impactos para todos os 18 tipos, integração segura com cries e suporte a música procedural de batalha e cues de vitória/derrota originais.
-- [x] **PBA-012 Battle Camera & Impact** *(Fase Concluída)*: A Battle Arena agora possui um sistema de impacto audiovisual que coordena screen shake localizado, micro zoom de câmera, hit flash e ênfase baseada no resultado já calculado do golpe (Normal, Super Effective, 4x, Resisted, Miss, Immunity). Totalmente acelerado por hardware (GPU), isolado ao palco da arena (`CAMERA_LAYOUT_THRASHING = NONE`), com prevenção estrita a estroboscópio (`NO_STROBE_EFFECT = YES`), suporte completo a acessibilidade (`reducedMotion`), proteção de concorrência com cancelamento limpo e zero interferência nas regras matemáticas da batalha.
-- [x] **PBA-013 Final Battle UI** *(Fase Concluída)*: Interface gráfica de combate 3x3 totalmente jogável e acessível na aplicação real. Camada Battle Session (`BattleTeamHydrator`, `BattleOpponentFactory`, `BattleRandomSource`, `BattleSessionController`), auto move loadout determinístico de 1 a 4 golpes legais, seleção de golpes e trocas táticas via SMART AI, painel de trocas voluntárias e substituições forçadas por nocaute, barras de HP dinâmicas, sincronização temporal via `BattleUiDomAdapter` integrado ao `CompositeBattleDomAdapter` quíntuplo, telas de vitória/derrota, revanche e responsividade impecável.
-- [ ] **PBA-014 Trainer Profile**: Perfil do treinador, insígnias conquistadas e estatísticas.
-- [x] **PBA-015 Campaign Mode**: Circuito completo com 18 Mestres, Trials, Super Trainer, Shadow Final Stand, True Ending e áudio procedural original.
-- [ ] **PBA-016 Performance & Accessibility**: Baseline e auditoria de performance/acessibilidade em andamento.
-- [ ] **PBA-017 Automated Tests**: Testes unitários para cálculos de dano e regras da engine.
-- [ ] **PBA-018 Portfolio Release**: Documentação final, estudo de caso e publicação.
+A entrega de arte dos cards da Campaign foi medida em cenário controlado: o Campaign Home passou de **7.558.275 bytes** para **2.589.922 bytes** de transferência de assets de treinador, redução de **65,7%** naquele cenário. Foram adicionadas 18 thumbnails WebP para os cards dos Mestres; retratos PNG de alta resolução permanecem nas superfícies maiores de preparação, recompensa e batalha. Para os cards visíveis de Aster e Kael, a amostra caiu de 4.994.905 para 26.552 bytes (99,5%) — isso descreve a entrega desses assets, não uma alegação de velocidade global do site.
 
----
+Fluxos críticos foram validados em 360×700, 390×844, 412×915 e 1366×768, sem overflow horizontal. A experiência inclui foco visível, controles semânticos, estados `aria-pressed`, barras de HP acessíveis, gerenciamento de foco em diálogos, alvos mobile de toque, verificação em zoom de 200% e suporte a `prefers-reduced-motion`. A navegação por teclado dos fluxos de perfil e troca foi homologada em navegador real. Uma avaliação com leitor de tela real ainda não foi realizada.
 
-Desenvolvido com 💜 por Rafael.
-## 🏆 Circuito dos Mestres
-- Campanha com draft inicial, 18 Mestres de Tipo, insígnias, recrutamento e Super Treinador.
-- Um desafio final secreto para quem concluir a jornada.
+A evidência completa está em [Performance & Accessibility Audit](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md).
+
+## Testes automatizados
+
+Na baseline de release candidate v1.0, a suíte contém **575 testes aprovados**, **0 falhas**, **0 cancelados**, em **21 suítes**. A contagem pode evoluir; os testes cobrem Battle Engine, Type Chart, sistema de golpes, trocas, AI, Presentation Engine, VFX/áudio/câmera, Battle Session, Campaign e regressões estruturais de acessibilidade e performance.
+
+No PowerShell, execute a suíte completa com:
+
+```powershell
+node --test (Get-ChildItem -Recurse -File tests -Filter *.test.js | ForEach-Object { $_.FullName })
+```
+
+Exemplo de recorte relevante:
+
+```powershell
+node --test tests/ui/battle-ui.test.js tests/campaign/trainer-avatar.test.js
+```
+
+## Tecnologias
+
+- JavaScript ES6+, HTML5 semântico e CSS moderno
+- PokéAPI para dados, sprites e cries onde aplicável
+- Web Audio API para efeitos, música de batalha e tema Shadow procedural
+- Fetch API e LocalStorage
+- CSS Grid, Flexbox, animações e `prefers-reduced-motion`
+
+## Executando localmente
+
+```bash
+git clone https://github.com/spiritstonesrafa-ux/js-developer-pokedex.git
+cd js-developer-pokedex
+```
+
+Abra `index.html` em um navegador moderno ou sirva a pasta com um servidor HTTP simples. A aplicação requer recursos de navegadores modernos, incluindo ES6+, Fetch, LocalStorage, CSS Grid/Flexbox e Web Audio API.
+
+## Documentação técnica
+
+- [Arquitetura da Battle Arena](docs/battle-architecture.md)
+- [Campaign Mode](docs/CAMPAIGN_MODE.md)
+- [Performance & Accessibility Audit](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md)
+- [Portfolio & Release Audit](docs/PBA_017_PORTFOLIO_RELEASE_AUDIT.md)
+
+## Aviso sobre propriedade intelectual
+
+Este é um projeto educacional e de portfólio, não comercial e sem afiliação ou endosso da Nintendo, The Pokémon Company ou Game Freak. Nomes, personagens e assets relacionados a Pokémon pertencem aos respectivos titulares. Dados e assets de Pokémon são consumidos da PokéAPI quando aplicável. A Campaign inclui arte personalizada de treinadores criada especificamente para a apresentação deste projeto.
