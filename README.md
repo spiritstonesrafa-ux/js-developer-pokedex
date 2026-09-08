@@ -15,6 +15,15 @@ Uma experiência web de Pokédex e batalha por turnos construída com JavaScript
 - Campaign persistente com 18 Mestres de Tipo, progressão, endgame e Shadow Final Stand.
 - Performance e acessibilidade verificadas com evidência de entrega de assets, teclado, foco, diálogos, contraste, touch, zoom e reduced motion.
 
+## Screenshots
+
+| Pokédex Pro | Battle Arena |
+| --- | --- |
+| ![Pokédex Pro com filtros e cards de Pokémon](docs/images/portfolio/pokedex-pro.webp) | ![Battle Arena durante combate 3x3 com HUD, HP e golpes](docs/images/portfolio/battle-arena.webp) |
+| Campaign — 18 Mestres | Endgame |
+| ![Campaign com os Mestres de Tipo e arte de treinadores](docs/images/portfolio/campaign-masters.webp) | ![Preparação para o Super Trainer](docs/images/portfolio/super-trainer.webp) |
+| Shadow Final Stand | |
+| ![Preparação Shadow Final Stand com identidade visual roxa](docs/images/portfolio/shadow-final-stand.webp) | |
 ## Da Pokédex à Battle Arena
 
 ```text

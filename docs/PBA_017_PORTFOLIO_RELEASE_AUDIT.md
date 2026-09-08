@@ -127,3 +127,36 @@ PBA-017B resolved the P1/P2 presentation findings without changing gameplay or r
 `IP_DISCLAIMER_PRESENT = YES`; `TRAINER_ART_DOCUMENTATION = PASS`.
 
 PBA-017B is complete. PBA-017C is ready for owner-controlled portfolio visuals, social-preview, license, version, and release preparation.
+## PBA-017C — Portfolio Visuals & Release Preparation
+
+### Portfolio visuals
+
+Five real desktop screenshots were captured from the public-equivalent application in controlled, non-persistent browser states: Pokédex Pro, Battle Arena, Campaign Masters, Super Trainer, and Shadow Final Stand. They are stored under `docs/images/portfolio/` as WebP and linked from the README with descriptive alt text. A 1280×640 PNG social-preview asset was composed with HTML/CSS from the real Battle and Shadow screenshots; it does not invent product UI or alter original trainer art.
+
+`SOCIAL_PREVIEW_ASSET = READY`.
+
+GitHub’s repository social-preview setting cannot be configured from the repository: `GITHUB_SOCIAL_PREVIEW_CONFIGURED = NO`; owner action is required in repository Settings → Social preview.
+
+### License assessment
+
+Repository content separates into original project source code; Pokémon names, sprites, cries and PokéAPI-derived material; custom trainer artwork made for the project presentation; and third-party fonts/icons delivered by their respective providers. This is not legal advice.
+
+| Option | Scope | Assessment |
+| --- | --- | --- |
+| A — MIT for original source code only | Original JavaScript, HTML, CSS and project documentation; third-party/Pokémon material excluded by notice | Recommended if the owner wants ordinary source-code reuse while avoiding an implication of rights over third-party IP |
+| B — No explicit software license | Publicly viewable repository without broad reuse permission | Suitable if the owner does not wish to grant reuse permission |
+| C — Another standard software license | Only after an owner-specific licensing goal is identified | No evidence supports choosing this automatically |
+
+`RECOMMENDED_LICENSE_OPTION = A — MIT for original source code only, with third-party/IP exclusions in accompanying notices`.
+
+`LICENSE_OWNER_DECISION = REQUIRED`. No LICENSE was created. The existing README disclaimer remains conservative and does not imply rights over Pokémon IP.
+
+### Version and release preparation
+
+`PROPOSED_RELEASE_VERSION = v1.0.0`; `VERSION_APPROPRIATE = YES`; `VERSION_SOURCE = GIT_TAG`; `V1_TAG_EXISTS = NO`.
+
+The public release-notes draft is [PBA_017_V1_RELEASE_NOTES_DRAFT.md](PBA_017_V1_RELEASE_NOTES_DRAFT.md). The future-release checklist is [PBA_017_V1_RELEASE_CHECKLIST.md](PBA_017_V1_RELEASE_CHECKLIST.md). PBA-017D must not create the tag or release until the owner resolves the license decision.
+
+### Status
+
+PBA-017C technical gates are complete: screenshots, README gallery, social-preview asset, license audit/options, v1 notes/checklist, secret scan, links, regression, and public validation. `PBA_017D_BLOCKER = LICENSE_OWNER_DECISION`.
