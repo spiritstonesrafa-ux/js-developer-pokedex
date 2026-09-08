@@ -165,3 +165,12 @@ PBA-017C technical gates are complete: screenshots, README gallery, social-previ
 `LICENSE_OWNER_DECISION = MIT_FOR_ORIGINAL_SOURCE_CODE_ONLY`.
 
 The repository now contains a MIT license scoped expressly to original source code. Pokémon-related material, PokéAPI-sourced material, custom trainer art, visual assets, and other third-party material are excluded unless an explicit notice says otherwise. The README contains a matching scope notice and preserves the existing intellectual-property disclaimer. This resolves the owner-decision blocker; PBA-017D is ready to start but is not started by this change.
+### v1.0.0 final release closure
+
+`GITHUB_SOCIAL_PREVIEW_CONFIGURED = YES` (confirmed by the owner).
+
+`RELEASE_VERSION = v1.0.0`; `V1_TAG = PASS`; `TAG_TARGET_COMMIT = 665e91dd00736e47ba4cd702026862ed7044cb0a`; `TAG_MOVED_AFTER_CREATION = NO`.
+
+The public GitHub Release is [Pokédex Pro + Pokémon Battle Arena v1.0.0](https://github.com/spiritstonesrafa-ux/js-developer-pokedex/releases/tag/v1.0.0). `GITHUB_RELEASE = PASS`; `RELEASE_DRAFT = false`; `RELEASE_PRERELEASE = false`.
+
+`PBA_017D = PASS`; `PBA_017 = PASS`; `CRITICAL_OPEN_ISSUES = 0`; `FINAL_PROJECT_RELEASED = YES`; `PBA_018 = NOT_STARTED`.
