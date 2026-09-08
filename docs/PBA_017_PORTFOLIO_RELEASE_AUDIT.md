@@ -143,7 +143,7 @@ Repository content separates into original project source code; Pokémon names, 
 
 | Option | Scope | Assessment |
 | --- | --- | --- |
-| A — MIT for original source code only | Original JavaScript, HTML, CSS and project documentation; third-party/Pokémon material excluded by notice | Recommended if the owner wants ordinary source-code reuse while avoiding an implication of rights over third-party IP |
+| A — MIT for original source code only | Original JavaScript, HTML and CSS; third-party/Pokémon material excluded by notice | Recommended if the owner wants ordinary source-code reuse while avoiding an implication of rights over third-party IP |
 | B — No explicit software license | Publicly viewable repository without broad reuse permission | Suitable if the owner does not wish to grant reuse permission |
 | C — Another standard software license | Only after an owner-specific licensing goal is identified | No evidence supports choosing this automatically |
 
@@ -160,3 +160,8 @@ The public release-notes draft is [PBA_017_V1_RELEASE_NOTES_DRAFT.md](PBA_017_V1
 ### Status
 
 PBA-017C technical gates are complete: screenshots, README gallery, social-preview asset, license audit/options, v1 notes/checklist, secret scan, links, regression, and public validation. `PBA_017D_BLOCKER = LICENSE_OWNER_DECISION`.
+### License owner decision
+
+`LICENSE_OWNER_DECISION = MIT_FOR_ORIGINAL_SOURCE_CODE_ONLY`.
+
+The repository now contains a MIT license scoped expressly to original source code. Pokémon-related material, PokéAPI-sourced material, custom trainer art, visual assets, and other third-party material are excluded unless an explicit notice says otherwise. The README contains a matching scope notice and preserves the existing intellectual-property disclaimer. This resolves the owner-decision blocker; PBA-017D is ready to start but is not started by this change.

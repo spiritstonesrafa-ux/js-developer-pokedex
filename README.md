@@ -136,6 +136,9 @@ Abra `index.html` em um navegador moderno ou sirva a pasta com um servidor HTTP 
 - [Performance & Accessibility Audit](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md)
 - [Portfolio & Release Audit](docs/PBA_017_PORTFOLIO_RELEASE_AUDIT.md)
 
+## Licença
+
+O código-fonte original deste projeto é disponibilizado sob a [licença MIT](LICENSE). A MIT aplica-se somente ao código-fonte original do projeto. Ela **não** abrange Pokémon, personagens, nomes, marcas, sprites, cries, dados, materiais da PokéAPI, artes personalizadas dos treinadores ou outros assets visuais/de terceiros, salvo indicação explícita em contrário.
 ## Aviso sobre propriedade intelectual
 
 Este é um projeto educacional e de portfólio, não comercial e sem afiliação ou endosso da Nintendo, The Pokémon Company ou Game Freak. Nomes, personagens e assets relacionados a Pokémon pertencem aos respectivos titulares. Dados e assets de Pokémon são consumidos da PokéAPI quando aplicável. A Campaign inclui arte personalizada de treinadores criada especificamente para a apresentação deste projeto.
