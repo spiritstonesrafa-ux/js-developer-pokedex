@@ -1,40 +1,77 @@
 # Pokédex Pro + Pokémon Battle Arena
 
-Uma experiência web de Pokédex e batalha por turnos construída com JavaScript Vanilla. O projeto começou como um desafio de Pokédex da [Digital Innovation One (DIO)](https://www.dio.me/) e evoluiu para uma plataforma de jogo no navegador com Team Builder, Quick Battle, Campaign persistente e um endgame completo.
+[![Tests](https://img.shields.io/badge/Tests-575%2F575%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](tests)
+[![Architecture](https://img.shields.io/badge/Architecture-Event--Driven%20Engine-blueviolet?style=for-the-badge)](docs/battle-architecture.md)
+[![JavaScript](https://img.shields.io/badge/Vanilla_JS-ES6%2B%20%7C%20No_Frameworks-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](assets/js)
+[![Web Audio](https://img.shields.io/badge/Web_Audio_API-Procedural_Sound-FF5722?style=for-the-badge)](assets/js/presentation/sound-fx-player.js)
+[![A11y](https://img.shields.io/badge/A11y-ARIA%20%26%20Reduced_Motion-4CAF50?style=for-the-badge)](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md)
+[![License](https://img.shields.io/badge/License-MIT-black?style=for-the-badge)](LICENSE)
 
-## Demonstração ao vivo
+> Uma plataforma web de Pokédex moderna e **Game Engine de batalha por turnos 3×3** com **SMART AI tática**, **Campanha com 18 Mestres de Tipo**, síntese de som procedural em runtime e suíte rigorosa de **575 testes automatizados**.
 
-[**Abrir Pokédex Pro + Pokémon Battle Arena**](https://spiritstonesrafa-ux.github.io/js-developer-pokedex/)
+---
 
-## Destaques
+### 🎮 [Abrir Demonstração ao Vivo no GitHub Pages](https://spiritstonesrafa-ux.github.io/js-developer-pokedex/)
 
-- Pokédex interativa com busca, filtros, favoritos, detalhes, evoluções e dados da PokéAPI.
-- Team Builder persistente para montar e ordenar equipes de até três Pokémon.
-- Quick Battle 3×3 com seleção de oponentes variada, Battle Engine determinística e SMART AI tática.
-- Pipeline de apresentação separado da regra de jogo: animações, VFX, áudio procedural e câmera de impacto.
-- Campaign persistente com 18 Mestres de Tipo, progressão, endgame e Shadow Final Stand.
-- Performance e acessibilidade verificadas com evidência de entrega de assets, teclado, foco, diálogos, contraste, touch, zoom e reduced motion.
+---
+
+> [!NOTE]
+> ### 💡 Destaque para Recrutadores e Avaliadores Técnicos
+> O projeto teve origem no desafio acadêmico de Pokédex da **Digital Innovation One (DIO)**, mas foi inteiramente refatorado e expandido para uma **aplicação complexa de engenharia de software sem frameworks**:
+> 1. **Game Engine Determinística ≠ Presentation Engine:** O motor de combate calcula dano, tipos, turnos e estados serializáveis de forma puramente lógica e desacoplada do DOM. A interface consome streams de eventos sem jamais alterar HP/PP diretamente.
+> 2. **SMART AI Tática:** IA adversária que calcula dano esperado, precisão ponderada, fraquezas duplas (4x), resistências, imunidades (0x), bônus STAB, trocas voluntárias e substituições inteligentes — com RNG injetável e zero trapaça.
+> 3. **Engenharia de Performance e Acessibilidade:** Payload de cards de campanha reduzido em 65,7% com entrega de thumbnails WebP, navegação completa por teclado, suporte nativo a `prefers-reduced-motion` e contratos WAI-ARIA.
+> 4. **Cultura de Testes:** **575 testes automatizados** executados via `npm test` com o test runner nativo do Node.js (`node:test`) em ~7 segundos.
+
+---
+
+## ⚡ Guia Rápido (Executando e Testando)
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/spiritstonesrafa-ux/js-developer-pokedex.git
+cd js-developer-pokedex
+
+# 2. Execute a suíte com 575 testes automatizados
+npm test
+
+# 3. Testes específicos por subsistema
+npm run test:ai        # Validação dos 43 gates da IA Tática
+npm run test:engine    # Validação do Motor Determinístico de Batalha
+npm run test:campaign  # Validação do Sistema de Campanha e 18 Mestres
+npm run test:vfx       # Validação dos 40 gates de Efeitos Visuais
+```
+*Para jogar localmente, basta abrir o `index.html` em qualquer navegador moderno.*
+
+---
+
+## Destaques do Projeto
+
+- **Pokédex Interativa:** Consumo REST da PokéAPI, busca, filtros combinados por tipo e geração, ordenação, favoritos persistentes em LocalStorage e áudio oficial (cries).
+- **Team Builder:** Montagem e reordenação de equipes de até 3 Pokémon com validação contra duplicatas e definição de líder.
+- **Battle Arena 3×3:** Combate por turnos com até 4 golpes por Pokémon, cálculo oficial de STAB e efetividade de tipos, PP canônico, trocas voluntárias e substituição obrigatória pós-nocaute.
+- **Pipeline de Apresentação Modular:** Animações CSS coordenadas, VFX elementais para todos os 18 tipos, câmera dinâmica de impacto e síntese sonora procedural com Web Audio API.
+- **Campanha — Circuito dos 18 Mestres & Endgame:** Draft inicial, progressão persistente, insígnias, chefes com retratos originais, provas lendárias e o desafio final contra o **Shadow Super Trainer** com até 37 Pokémon disponíveis na mesma Battle Engine.
 
 ## Screenshots
 
-| Pokédex Pro | Battle Arena |
-| --- | --- |
+| Pokédex Pro | Battle Arena 3×3 |
+| :---: | :---: |
 | ![Pokédex Pro com filtros e cards de Pokémon](docs/images/portfolio/pokedex-pro.webp) | ![Battle Arena durante combate 3x3 com HUD, HP e golpes](docs/images/portfolio/battle-arena.webp) |
-| Campaign — 18 Mestres | Endgame |
-| ![Campaign com os Mestres de Tipo e arte de treinadores](docs/images/portfolio/campaign-masters.webp) | ![Preparação para o Super Trainer](docs/images/portfolio/super-trainer.webp) |
-| Shadow Final Stand | |
-| ![Preparação Shadow Final Stand com identidade visual roxa](docs/images/portfolio/shadow-final-stand.webp) | |
-## Da Pokédex à Battle Arena
+| **Campaign — 18 Mestres** | **Endgame & Shadow Final Stand** |
+| ![Campaign com os Mestres de Tipo e arte de treinadores](docs/images/portfolio/campaign-masters.webp) | ![Preparação Shadow Final Stand com identidade visual roxa](docs/images/portfolio/shadow-final-stand.webp) |
+
+## Da Pokédex Simples à Battle Arena Completa
 
 ```text
 Desafio DIO de Pokédex
-  → Pokédex avançada
-  → Team Builder
-  → Battle Engine determinística e sistema de tipos/golpes
-  → batalhas 3×3 e SMART AI
-  → Presentation Engine, animações, VFX, áudio e câmera
-  → Campaign completa
-  → hardening de performance e acessibilidade
+  → Pokédex Pro com filtros, áudio e favoritos
+  → Team Builder com persistência e validações
+  → Battle Engine determinística (cálculo de dano, tipos e turnos)
+  → Batalhas 3×3 e IA Tática com tomada de decisão determinística
+  → Presentation Engine: VFX para 18 tipos, áudio procedural e câmera
+  → Campanha com 18 Mestres, Endgame e Shadow Final Stand
+  → Hardening contínuo de A11y, Performance WebP e 575 Testes
 ```
 
 ## Funcionalidades principais

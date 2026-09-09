@@ -1,0 +1,27 @@
+{
+  "name": "pokemon-battle-arena-pro",
+  "version": "1.0.0",
+  "description": "Deterministic turn-based battle engine, tactical AI, campaign with 18 type masters and Pokédex in Vanilla JavaScript with +570 automated tests.",
+  "main": "assets/js/main.js",
+  "scripts": {
+    "test": "node --test tests/**/*.test.js tests/**/**/*.test.js",
+    "test:ai": "node --test tests/battle/battle-ai.test.js",
+    "test:engine": "node --test tests/battle/battle-engine.test.js",
+    "test:campaign": "node --test tests/campaign/*.test.js",
+    "test:vfx": "node --test tests/presentation/move-vfx.test.js"
+  },
+  "keywords": [
+    "game-engine",
+    "battle-engine",
+    "turn-based-combat",
+    "tactical-ai",
+    "vanilla-javascript",
+    "event-driven",
+    "web-audio-api",
+    "automated-tests",
+    "pokedex",
+    "pokeapi"
+  ],
+  "author": "Rafael Alves <spiritstonesrafa-ux>",
+  "license": "MIT"
+}
