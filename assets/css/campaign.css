@@ -15,3 +15,376 @@
 
 /* PBA-015I Final Stand */
 .shadow-reinforcements,.final-stand-army{padding:1rem;border:1px solid #c98cff;border-radius:16px;background:linear-gradient(135deg,#211036,#0e1629);margin:1rem 0}.final-stand-rule{padding:.85rem;border-left:4px solid #d79bff;background:rgba(95,35,126,.35);display:grid;gap:.35rem}.guest-card{border-color:#d69cff!important;background:rgba(83,30,112,.35)!important}.guest-card small{color:#efccff}.shadow-reinforcement-count{font-weight:800;color:#efccff}.final-stand-army{display:flex;gap:1rem;flex-wrap:wrap}.final-stand-army strong{color:#f4eaff}.final-stand-army-grid{max-height:58vh;overflow-y:auto;align-content:start}@media(max-width:600px){.final-stand-army{display:grid;gap:.45rem}.final-stand-army-grid{max-height:none}.shadow-reinforcements h3{font-size:1rem}}
+
+/* ==========================================================================
+   CAMPAIGN TRAINER CARDS — DEFEATED VS UNDEFEATED DIFFERENTIATION
+   ========================================================================== */
+.master-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s ease;
+}
+
+.master-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+  width: 100%;
+}
+
+.master-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.master-status-tag.completed {
+  background: rgba(255, 209, 102, 0.18);
+  border: 1px solid rgba(255, 209, 102, 0.55);
+  color: #ffd166;
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.2);
+}
+
+.master-status-tag.pending {
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.65);
+  color: #ff8585;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.25);
+  animation: pulsePendingTag 2.2s infinite ease-in-out;
+}
+
+@keyframes pulsePendingTag {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 14px rgba(255, 107, 107, 0.5); }
+}
+
+/* DEFEATED TRAINERS (Insígnia Conquistada) */
+.master-card.completed {
+  border: 1.5px solid rgba(255, 209, 102, 0.45) !important;
+  background: linear-gradient(165deg, rgba(22, 28, 44, 0.96), rgba(14, 17, 28, 0.98)) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(255, 209, 102, 0.12), inset 0 1px 0 rgba(255, 209, 102, 0.2) !important;
+}
+
+.master-card.completed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffd166, transparent);
+  opacity: 0.9;
+}
+
+.master-card.completed:hover {
+  border-color: #ffd166 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 209, 102, 0.32) !important;
+  transform: translateY(-4px);
+}
+
+.master-card.completed .trainer-avatar {
+  border-color: #ffd166 !important;
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.45), 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* UNDEFEATED TRAINERS (Desafio Aberto / Pendente) */
+.master-card:not(.completed),
+.master-card.pending {
+  border: 1.5px solid rgba(255, 107, 107, 0.6) !important;
+  background: linear-gradient(165deg, rgba(38, 22, 46, 0.96), rgba(18, 14, 26, 0.98)) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba(255, 107, 107, 0.2) !important;
+}
+
+.master-card:not(.completed)::before,
+.master-card.pending::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
+  opacity: 0.9;
+}
+
+.master-card:not(.completed):hover,
+.master-card.pending:hover {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 26px rgba(255, 107, 107, 0.4) !important;
+  transform: translateY(-4px);
+}
+
+.master-card:not(.completed) .trainer-avatar,
+.master-card.pending .trainer-avatar {
+  border-color: rgba(255, 107, 107, 0.8) !important;
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.4), 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Badge Orb on Cards */
+.master-card .badge-orb {
+  width: 28px;
+  height: 28px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.master-card .badge-orb.earned {
+  box-shadow: 0 0 16px #ffd166, 0 0 6px #fff !important;
+  opacity: 1 !important;
+}
+
+.master-card .badge-orb.locked {
+  opacity: 0.3 !important;
+  filter: grayscale(0.7) !important;
+  box-shadow: none !important;
+}
+
+/* Badge name with icon */
+.master-badge-name {
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.master-badge-name.earned {
+  color: #ffd166;
+  font-weight: 700;
+}
+
+.master-badge-name.locked {
+  color: #94a3b8;
+  opacity: 0.85;
+}
+
+/* Buttons: Rematch vs Challenge */
+.campaign-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.7rem 1.1rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  margin: 0.75rem auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 92%;
+  max-width: 175px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.campaign-btn-rematch {
+  background: linear-gradient(135deg, #25334d, #162033) !important;
+  border: 1px solid rgba(147, 197, 253, 0.32) !important;
+  color: #93c5fd !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.campaign-btn-rematch:hover {
+  background: linear-gradient(135deg, #324466, #1f2d47) !important;
+  color: #bfdbfe !important;
+  border-color: rgba(147, 197, 253, 0.6) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.campaign-btn-challenge {
+  background: linear-gradient(135deg, #ff6b6b, #ee5253) !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 16px rgba(238, 82, 83, 0.48) !important;
+  animation: challengeBtnPulse 2.5s infinite ease-in-out;
+}
+
+.campaign-btn-challenge:hover {
+  background: linear-gradient(135deg, #ff5252, #e84118) !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 22px rgba(238, 82, 83, 0.75) !important;
+}
+
+@keyframes challengeBtnPulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(238, 82, 83, 0.48);
+  }
+  50% {
+    box-shadow: 0 4px 26px rgba(238, 82, 83, 0.8), 0 0 12px rgba(255, 107, 107, 0.45);
+    transform: scale(1.02);
+  }
+}
+
+/* ==========================================================================
+   CAMPAIGN PICKER — START BATTLE BUTTON & INTERACTIVE FEEDBACK
+   ========================================================================== */
+
+.picker-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem auto 0;
+  max-width: 440px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.picker-status-hint {
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.picker-status-hint.incomplete {
+  background: rgba(255, 255, 255, 0.07);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.picker-status-hint.complete {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.25);
+}
+
+.picker-status-hint.warning-pulse {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4) !important;
+  animation: shakeBtn 0.45s ease-in-out;
+}
+
+/* Button States */
+#startCampaignBattle {
+  width: 100%;
+  max-width: 360px;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.4rem;
+  border-radius: 12px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disabled State */
+.campaign-primary:disabled,
+.campaign-secondary:disabled,
+.campaign-danger:disabled,
+#startCampaignBattle:disabled {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  filter: grayscale(0.5);
+  opacity: 0.55;
+}
+
+/* Ready to Battle Enabled State */
+.campaign-primary:not(:disabled),
+#startCampaignBattle:not(:disabled) {
+  background: linear-gradient(135deg, #ffd166, #ffb703) !important;
+  color: #261f0a !important;
+  border: 0;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 209, 102, 0.5), 0 0 10px rgba(255, 183, 3, 0.35);
+}
+
+.campaign-primary:not(:disabled):hover,
+#startCampaignBattle:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 26px rgba(255, 209, 102, 0.7), 0 0 16px rgba(255, 183, 3, 0.5);
+}
+
+.campaign-primary:not(:disabled):active,
+#startCampaignBattle:not(:disabled):active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.campaign-primary.ready-to-battle,
+#startCampaignBattle.ready-to-battle {
+  animation: battleReadyPulse 2s infinite ease-in-out;
+}
+
+@keyframes battleReadyPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(255, 209, 102, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(255, 209, 102, 0.8), 0 0 16px rgba(255, 209, 102, 0.6);
+    transform: scale(1.025);
+  }
+}
+
+/* Loading / Launching State */
+.campaign-primary.is-loading,
+.campaign-danger.is-loading,
+#startCampaignBattle.is-loading {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.75) !important;
+  cursor: wait !important;
+  pointer-events: none;
+  opacity: 0.95;
+  transform: scale(0.99);
+}
+
+/* Shake Animation */
+@keyframes shakeBtn {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.btn-shake {
+  animation: shakeBtn 0.45s ease-in-out !important;
+}
+
+/* Battle Launch Flash Transition Overlay */
+.battle-launch-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 209, 102, 0.5) 45%, rgba(10, 12, 24, 0.95) 100%);
+  z-index: 99999;
+  pointer-events: none;
+  animation: battleLaunchAnim 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes battleLaunchAnim {
+  0% { opacity: 0; transform: scale(0.92); }
+  35% { opacity: 0.95; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
