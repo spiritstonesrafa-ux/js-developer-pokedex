@@ -18,17 +18,41 @@
  */
 
 (function () {
+  let arenaRegistryModule;
+  let arenaControllerModule;
+  if (typeof module !== 'undefined' && module.exports) {
+    try {
+      arenaRegistryModule = require('../arena/type-arena-registry.js');
+      arenaControllerModule = require('../arena/type-arena-controller.js');
+    } catch {
+      arenaRegistryModule = null;
+      arenaControllerModule = null;
+    }
+  } else if (typeof window !== 'undefined') {
+    arenaRegistryModule = window.PBATypeArena || {};
+    arenaControllerModule = window.PBATypeArena || {};
+  }
+
   class BattleView {
     /**
      * @param {Object} [options]
      * @param {HTMLElement|string} [options.container] - Elemento ou seletor do container da view.
      * @param {Object} [options.sessionController] - Instância de BattleSessionController.
+     * @param {Object} [options.arenaController] - Instância customizada de TypeArenaController.
      */
     constructor(options = {}) {
       this.container = typeof options.container === 'string'
         ? (typeof document !== 'undefined' ? document.querySelector(options.container) : null)
         : (options.container || (typeof document !== 'undefined' ? document.getElementById('futureModuleView') : null));
       this.sessionController = options.sessionController || (typeof window !== 'undefined' ? window.battleSessionController : null);
+      this.arenaController = options.arenaController || (
+        arenaControllerModule && typeof arenaControllerModule.TypeArenaController === 'function'
+          ? new arenaControllerModule.TypeArenaController()
+          : (typeof window !== 'undefined' && window.PBATypeArena && window.PBATypeArena.TypeArenaController
+            ? new window.PBATypeArena.TypeArenaController()
+            : null)
+      );
+      this.currentArenaTheme = null;
       this.isSwitchModalOpen = false;
       this.isReplacementModalOpen = false;
       this.isMuted = false;
@@ -112,6 +136,13 @@
       }
     }
 
+    resetArena() {
+      if (this.arenaController && typeof this.arenaController.cleanup === 'function') {
+        this.arenaController.cleanup();
+      }
+      this.currentArenaTheme = null;
+    }
+
     setImmersiveMode(active) {
       if (typeof document === 'undefined') return;
       if (active) {
@@ -122,6 +153,7 @@
       } else {
         document.documentElement.classList.remove('battle-immersive-active');
         document.body.classList.remove('battle-immersive-active');
+        this.resetArena();
       }
     }
 
@@ -129,15 +161,18 @@
       const state = this.sessionController ? this.sessionController.uiState : null;
       const completed = state === 'VICTORY' || state === 'DEFEAT';
       if (!completed && typeof window !== 'undefined' && !window.confirm('Sair da batalha atual? O resultado não será registrado.')) return false;
+      this.resetArena();
       if (this.sessionController && typeof this.sessionController.abandonBattle === 'function') this.sessionController.abandonBattle();
       return true;
     }
 
     returnToPreparation() {
+      this.resetArena();
       if (this.sessionController && typeof this.sessionController.returnToPreparation === 'function') this.sessionController.returnToPreparation();
     }
 
     returnToCampaign() {
+      this.resetArena();
       if (this.sessionController) this.sessionController.leaveBattle();
       if (typeof window !== 'undefined' && window.switchAppTab) window.switchAppTab('campaign');
     }
@@ -241,6 +276,7 @@
      * Estado: Time incompleto (< 3 Pokémon).
      */
     renderNoTeamView(data = {}) {
+      this.resetArena();
       const teamSize = data.teamSize !== undefined ? data.teamSize : 0;
       this.container.innerHTML = `
         <div class="battle-view-container">
@@ -265,6 +301,7 @@
      * Estado: Equipe completa (3/3) pronta para iniciar o combate.
      */
     renderReadyView(data = {}) {
+      this.resetArena();
       const playerTeam = data.playerTeam || (this.sessionController && this.sessionController.playerTeam) || null;
       let playerRosterHtml = '';
 
@@ -376,6 +413,7 @@
      * Estado: Preparando e hidratando equipes da PokéAPI.
      */
     renderPreparingView() {
+      this.resetArena();
       this.container.innerHTML = `
         <div class="battle-view-container">
           <div class="battle-card-panel">
@@ -411,6 +449,22 @@
       const enemyRemaining = enemy.team.filter(p => p.currentHp > 0).length;
       const opponentTrainer = this.sessionController?.sessionOptions?.metadata?.opponentTrainer || null;
       const trainerAvatarMarkup = opponentTrainer && typeof window !== 'undefined' && window.PBACampaign?.renderTrainerAvatar ? window.PBACampaign.renderTrainerAvatar(opponentTrainer, { size: 'SMALL', shape: 'CIRCLE', decorative: true }) : '';
+
+      // Resolução segura de Arena Temática (PBA-018A)
+      const battleMetadata = this.sessionController?.sessionOptions?.metadata || battleState?.metadata || null;
+      const resolveTheme = (arenaRegistryModule && arenaRegistryModule.resolveArenaTheme) ||
+        (typeof window !== 'undefined' && window.PBATypeArena?.resolveArenaTheme) ||
+        (() => ({
+          key: 'default',
+          type: 'default',
+          themeClass: 'arena-theme-default',
+          backgroundSrc: null,
+          accentColor: '#38bdf8',
+          particleCount: 0
+        }));
+
+      const arenaTheme = resolveTheme(battleMetadata);
+      this.currentArenaTheme = arenaTheme;
 
       // Cores para barras de HP
       const playerHpPct = Math.max(0, Math.min(100, Math.round((playerActive.currentHp / playerActive.maxHp) * 100)));
@@ -458,7 +512,7 @@
 
       this.container.innerHTML = `
         <div class="battle-view-container battle-immersive-shell">
-          <div class="battle-arena-layout ${shadowAura ? 'shadow-aura-active' : ''} ${finalStand ? 'final-stand-active' : ''}">
+          <div class="battle-arena-layout ${shadowAura ? 'shadow-aura-active' : ''} ${finalStand ? 'final-stand-active' : ''} ${arenaTheme.themeClass}">
           ${shadowAura ? '<div class="shadow-aura-indicator" role="status"><strong>AURA SOMBRIA</strong><span>Todos os ataques inimigos são no mínimo Super Efetivos.</span></div>' : ''}
             <!-- Barra Superior com Utilitários -->
             <div class="battle-top-bar">
@@ -483,7 +537,7 @@
               <div class="hud-info-row">
                 <span id="enemyPokemonName" class="hud-pokemon-name">${enemyActive.name}</span>
                 <div id="enemyPokemonTypes" class="hud-pokemon-types">
-                  ${enemyActive.types.map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
+                  ${(enemyActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
               </div>
               <div class="hp-track">
@@ -506,8 +560,10 @@
 
             <!-- Palco de Batalha e Câmera Isolada -->
             <div class="battle-camera-wrapper" data-battle-camera id="battleCameraWrapper">
-              <div class="battle-stage" data-battle-stage id="battleStage">
+              <div class="battle-stage ${arenaTheme.themeClass} arena-transitioning" data-battle-stage id="battleStage">
+                ${arenaTheme.backgroundSrc ? '<div class="arena-backdrop" id="arenaBackdrop"></div>' : ''}
                 <div class="stage-ground-platform"></div>
+                <div class="arena-ambient-container" id="arenaAmbientContainer" aria-hidden="true"></div>
 
                 <!-- Slot do Pokémon do Jogador -->
                 <div class="combatant-slot player-slot" data-pokemon-target="player" id="playerCombatantTarget">
@@ -548,7 +604,7 @@
               <div class="hud-info-row">
                 <span id="playerPokemonName" class="hud-pokemon-name">${playerActive.name}</span>
                 <div id="playerPokemonTypes" class="hud-pokemon-types">
-                  ${playerActive.types.map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
+                  ${(playerActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
               </div>
               <div class="hp-track">
@@ -597,6 +653,14 @@
 
       // Sincroniza alvos DOM com os registros dos subsistemas (Animation, VFX, Camera)
       this.syncRegistries();
+
+      // Monta efeitos e partículas da arena temática ativa (PBA-018A)
+      if (this.arenaController && this.container && typeof this.container.querySelector === 'function') {
+        const stageElement = this.container.querySelector('#battleStage');
+        if (stageElement) {
+          this.arenaController.mount(stageElement, arenaTheme);
+        }
+      }
     }
 
     /**
@@ -812,6 +876,7 @@
       const icon = isVictory ? 'fa-trophy' : 'fa-heart-crack';
 
       this.closeModal();
+      this.resetArena();
 
       this.container.innerHTML = `
         <div class="battle-view-container battle-immersive-shell battle-result-shell">
@@ -838,6 +903,7 @@
      * Renderiza tela de erro com recuperação.
      */
     renderErrorView(data = {}) {
+      this.resetArena();
       this.container.innerHTML = `
         <div class="battle-view-container">
           <div class="battle-card-panel">

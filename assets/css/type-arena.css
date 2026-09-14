@@ -1,0 +1,293 @@
+/**
+ * ====================================================================
+ * ESTILOS DO SISTEMA DE ARENAS POR TIPO: (type-arena.css)
+ * ====================================================================
+ * Temas elementais, backgrounds com fallbacks gradientes, iluminação
+ * e partículas de ambiente para a Battle Arena (PBA-018A).
+ *
+ * Características:
+ * - Separação estrita: camada puramente visual / apresentação;
+ * - Gradientes de base instantâneos (zero flash branco durante carregamento);
+ * - Partículas aceleradas por hardware via transform e opacity;
+ * - Suporte total a prefers-reduced-motion (desliga partículas e loops);
+ * - Responsivo e fluído (360px até 1366px+) sem overflow.
+ */
+
+/* ====================================================================
+   1. CAMADA DE BACKDROP E PALCO TEMÁTICO
+   ==================================================================== */
+.battle-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+/* Transição suave ao entrar na arena */
+.battle-stage.arena-transitioning {
+  animation: arenaFadeIn 0.35s ease-out;
+}
+
+@keyframes arenaFadeIn {
+  from {
+    opacity: 0.88;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Backdrop com imagem WebP e vinheta de alto contraste */
+.arena-backdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.88;
+  transition: opacity 0.4s ease;
+}
+
+/* Camada de vinheta para preservar leitura impecável dos Pokémon e da UI */
+.arena-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.15) 0%, rgba(5, 8, 16, 0.65) 85%, rgba(2, 4, 8, 0.85) 100%);
+  pointer-events: none;
+}
+
+/* ====================================================================
+   2. TEMA DEFAULT (ARENA PADRÃO / QUICK BATTLE / SUPER / SHADOW)
+   ==================================================================== */
+.battle-stage.arena-theme-default {
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 70%, #020617 100%);
+}
+
+.arena-theme-default .arena-backdrop {
+  display: none;
+}
+
+.arena-theme-default .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.6) 70%, transparent 100%);
+}
+
+/* ====================================================================
+   3. PROTÓTIPO 1: FIRE ARENA (CALDEIRA VULCÂNICA)
+   ==================================================================== */
+.battle-stage.arena-theme-fire {
+  background: radial-gradient(circle at 50% 30%, #3b1408 0%, #1c0803 65%, #0d0402 100%);
+}
+
+.arena-theme-fire .arena-backdrop {
+  background-image: url('../images/arenas/arena-fire.webp');
+}
+
+.arena-theme-fire .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.32) 0%, rgba(40, 12, 6, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.18);
+}
+
+.battle-arena-layout.arena-theme-fire {
+  border-color: rgba(249, 115, 22, 0.35);
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.12), inset 0 0 40px rgba(249, 115, 22, 0.05);
+}
+
+/* ====================================================================
+   4. PROTÓTIPO 2: WATER ARENA (SANTUÁRIO DAS MARÉS)
+   ==================================================================== */
+.battle-stage.arena-theme-water {
+  background: radial-gradient(circle at 50% 30%, #062038 0%, #041424 65%, #020912 100%);
+}
+
+.arena-theme-water .arena-backdrop {
+  background-image: url('../images/arenas/arena-water.webp');
+}
+
+.arena-theme-water .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(0, 180, 216, 0.32) 0%, rgba(4, 24, 44, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(0, 180, 216, 0.18);
+}
+
+.battle-arena-layout.arena-theme-water {
+  border-color: rgba(0, 180, 216, 0.35);
+  box-shadow: 0 0 24px rgba(0, 180, 216, 0.12), inset 0 0 40px rgba(0, 180, 216, 0.05);
+}
+
+/* ====================================================================
+   5. PROTÓTIPO 3: ELECTRIC ARENA (CÚPULA TECNOLÓGICA)
+   ==================================================================== */
+.battle-stage.arena-theme-electric {
+  background: radial-gradient(circle at 50% 30%, #151d32 0%, #0c1220 65%, #060910 100%);
+}
+
+.arena-theme-electric .arena-backdrop {
+  background-image: url('../images/arenas/arena-electric.webp');
+}
+
+.arena-theme-electric .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(250, 204, 21, 0.28) 0%, rgba(12, 18, 32, 0.8) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(250, 204, 21, 0.14);
+}
+
+.battle-arena-layout.arena-theme-electric {
+  border-color: rgba(250, 204, 21, 0.35);
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.12), inset 0 0 40px rgba(250, 204, 21, 0.05);
+}
+
+/* ====================================================================
+   6. CONTÊINER DE AMBIENTE E PARTÍCULAS LEVES
+   ==================================================================== */
+.arena-ambient-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Partícula Base */
+.arena-particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+/* Brasas Suaves (Fire) */
+.arena-particle--embers {
+  bottom: 0;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #fef08a 0%, #f97316 60%, #ea580c 100%);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.8), 0 0 16px rgba(234, 88, 12, 0.4);
+  animation: floatEmber var(--particle-duration, 3000ms) cubic-bezier(0.25, 1, 0.5, 1) infinite var(--particle-delay, 0ms);
+}
+
+@keyframes floatEmber {
+  0% {
+    transform: translate3d(0, 10px, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(clamp(-25px, 2vw, 25px), -180px, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Bolhas Suaves (Water) */
+.arena-particle--bubbles {
+  bottom: 0;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 6px);
+  height: var(--particle-size, 6px);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85) 0%, rgba(56, 189, 248, 0.35) 45%, rgba(14, 116, 144, 0.15) 85%);
+  border: 1px solid rgba(186, 230, 253, 0.55);
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+  animation: floatBubble var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+@keyframes floatBubble {
+  0% {
+    transform: translate3d(0, 10px, 0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  75% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(clamp(-15px, 1.5vw, 15px), -170px, 0) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* Pulsos Tecnológicos Suaves (Electric) — Frequência segura, sem estroboscópio */
+.arena-particle--pulses {
+  bottom: clamp(16px, 4vw, 36px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 5px);
+  height: var(--particle-size, 5px);
+  background: radial-gradient(circle, #fef08a 0%, #facc15 60%, rgba(250, 204, 21, 0.2) 100%);
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.65);
+  animation: pulseTech var(--particle-duration, 2800ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+@keyframes pulseTech {
+  0%, 100% {
+    transform: scale(0.7);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.65;
+  }
+}
+
+/* ====================================================================
+   7. ACESSIBILIDADE: REDUCED MOTION
+   ==================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .battle-stage.arena-transitioning {
+    animation: none !important;
+  }
+
+  .arena-ambient-container {
+    display: none !important;
+  }
+
+  .arena-particle {
+    animation: none !important;
+    display: none !important;
+  }
+
+  .arena-backdrop {
+    transition: none !important;
+  }
+}
+
+/* ====================================================================
+   8. RESPONSIVIDADE E DISPOSITIVOS MÓVEIS (360px, 390px, 412px)
+   ==================================================================== */
+@media (max-width: 760px) {
+  .arena-backdrop {
+    opacity: 0.82;
+  }
+
+  .arena-particle--embers {
+    animation-name: floatEmberMobile;
+  }
+
+  .arena-particle--bubbles {
+    animation-name: floatBubbleMobile;
+  }
+
+  @keyframes floatEmberMobile {
+    0% { transform: translate3d(0, 10px, 0) scale(0.5); opacity: 0; }
+    20% { opacity: 0.85; }
+    70% { opacity: 0.65; }
+    100% { transform: translate3d(0, -110px, 0) scale(1); opacity: 0; }
+  }
+
+  @keyframes floatBubbleMobile {
+    0% { transform: translate3d(0, 10px, 0) scale(0.6); opacity: 0; }
+    20% { opacity: 0.75; }
+    75% { opacity: 0.55; }
+    100% { transform: translate3d(0, -100px, 0) scale(1); opacity: 0; }
+  }
+}

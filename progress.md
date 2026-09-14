@@ -773,8 +773,41 @@ NEXT_STEP = WAIT_FOR_HUMAN_PBA_014D_TEST
 - V1_TAG = PASS
 - TAG_TARGET_COMMIT = 665e91dd00736e47ba4cd702026862ed7044cb0a
 - GITHUB_RELEASE = PASS
-- PBA_017D = PASS
 - PBA_017 = PASS
 - CRITICAL_OPEN_ISSUES = 0
 - FINAL_PROJECT_RELEASED = YES
-- PBA_018 = NOT_STARTED
+- PBA_018 = IN_PROGRESS
+- PBA_018A = PASS
+- PBA_018B = READY_TO_START
+
+---
+
+## PBA-018A — Type Arena System Foundation + 3-Arena Prototype
+
+- ARENA_THEME_REGISTRY = PASS
+- DEFAULT_ARENA_FALLBACK = PASS
+- FIRE_ARENA = PASS
+- WATER_ARENA = PASS
+- ELECTRIC_ARENA = PASS
+- ONE_BATTLE_VIEW = YES
+- BATTLE_ENGINE_CHANGED = NO
+- GAMEPLAY_CHANGED = NO
+- QUICK_BATTLE_VISUAL_REGRESSION = NO
+- SUPER_VISUAL_CHANGED = NO
+- SHADOW_VISUAL_CHANGED = NO
+- REDUCED_MOTION_ARENA = PASS
+- MOBILE_VALIDATION = PASS
+- DESKTOP_VALIDATION = PASS
+- ARENA_STATE_LEAK = NO
+- PARTICLE_LEAKS = 0
+- FULL_REGRESSION = PASS
+- FULL_TESTS_PASS = 599
+- FULL_TESTS_FAIL = 0
+- FULL_TESTS_CANCELLED = 0
+- TOTAL_NEW_ASSET_BYTES = 259366 (253.3 KB)
+- PBA_018A_SUMMARY = Fundação do sistema de arenas temáticas por tipo com catálogo central (TypeArenaRegistry), fallback determinístico garantido, 3 protótipos de alta qualidade (Fire, Water, Electric) com WebP local leve (~253.3 KB total), ciclo de vida com zero vazamentos (TypeArenaController), suporte a prefers-reduced-motion e total preservação do Battle Engine e Quick Battle.
+- PBA_017 = PASS
+- PBA_018 = IN_PROGRESS
+- PBA_018A = PASS
+- PBA_018B = READY_TO_START
+- FINAL_PROJECT_RELEASED = YES
