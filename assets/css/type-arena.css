@@ -3,14 +3,15 @@
  * ESTILOS DO SISTEMA DE ARENAS POR TIPO: (type-arena.css)
  * ====================================================================
  * Temas elementais, backgrounds com fallbacks gradientes, iluminação
- * e partículas de ambiente para a Battle Arena (PBA-018A).
+ * e partículas de ambiente para todos os 18 tipos Pokémon (PBA-018B).
  *
  * Características:
  * - Separação estrita: camada puramente visual / apresentação;
  * - Gradientes de base instantâneos (zero flash branco durante carregamento);
  * - Partículas aceleradas por hardware via transform e opacity;
  * - Suporte total a prefers-reduced-motion (desliga partículas e loops);
- * - Responsivo e fluído (360px até 1366px+) sem overflow.
+ * - Responsivo e fluído (360px até 1366px+) sem overflow;
+ * - Vinheta de alto contraste garantindo legibilidade perfeita da UI e Pokémon.
  */
 
 /* ====================================================================
@@ -59,12 +60,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.15) 0%, rgba(5, 8, 16, 0.65) 85%, rgba(2, 4, 8, 0.85) 100%);
+  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.18) 0%, rgba(5, 8, 16, 0.65) 85%, rgba(2, 4, 8, 0.88) 100%);
   pointer-events: none;
 }
 
 /* ====================================================================
-   2. TEMA DEFAULT (ARENA PADRÃO / QUICK BATTLE / SUPER / SHADOW)
+   2. TEMA DEFAULT (ARENA PADRÃO / QUICK BATTLE / TRIALS / SUPER / SHADOW)
    ==================================================================== */
 .battle-stage.arena-theme-default {
   background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 70%, #020617 100%);
@@ -79,70 +80,263 @@
 }
 
 /* ====================================================================
-   3. PROTÓTIPO 1: FIRE ARENA (CALDEIRA VULCÂNICA)
+   3. TEMAS DAS 18 ARENAS ELEMENTAIS
    ==================================================================== */
+
+/* 1. NORMAL: Estádio da Liga */
+.battle-stage.arena-theme-normal {
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #111827 65%, #030712 100%);
+}
+.arena-theme-normal .arena-backdrop { background-image: url('../images/arenas/arena-normal.webp'); }
+.arena-theme-normal .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(148, 163, 184, 0.28) 0%, rgba(17, 24, 39, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(148, 163, 184, 0.15);
+}
+.battle-arena-layout.arena-theme-normal {
+  border-color: rgba(148, 163, 184, 0.35);
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.12), inset 0 0 40px rgba(148, 163, 184, 0.05);
+}
+
+/* 2. FIRE: Caldeira Vulcânica */
 .battle-stage.arena-theme-fire {
   background: radial-gradient(circle at 50% 30%, #3b1408 0%, #1c0803 65%, #0d0402 100%);
 }
-
-.arena-theme-fire .arena-backdrop {
-  background-image: url('../images/arenas/arena-fire.webp');
-}
-
+.arena-theme-fire .arena-backdrop { background-image: url('../images/arenas/arena-fire.webp'); }
 .arena-theme-fire .stage-ground-platform {
   background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.32) 0%, rgba(40, 12, 6, 0.75) 60%, transparent 100%);
   box-shadow: 0 4px 20px rgba(249, 115, 22, 0.18);
 }
-
 .battle-arena-layout.arena-theme-fire {
   border-color: rgba(249, 115, 22, 0.35);
   box-shadow: 0 0 24px rgba(249, 115, 22, 0.12), inset 0 0 40px rgba(249, 115, 22, 0.05);
 }
 
-/* ====================================================================
-   4. PROTÓTIPO 2: WATER ARENA (SANTUÁRIO DAS MARÉS)
-   ==================================================================== */
+/* 3. WATER: Santuário das Marés */
 .battle-stage.arena-theme-water {
   background: radial-gradient(circle at 50% 30%, #062038 0%, #041424 65%, #020912 100%);
 }
-
-.arena-theme-water .arena-backdrop {
-  background-image: url('../images/arenas/arena-water.webp');
-}
-
+.arena-theme-water .arena-backdrop { background-image: url('../images/arenas/arena-water.webp'); }
 .arena-theme-water .stage-ground-platform {
   background: radial-gradient(ellipse at center, rgba(0, 180, 216, 0.32) 0%, rgba(4, 24, 44, 0.75) 60%, transparent 100%);
   box-shadow: 0 4px 20px rgba(0, 180, 216, 0.18);
 }
-
 .battle-arena-layout.arena-theme-water {
   border-color: rgba(0, 180, 216, 0.35);
   box-shadow: 0 0 24px rgba(0, 180, 216, 0.12), inset 0 0 40px rgba(0, 180, 216, 0.05);
 }
 
-/* ====================================================================
-   5. PROTÓTIPO 3: ELECTRIC ARENA (CÚPULA TECNOLÓGICA)
-   ==================================================================== */
+/* 4. ELECTRIC: Cúpula Tecnológica */
 .battle-stage.arena-theme-electric {
   background: radial-gradient(circle at 50% 30%, #151d32 0%, #0c1220 65%, #060910 100%);
 }
-
-.arena-theme-electric .arena-backdrop {
-  background-image: url('../images/arenas/arena-electric.webp');
-}
-
+.arena-theme-electric .arena-backdrop { background-image: url('../images/arenas/arena-electric.webp'); }
 .arena-theme-electric .stage-ground-platform {
   background: radial-gradient(ellipse at center, rgba(250, 204, 21, 0.28) 0%, rgba(12, 18, 32, 0.8) 60%, transparent 100%);
   box-shadow: 0 4px 20px rgba(250, 204, 21, 0.14);
 }
-
 .battle-arena-layout.arena-theme-electric {
   border-color: rgba(250, 204, 21, 0.35);
   box-shadow: 0 0 24px rgba(250, 204, 21, 0.12), inset 0 0 40px rgba(250, 204, 21, 0.05);
 }
 
+/* 5. GRASS: Bosque Ancestral */
+.battle-stage.arena-theme-grass {
+  background: radial-gradient(circle at 50% 30%, #062d17 0%, #03180c 65%, #010a05 100%);
+}
+.arena-theme-grass .arena-backdrop { background-image: url('../images/arenas/arena-grass.webp'); }
+.arena-theme-grass .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.30) 0%, rgba(6, 45, 23, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.16);
+}
+.battle-arena-layout.arena-theme-grass {
+  border-color: rgba(34, 197, 94, 0.35);
+  box-shadow: 0 0 24px rgba(34, 197, 94, 0.12), inset 0 0 40px rgba(34, 197, 94, 0.05);
+}
+
+/* 6. ICE: Caverna Glacial */
+.battle-stage.arena-theme-ice {
+  background: radial-gradient(circle at 50% 30%, #0e2f44 0%, #071a26 65%, #030d14 100%);
+}
+.arena-theme-ice .arena-backdrop { background-image: url('../images/arenas/arena-ice.webp'); }
+.arena-theme-ice .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.30) 0%, rgba(14, 47, 68, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.16);
+}
+.battle-arena-layout.arena-theme-ice {
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.12), inset 0 0 40px rgba(56, 189, 248, 0.05);
+}
+
+/* 7. FIGHTING: Dojo Marcial */
+.battle-stage.arena-theme-fighting {
+  background: radial-gradient(circle at 50% 30%, #2e140d 0%, #1a0b07 65%, #0d0503 100%);
+}
+.arena-theme-fighting .arena-backdrop { background-image: url('../images/arenas/arena-fighting.webp'); }
+.arena-theme-fighting .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(251, 146, 60, 0.28) 0%, rgba(46, 20, 13, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(251, 146, 60, 0.15);
+}
+.battle-arena-layout.arena-theme-fighting {
+  border-color: rgba(251, 146, 60, 0.35);
+  box-shadow: 0 0 24px rgba(251, 146, 60, 0.12), inset 0 0 40px rgba(251, 146, 60, 0.05);
+}
+
+/* 8. POISON: Complexo Químico */
+.battle-stage.arena-theme-poison {
+  background: radial-gradient(circle at 50% 30%, #200f38 0%, #120822 65%, #090312 100%);
+}
+.arena-theme-poison .arena-backdrop { background-image: url('../images/arenas/arena-poison.webp'); }
+.arena-theme-poison .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.30) 0%, rgba(32, 15, 56, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.16);
+}
+.battle-arena-layout.arena-theme-poison {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.12), inset 0 0 40px rgba(168, 85, 247, 0.05);
+}
+
+/* 9. GROUND: Cânion Terracota */
+.battle-stage.arena-theme-ground {
+  background: radial-gradient(circle at 50% 30%, #361c0d 0%, #1e0e06 65%, #0f0703 100%);
+}
+.arena-theme-ground .arena-backdrop { background-image: url('../images/arenas/arena-ground.webp'); }
+.arena-theme-ground .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(217, 119, 6, 0.28) 0%, rgba(54, 28, 13, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.15);
+}
+.battle-arena-layout.arena-theme-ground {
+  border-color: rgba(217, 119, 6, 0.35);
+  box-shadow: 0 0 24px rgba(217, 119, 6, 0.12), inset 0 0 40px rgba(217, 119, 6, 0.05);
+}
+
+/* 10. FLYING: Templo dos Céus */
+.battle-stage.arena-theme-flying {
+  background: radial-gradient(circle at 50% 30%, #102a45 0%, #081726 65%, #040c14 100%);
+}
+.arena-theme-flying .arena-backdrop { background-image: url('../images/arenas/arena-flying.webp'); }
+.arena-theme-flying .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.30) 0%, rgba(16, 42, 69, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(96, 165, 250, 0.16);
+}
+.battle-arena-layout.arena-theme-flying {
+  border-color: rgba(96, 165, 250, 0.35);
+  box-shadow: 0 0 24px rgba(96, 165, 250, 0.12), inset 0 0 40px rgba(96, 165, 250, 0.05);
+}
+
+/* 11. PSYCHIC: Observatório Astral */
+.battle-stage.arena-theme-psychic {
+  background: radial-gradient(circle at 50% 30%, #270e3c 0%, #160724 65%, #0b0312 100%);
+}
+.arena-theme-psychic .arena-backdrop { background-image: url('../images/arenas/arena-psychic.webp'); }
+.arena-theme-psychic .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(232, 121, 249, 0.30) 0%, rgba(39, 14, 60, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(232, 121, 249, 0.16);
+}
+.battle-arena-layout.arena-theme-psychic {
+  border-color: rgba(232, 121, 249, 0.35);
+  box-shadow: 0 0 24px rgba(232, 121, 249, 0.12), inset 0 0 40px rgba(232, 121, 249, 0.05);
+}
+
+/* 12. BUG: Bosque dos Esporos */
+.battle-stage.arena-theme-bug {
+  background: radial-gradient(circle at 50% 30%, #1a2908 0%, #0d1603 65%, #060b01 100%);
+}
+.arena-theme-bug .arena-backdrop { background-image: url('../images/arenas/arena-bug.webp'); }
+.arena-theme-bug .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(132, 204, 22, 0.30) 0%, rgba(26, 41, 8, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(132, 204, 22, 0.16);
+}
+.battle-arena-layout.arena-theme-bug {
+  border-color: rgba(132, 204, 22, 0.35);
+  box-shadow: 0 0 24px rgba(132, 204, 22, 0.12), inset 0 0 40px rgba(132, 204, 22, 0.05);
+}
+
+/* 13. ROCK: Pedreira Monolítica */
+.battle-stage.arena-theme-rock {
+  background: radial-gradient(circle at 50% 30%, #29241e 0%, #171410 65%, #0b0908 100%);
+}
+.arena-theme-rock .arena-backdrop { background-image: url('../images/arenas/arena-rock.webp'); }
+.arena-theme-rock .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(161, 161, 170, 0.28) 0%, rgba(41, 36, 30, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(161, 161, 170, 0.15);
+}
+.battle-arena-layout.arena-theme-rock {
+  border-color: rgba(161, 161, 170, 0.35);
+  box-shadow: 0 0 24px rgba(161, 161, 170, 0.12), inset 0 0 40px rgba(161, 161, 170, 0.05);
+}
+
+/* 14. GHOST: Mausoléu Espectral */
+.battle-stage.arena-theme-ghost {
+  background: radial-gradient(circle at 50% 30%, #1e1233 0%, #10091e 65%, #08040f 100%);
+}
+.arena-theme-ghost .arena-backdrop { background-image: url('../images/arenas/arena-ghost.webp'); }
+.arena-theme-ghost .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(192, 132, 252, 0.30) 0%, rgba(30, 18, 51, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(192, 132, 252, 0.16);
+}
+.battle-arena-layout.arena-theme-ghost {
+  border-color: rgba(192, 132, 252, 0.35);
+  box-shadow: 0 0 24px rgba(192, 132, 252, 0.12), inset 0 0 40px rgba(192, 132, 252, 0.05);
+}
+
+/* 15. DRAGON: Santuário Dracônico */
+.battle-stage.arena-theme-dragon {
+  background: radial-gradient(circle at 50% 30%, #2b0b14 0%, #17050a 65%, #0c0205 100%);
+}
+.arena-theme-dragon .arena-backdrop { background-image: url('../images/arenas/arena-dragon.webp'); }
+.arena-theme-dragon .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.32) 0%, rgba(43, 11, 20, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.18);
+}
+.battle-arena-layout.arena-theme-dragon {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.12), inset 0 0 40px rgba(245, 158, 11, 0.05);
+}
+
+/* 16. DARK: Ruínas do Eclipse */
+.battle-stage.arena-theme-dark {
+  background: radial-gradient(circle at 50% 30%, #150d24 0%, #0b0614 65%, #05020a 100%);
+}
+.arena-theme-dark .arena-backdrop { background-image: url('../images/arenas/arena-dark.webp'); }
+.arena-theme-dark .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.28) 0%, rgba(21, 13, 36, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+}
+.battle-arena-layout.arena-theme-dark {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.12), inset 0 0 40px rgba(168, 85, 247, 0.05);
+}
+
+/* 17. STEEL: Fortaleza Siderúrgica */
+.battle-stage.arena-theme-steel {
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 65%, #070b14 100%);
+}
+.arena-theme-steel .arena-backdrop { background-image: url('../images/arenas/arena-steel.webp'); }
+.arena-theme-steel .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(203, 213, 225, 0.28) 0%, rgba(30, 41, 59, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(203, 213, 225, 0.15);
+}
+.battle-arena-layout.arena-theme-steel {
+  border-color: rgba(203, 213, 225, 0.35);
+  box-shadow: 0 0 24px rgba(203, 213, 225, 0.12), inset 0 0 40px rgba(203, 213, 225, 0.05);
+}
+
+/* 18. FAIRY: Clareira Encantada */
+.battle-stage.arena-theme-fairy {
+  background: radial-gradient(circle at 50% 30%, #2f143a 0%, #1a0a21 65%, #0e0512 100%);
+}
+.arena-theme-fairy .arena-backdrop { background-image: url('../images/arenas/arena-fairy.webp'); }
+.arena-theme-fairy .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(244, 114, 182, 0.32) 0%, rgba(47, 20, 58, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(244, 114, 182, 0.18);
+}
+.battle-arena-layout.arena-theme-fairy {
+  border-color: rgba(244, 114, 182, 0.35);
+  box-shadow: 0 0 24px rgba(244, 114, 182, 0.12), inset 0 0 40px rgba(244, 114, 182, 0.05);
+}
+
 /* ====================================================================
-   6. CONTÊINER DE AMBIENTE E PARTÍCULAS LEVES
+   4. CONTÊINER DE AMBIENTE E PARTÍCULAS LEVES
    ==================================================================== */
 .arena-ambient-container {
   position: absolute;
@@ -160,7 +354,7 @@
   will-change: transform, opacity;
 }
 
-/* Brasas Suaves (Fire) */
+/* 1. Brasas Suaves (Fire) */
 .arena-particle--embers {
   bottom: 0;
   left: var(--particle-left, 50%);
@@ -168,27 +362,10 @@
   height: var(--particle-size, 4px);
   background: radial-gradient(circle, #fef08a 0%, #f97316 60%, #ea580c 100%);
   box-shadow: 0 0 8px rgba(249, 115, 22, 0.8), 0 0 16px rgba(234, 88, 12, 0.4);
-  animation: floatEmber var(--particle-duration, 3000ms) cubic-bezier(0.25, 1, 0.5, 1) infinite var(--particle-delay, 0ms);
+  animation: floatUpward var(--particle-duration, 3000ms) cubic-bezier(0.25, 1, 0.5, 1) infinite var(--particle-delay, 0ms);
 }
 
-@keyframes floatEmber {
-  0% {
-    transform: translate3d(0, 10px, 0) scale(0.5);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.9;
-  }
-  70% {
-    opacity: 0.75;
-  }
-  100% {
-    transform: translate3d(clamp(-25px, 2vw, 25px), -180px, 0) scale(1.1);
-    opacity: 0;
-  }
-}
-
-/* Bolhas Suaves (Water) */
+/* 2. Bolhas Suaves (Water) */
 .arena-particle--bubbles {
   bottom: 0;
   left: var(--particle-left, 50%);
@@ -197,27 +374,10 @@
   background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85) 0%, rgba(56, 189, 248, 0.35) 45%, rgba(14, 116, 144, 0.15) 85%);
   border: 1px solid rgba(186, 230, 253, 0.55);
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
-  animation: floatBubble var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
+  animation: floatUpward var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
 }
 
-@keyframes floatBubble {
-  0% {
-    transform: translate3d(0, 10px, 0) scale(0.6);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.8;
-  }
-  75% {
-    opacity: 0.65;
-  }
-  100% {
-    transform: translate3d(clamp(-15px, 1.5vw, 15px), -170px, 0) scale(1.05);
-    opacity: 0;
-  }
-}
-
-/* Pulsos Tecnológicos Suaves (Electric) — Frequência segura, sem estroboscópio */
+/* 3. Pulsos Tecnológicos (Electric) — Frequência segura, sem estroboscópio */
 .arena-particle--pulses {
   bottom: clamp(16px, 4vw, 36px);
   left: var(--particle-left, 50%);
@@ -228,19 +388,238 @@
   animation: pulseTech var(--particle-duration, 2800ms) ease-in-out infinite var(--particle-delay, 0ms);
 }
 
+/* 4. Folhas Flutuantes (Grass) */
+.arena-particle--leaves {
+  top: -10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 6px);
+  height: var(--particle-size, 6px);
+  border-radius: 60% 0 60% 0;
+  background: linear-gradient(135deg, #86efac 0%, #22c55e 70%, #15803d 100%);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  animation: floatDownward var(--particle-duration, 4200ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 5. Neve / Cristais de Gelo (Ice) */
+.arena-particle--snow {
+  top: -10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #bae6fd 60%, rgba(56, 189, 248, 0.2) 100%);
+  box-shadow: 0 0 8px rgba(186, 230, 253, 0.8);
+  animation: floatDownward var(--particle-duration, 3800ms) linear infinite var(--particle-delay, 0ms);
+}
+
+/* 6. Fagulhas de Foco Marcial (Fighting) */
+.arena-particle--focus {
+  bottom: 10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #fed7aa 0%, #fb923c 60%, #c2410c 100%);
+  box-shadow: 0 0 8px rgba(251, 146, 60, 0.7);
+  animation: floatUpward var(--particle-duration, 3000ms) ease-out infinite var(--particle-delay, 0ms);
+}
+
+/* 7. Vapores Químicos Suaves (Poison) */
+.arena-particle--toxic {
+  bottom: 5px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 5px);
+  height: var(--particle-size, 5px);
+  background: radial-gradient(circle, #d8b4fe 0%, #a855f7 60%, rgba(74, 222, 128, 0.4) 100%);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  animation: floatUpward var(--particle-duration, 3600ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 8. Motes de Poeira de Cânion (Ground) */
+.arena-particle--dust {
+  bottom: 15px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #fde68a 0%, #d97706 70%, rgba(180, 83, 9, 0.2) 100%);
+  box-shadow: 0 0 6px rgba(217, 119, 6, 0.4);
+  animation: floatUpward var(--particle-duration, 3400ms) ease-out infinite var(--particle-delay, 0ms);
+}
+
+/* 9. Brisas Celestes (Flying) */
+.arena-particle--wind {
+  top: clamp(20px, 8vw, 80px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 6px);
+  height: calc(var(--particle-size, 6px) * 0.5);
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+  animation: driftWind var(--particle-duration, 3200ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 10. Shimmer Astral (Psychic) */
+.arena-particle--astral {
+  top: clamp(30px, 10vw, 120px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #f0abfc 50%, #c084fc 100%);
+  box-shadow: 0 0 10px rgba(232, 121, 249, 0.7);
+  animation: pulseTech var(--particle-duration, 3000ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 11. Esporos de Fungo (Bug) */
+.arena-particle--spores {
+  bottom: 10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #bef264 0%, #84cc16 60%, rgba(101, 163, 13, 0.2) 100%);
+  box-shadow: 0 0 8px rgba(132, 204, 22, 0.6);
+  animation: floatUpward var(--particle-duration, 3600ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 12. Fragmentos Minerais (Rock) */
+.arena-particle--pebbles {
+  top: -5px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 3px);
+  height: var(--particle-size, 3px);
+  background: #d4d4d8;
+  box-shadow: 0 0 4px rgba(161, 161, 170, 0.6);
+  animation: floatDownward var(--particle-duration, 3500ms) linear infinite var(--particle-delay, 0ms);
+}
+
+/* 13. Névoa Espectral (Ghost) */
+.arena-particle--wisps {
+  bottom: 15px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 5px);
+  height: var(--particle-size, 5px);
+  background: radial-gradient(circle, #e9d5ff 0%, #c084fc 60%, rgba(147, 51, 234, 0.1) 100%);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.7);
+  animation: floatUpward var(--particle-duration, 3800ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 14. Brasas Dracônicas (Dragon) */
+.arena-particle--draconic {
+  bottom: 10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #dc2626 100%);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+  animation: floatUpward var(--particle-duration, 3200ms) ease-out infinite var(--particle-delay, 0ms);
+}
+
+/* 15. Sombras Abissais (Dark) */
+.arena-particle--shadows {
+  bottom: 10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #c084fc 0%, #581c87 70%, transparent 100%);
+  box-shadow: 0 0 8px rgba(147, 51, 234, 0.6);
+  animation: floatUpward var(--particle-duration, 3600ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 16. Faíscas Metálicas (Steel) */
+.arena-particle--sparks {
+  bottom: 20px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 3px);
+  height: var(--particle-size, 3px);
+  background: radial-gradient(circle, #ffffff 0%, #cbd5e1 60%, #38bdf8 100%);
+  box-shadow: 0 0 6px rgba(203, 213, 225, 0.8);
+  animation: floatUpward var(--particle-duration, 2600ms) ease-out infinite var(--particle-delay, 0ms);
+}
+
+/* 17. Brilhos de Fada (Fairy) */
+.arena-particle--sparkles {
+  top: clamp(20px, 8vw, 80px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #f472b6 60%, rgba(217, 70, 239, 0.2) 100%);
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.8);
+  animation: pulseTech var(--particle-duration, 2800ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 18. Luzes do Estádio (Normal) */
+.arena-particle--stadium {
+  top: clamp(20px, 5vw, 60px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #e2e8f0 60%, transparent 100%);
+  box-shadow: 0 0 6px rgba(226, 232, 240, 0.6);
+  animation: pulseTech var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* Animações reutilizáveis e leves */
+@keyframes floatUpward {
+  0% {
+    transform: translate3d(0, 10px, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(clamp(-20px, 2vw, 20px), -180px, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes floatDownward {
+  0% {
+    transform: translate3d(0, -10px, 0) scale(0.5);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(clamp(-20px, 2vw, 20px), 180px, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
 @keyframes pulseTech {
   0%, 100% {
     transform: scale(0.7);
-    opacity: 0.15;
+    opacity: 0.2;
   }
   50% {
-    transform: scale(1.2);
-    opacity: 0.65;
+    transform: scale(1.25);
+    opacity: 0.75;
+  }
+}
+
+@keyframes driftWind {
+  0% {
+    transform: translate3d(-30px, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(60px, 15px, 0) scale(1.1);
+    opacity: 0;
   }
 }
 
 /* ====================================================================
-   7. ACESSIBILIDADE: REDUCED MOTION
+   5. ACESSIBILIDADE: REDUCED MOTION
    ==================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .battle-stage.arena-transitioning {
@@ -262,32 +641,24 @@
 }
 
 /* ====================================================================
-   8. RESPONSIVIDADE E DISPOSITIVOS MÓVEIS (360px, 390px, 412px)
+   6. RESPONSIVIDADE E DISPOSITIVOS MÓVEIS (360px, 390px, 412px)
    ==================================================================== */
 @media (max-width: 760px) {
   .arena-backdrop {
     opacity: 0.82;
   }
 
-  .arena-particle--embers {
-    animation-name: floatEmberMobile;
-  }
-
-  .arena-particle--bubbles {
-    animation-name: floatBubbleMobile;
-  }
-
-  @keyframes floatEmberMobile {
+  @keyframes floatUpward {
     0% { transform: translate3d(0, 10px, 0) scale(0.5); opacity: 0; }
-    20% { opacity: 0.85; }
-    70% { opacity: 0.65; }
+    20% { opacity: 0.8; }
+    70% { opacity: 0.55; }
     100% { transform: translate3d(0, -110px, 0) scale(1); opacity: 0; }
   }
 
-  @keyframes floatBubbleMobile {
-    0% { transform: translate3d(0, 10px, 0) scale(0.6); opacity: 0; }
-    20% { opacity: 0.75; }
+  @keyframes floatDownward {
+    0% { transform: translate3d(0, -10px, 0) scale(0.5); opacity: 0; }
+    25% { opacity: 0.8; }
     75% { opacity: 0.55; }
-    100% { transform: translate3d(0, -100px, 0) scale(1); opacity: 0; }
+    100% { transform: translate3d(0, 110px, 0) scale(1); opacity: 0; }
   }
 }

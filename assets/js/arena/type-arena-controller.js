@@ -3,7 +3,7 @@
  * CONTROLADOR DE AMBIENTE DA ARENA: (type-arena-controller.js)
  * ====================================================================
  * Gerencia o ciclo de vida (mount, update, unmount/cleanup) dos efeitos
- * visuais de ambiente e partículas das arenas temáticas (PBA-018A).
+ * visuais de ambiente e partículas das arenas temáticas (PBA-018B).
  *
  * Princípios Fundamentais:
  * - Decorações puramente visuais, sem interação com o cursor (pointer-events: none);
@@ -21,7 +21,12 @@
     constants = window.PBATypeArena;
   } else {
     constants = {
-      ARENA_PARTICLE_LIMITS: { FIRE: 10, WATER: 10, ELECTRIC: 6, DEFAULT: 0, REDUCED_MOTION: 0 },
+      ARENA_PARTICLE_LIMITS: {
+        NORMAL: 6, FIRE: 10, WATER: 10, ELECTRIC: 6, GRASS: 10, ICE: 10,
+        FIGHTING: 6, POISON: 8, GROUND: 8, FLYING: 8, PSYCHIC: 8, BUG: 10,
+        ROCK: 6, GHOST: 8, DRAGON: 8, DARK: 8, STEEL: 6, FAIRY: 10,
+        DEFAULT: 0, REDUCED_MOTION: 0
+      },
       ARENA_DOM_IDS: { AMBIENT_CONTAINER: 'arenaAmbientContainer' }
     };
   }
@@ -112,7 +117,8 @@
         return;
       }
 
-      const count = Math.min(theme.particleCount, ARENA_PARTICLE_LIMITS[theme.type.toUpperCase()] || 10);
+      const maxLimit = (theme.type && ARENA_PARTICLE_LIMITS[theme.type.toUpperCase()]) || 10;
+      const count = Math.min(theme.particleCount, maxLimit);
       const fragment = typeof document.createDocumentFragment === 'function'
         ? document.createDocumentFragment()
         : null;
@@ -126,7 +132,15 @@
         const leftPct = Math.round(5 + (i * (90 / count)) + ((i % 3) * 2));
         const delayMs = Math.round((i * 450) % 3200);
         const durationMs = 2800 + ((i % 4) * 600);
-        const sizePx = theme.particleType === 'embers' ? (3 + (i % 3)) : (theme.particleType === 'bubbles' ? (5 + (i % 4)) : (4 + (i % 3)));
+
+        let sizePx = 4 + (i % 3);
+        if (theme.particleType === 'embers' || theme.particleType === 'sparks' || theme.particleType === 'pebbles') {
+          sizePx = 3 + (i % 3);
+        } else if (theme.particleType === 'bubbles' || theme.particleType === 'leaves') {
+          sizePx = 5 + (i % 4);
+        } else if (theme.particleType === 'snow' || theme.particleType === 'sparkles') {
+          sizePx = 4 + (i % 3);
+        }
 
         particle.style.setProperty('--particle-left', `${leftPct}%`);
         particle.style.setProperty('--particle-delay', `${delayMs}ms`);

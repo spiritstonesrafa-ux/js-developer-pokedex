@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Type Arena System Harness — PBA-018A</title>
+  <title>Type Arena System Harness — PBA-018B (18 Arenas)</title>
   <link rel="stylesheet" href="../../assets/css/reset.css">
   <link rel="stylesheet" href="../../assets/css/global.css">
   <link rel="stylesheet" href="../../assets/css/battle-arena.css">
@@ -28,27 +28,28 @@
     }
 
     .harness-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: #38bdf8;
       margin: 0 0 4px 0;
     }
 
     .harness-controls {
       display: flex;
-      gap: 10px;
+      gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 16px;
-      max-width: 900px;
+      margin-bottom: 14px;
+      max-width: 1100px;
     }
 
     .harness-btn {
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       background: rgba(30, 41, 59, 0.8);
       color: #e2e8f0;
       font-weight: 600;
+      font-size: 0.8rem;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -65,9 +66,14 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
+    .harness-btn-util {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+
     .harness-viewport-frame {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1024px;
       transition: max-width 0.3s ease;
       background: #030712;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -79,7 +85,7 @@
     .harness-viewport-frame.mode-mobile-360 { max-width: 360px; }
     .harness-viewport-frame.mode-mobile-390 { max-width: 390px; }
     .harness-viewport-frame.mode-mobile-412 { max-width: 412px; }
-    .harness-viewport-frame.mode-desktop { max-width: 1000px; }
+    .harness-viewport-frame.mode-desktop { max-width: 1024px; }
 
     .harness-status {
       margin-top: 14px;
@@ -90,7 +96,7 @@
       font-family: monospace;
       font-size: 0.85rem;
       color: #94a3b8;
-      max-width: 900px;
+      max-width: 1024px;
       width: 100%;
       box-sizing: border-box;
       display: flex;
@@ -102,20 +108,20 @@
 </head>
 <body>
   <div class="harness-header">
-    <h1>PBA-018A — Type Arena System Visual Harness</h1>
-    <p>Validação visual determinística das arenas temáticas Fire, Water, Electric e Default.</p>
+    <h1>PBA-018B — Complete 18 Type Arena Visual Harness</h1>
+    <p>Validação visual determinística das 18 arenas temáticas e do fallback default.</p>
+  </div>
+
+  <div class="harness-controls" id="themeButtonsContainer">
+    <!-- Preenchido via JavaScript com todos os 18 tipos + Default -->
   </div>
 
   <div class="harness-controls">
-    <button class="harness-btn" id="btnThemeFire" onclick="switchTheme('fire')">🔥 Fire Arena (Kael)</button>
-    <button class="harness-btn" id="btnThemeWater" onclick="switchTheme('water')">💧 Water Arena (Marina)</button>
-    <button class="harness-btn" id="btnThemeElectric" onclick="switchTheme('electric')">⚡ Electric Arena (Volt)</button>
-    <button class="harness-btn" id="btnThemeDefault" onclick="switchTheme('default')">🛡️ Default Arena (Quick Battle)</button>
-    <button class="harness-btn" id="btnToggleReducedMotion" onclick="toggleReducedMotion()">♿ Reduced Motion: OFF</button>
-    <button class="harness-btn" id="btnViewDesktop" onclick="setViewport('desktop')">🖥️ Desktop</button>
-    <button class="harness-btn" id="btnViewMobile360" onclick="setViewport('mobile-360')">📱 360x700</button>
-    <button class="harness-btn" id="btnViewMobile390" onclick="setViewport('mobile-390')">📱 390x844</button>
-    <button class="harness-btn" id="btnViewMobile412" onclick="setViewport('mobile-412')">📱 412x915</button>
+    <button class="harness-btn harness-btn-util" id="btnToggleReducedMotion" onclick="toggleReducedMotion()">♿ Reduced Motion: OFF</button>
+    <button class="harness-btn harness-btn-util active" id="btnViewDesktop" onclick="setViewport('desktop')">🖥️ Desktop (1024px)</button>
+    <button class="harness-btn harness-btn-util" id="btnViewMobile360" onclick="setViewport('mobile-360')">📱 360x700</button>
+    <button class="harness-btn harness-btn-util" id="btnViewMobile390" onclick="setViewport('mobile-390')">📱 390x844</button>
+    <button class="harness-btn harness-btn-util" id="btnViewMobile412" onclick="setViewport('mobile-412')">📱 412x915</button>
   </div>
 
   <div class="harness-viewport-frame mode-desktop" id="viewportFrame">
@@ -135,17 +141,58 @@
   <script src="../../assets/js/ui/battle-view.js"></script>
 
   <script>
-    let currentThemeKey = 'fire';
+    const ALL_TYPES = [
+      'normal', 'fire', 'water', 'electric', 'grass', 'ice',
+      'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
+      'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy', 'default'
+    ];
+
+    const typeIcons = {
+      normal: '⚪', fire: '🔥', water: '💧', electric: '⚡', grass: '🌿', ice: '❄️',
+      fighting: '🥊', poison: '☣️', ground: '🏜️', flying: '🦅', psychic: '🔮', bug: '🪲',
+      rock: '🪨', ghost: '👻', dragon: '🐉', dark: '🌑', steel: '⚙️', fairy: '✨', default: '🛡️'
+    };
+
+    let currentThemeKey = 'normal';
     let reducedMotionActive = false;
     let battleViewInstance = null;
     let arenaControllerInstance = new window.PBATypeArena.TypeArenaController();
 
     const sampleMockCombatants = {
+      normal: { id: 143, name: 'snorlax', types: ['normal'] },
       fire: { id: 6, name: 'charizard', types: ['fire', 'flying'] },
       water: { id: 9, name: 'blastoise', types: ['water'] },
       electric: { id: 25, name: 'raichu', types: ['electric'] },
-      default: { id: 143, name: 'snorlax', types: ['normal'] }
+      grass: { id: 3, name: 'venusaur', types: ['grass', 'poison'] },
+      ice: { id: 131, name: 'lapras', types: ['water', 'ice'] },
+      fighting: { id: 68, name: 'machamp', types: ['fighting'] },
+      poison: { id: 94, name: 'gengar', types: ['ghost', 'poison'] },
+      ground: { id: 112, name: 'rhydon', types: ['ground', 'rock'] },
+      flying: { id: 18, name: 'pidgeot', types: ['normal', 'flying'] },
+      psychic: { id: 150, name: 'mewtwo', types: ['psychic'] },
+      bug: { id: 123, name: 'scyther', types: ['bug', 'flying'] },
+      rock: { id: 95, name: 'onix', types: ['rock', 'ground'] },
+      ghost: { id: 355, name: 'duskull', types: ['ghost'] },
+      dragon: { id: 149, name: 'dragonite', types: ['dragon', 'flying'] },
+      dark: { id: 248, name: 'tyranitar', types: ['rock', 'dark'] },
+      steel: { id: 212, name: 'scizor', types: ['bug', 'steel'] },
+      fairy: { id: 36, name: 'clefable', types: ['fairy'] },
+      default: { id: 133, name: 'eevee', types: ['normal'] }
     };
+
+    function initButtons() {
+      const container = document.getElementById('themeButtonsContainer');
+      container.innerHTML = '';
+      ALL_TYPES.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'harness-btn' + (t === currentThemeKey ? ' active' : '');
+        btn.id = 'btnTheme_' + t;
+        const icon = typeIcons[t] || '⚔️';
+        btn.textContent = `${icon} ${t.toUpperCase()}`;
+        btn.onclick = () => renderBattle(t);
+        container.appendChild(btn);
+      });
+    }
 
     function renderBattle(themeKey) {
       currentThemeKey = themeKey;
@@ -202,10 +249,6 @@
       updateStatus(theme);
     }
 
-    function switchTheme(themeKey) {
-      renderBattle(themeKey);
-    }
-
     function toggleReducedMotion() {
       reducedMotionActive = !reducedMotionActive;
       document.getElementById('btnToggleReducedMotion').textContent = '♿ Reduced Motion: ' + (reducedMotionActive ? 'ON' : 'OFF');
@@ -226,12 +269,16 @@
     }
 
     function updateButtons() {
-      ['btnThemeFire', 'btnThemeWater', 'btnThemeElectric', 'btnThemeDefault'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.classList.remove('active');
+      ALL_TYPES.forEach(t => {
+        const btn = document.getElementById('btnTheme_' + t);
+        if (btn) {
+          if (t === currentThemeKey) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
       });
-      const activeBtn = document.getElementById('btnTheme' + currentThemeKey.charAt(0).toUpperCase() + currentThemeKey.slice(1));
-      if (activeBtn) activeBtn.classList.add('active');
     }
 
     function updateStatus(theme) {
@@ -242,8 +289,9 @@
       document.getElementById('statusMotion').textContent = 'Motion: ' + (reducedMotionActive ? 'REDUCED' : 'NORMAL');
     }
 
-    // Inicialização padrão
-    renderBattle('fire');
+    // Inicialização
+    initButtons();
+    renderBattle('normal');
     setViewport('desktop');
   </script>
 </body>
