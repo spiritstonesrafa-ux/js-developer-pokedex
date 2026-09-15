@@ -1,7 +1,7 @@
 {
   "name": "pokemon-battle-arena-pro",
-  "version": "1.0.0",
-  "description": "Deterministic turn-based battle engine, tactical AI, campaign with 18 type masters and Pokédex in Vanilla JavaScript with +570 automated tests.",
+  "version": "1.1.0",
+  "description": "Deterministic turn-based battle engine, tactical AI, campaign with 18 type masters, 24 themed arenas and Pokédex in Vanilla JavaScript with +650 automated tests.",
   "main": "assets/js/main.js",
   "scripts": {
     "test": "node --test tests/**/*.test.js tests/**/**/*.test.js",

@@ -1,13 +1,13 @@
 # Pokédex Pro + Pokémon Battle Arena
 
-[![Tests](https://img.shields.io/badge/Tests-575%2F575%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](tests)
+[![Tests](https://img.shields.io/badge/Tests-651%2F651%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](tests)
 [![Architecture](https://img.shields.io/badge/Architecture-Event--Driven%20Engine-blueviolet?style=for-the-badge)](docs/battle-architecture.md)
 [![JavaScript](https://img.shields.io/badge/Vanilla_JS-ES6%2B%20%7C%20No_Frameworks-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](assets/js)
 [![Web Audio](https://img.shields.io/badge/Web_Audio_API-Procedural_Sound-FF5722?style=for-the-badge)](assets/js/presentation/sound-fx-player.js)
 [![A11y](https://img.shields.io/badge/A11y-ARIA%20%26%20Reduced_Motion-4CAF50?style=for-the-badge)](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md)
 [![License](https://img.shields.io/badge/License-MIT-black?style=for-the-badge)](LICENSE)
 
-> Uma plataforma web de Pokédex moderna e **Game Engine de batalha por turnos 3×3** com **SMART AI tática**, **Campanha com 18 Mestres de Tipo**, síntese de som procedural em runtime e suíte rigorosa de **575 testes automatizados**.
+> Uma plataforma web de Pokédex moderna e **Game Engine de batalha por turnos 3×3** com **SMART AI tática**, **Campanha com 18 Mestres de Tipo**, **24 Arenas Temáticas de Batalha**, síntese de som procedural em runtime e suíte rigorosa de **651 testes automatizados**.
 
 ---
 
@@ -21,7 +21,7 @@
 > 1. **Game Engine Determinística ≠ Presentation Engine:** O motor de combate calcula dano, tipos, turnos e estados serializáveis de forma puramente lógica e desacoplada do DOM. A interface consome streams de eventos sem jamais alterar HP/PP diretamente.
 > 2. **SMART AI Tática:** IA adversária que calcula dano esperado, precisão ponderada, fraquezas duplas (4x), resistências, imunidades (0x), bônus STAB, trocas voluntárias e substituições inteligentes — com RNG injetável e zero trapaça.
 > 3. **Engenharia de Performance e Acessibilidade:** Payload de cards de campanha reduzido em 65,7% com entrega de thumbnails WebP, navegação completa por teclado, suporte nativo a `prefers-reduced-motion` e contratos WAI-ARIA.
-> 4. **Cultura de Testes:** **575 testes automatizados** executados via `npm test` com o test runner nativo do Node.js (`node:test`) em ~7 segundos.
+> 4. **Cultura de Testes:** **651 testes automatizados** executados via `npm test` com o test runner nativo do Node.js (`node:test`) em ~7 segundos.
 
 ---
 
@@ -32,7 +32,7 @@
 git clone https://github.com/spiritstonesrafa-ux/js-developer-pokedex.git
 cd js-developer-pokedex
 
-# 2. Execute a suíte com 575 testes automatizados
+# 2. Execute a suíte com 651 testes automatizados
 npm test
 
 # 3. Testes específicos por subsistema
@@ -50,6 +50,7 @@ npm run test:vfx       # Validação dos 40 gates de Efeitos Visuais
 - **Pokédex Interativa:** Consumo REST da PokéAPI, busca, filtros combinados por tipo e geração, ordenação, favoritos persistentes em LocalStorage e áudio oficial (cries).
 - **Team Builder:** Montagem e reordenação de equipes de até 3 Pokémon com validação contra duplicatas e definição de líder.
 - **Battle Arena 3×3:** Combate por turnos com até 4 golpes por Pokémon, cálculo oficial de STAB e efetividade de tipos, PP canônico, trocas voluntárias e substituição obrigatória pós-nocaute.
+- **24 Arenas Temáticas de Batalha:** Cenários dedicados com partículas e backgrounds WebP para todos os 18 Mestres de Tipo, 4 Endgame Trials (*Legendary*, *Mythical*, *Titans*, *Celestial*) e os chefes *Super Trainer* (Arena do Campeão) e *Shadow Super Trainer* (Trono do Eclipse), orquestradas por um *Arena Registry* centralizado sem duplicar Battle Views.
 - **Pipeline de Apresentação Modular:** Animações CSS coordenadas, VFX elementais para todos os 18 tipos, câmera dinâmica de impacto e síntese sonora procedural com Web Audio API.
 - **Campanha — Circuito dos 18 Mestres & Endgame:** Draft inicial, progressão persistente, insígnias, chefes com retratos originais, provas lendárias e o desafio final contra o **Shadow Super Trainer** com até 37 Pokémon disponíveis na mesma Battle Engine.
 
@@ -72,6 +73,7 @@ Desafio DIO de Pokédex
   → Presentation Engine: VFX para 18 tipos, áudio procedural e câmera
   → Campanha com 18 Mestres, Endgame e Shadow Final Stand
   → Hardening contínuo de A11y, Performance WebP e 575 Testes
+  → 24 Arenas Temáticas (18 Mestres, 4 Trials, Super & Shadow Bosses) e 651 Testes
 ```
 
 ## Funcionalidades principais
@@ -93,6 +95,15 @@ O modo Campaign é uma jornada persistente: draft inicial, elenco que cresce por
 Depois do circuito, o endgame inclui as provas **Legendary**, **Mythical**, **Titans** e **Celestial**, o **Super Trainer**, uma falsa conclusão e o verdadeiro desafio contra o **Shadow Super Trainer**. O confronto final aplica Shadow Aura e culmina no **Shadow Final Stand**, seguido pelo True Ending.
 
 O Shadow Final Stand reutiliza a mesma arquitetura de sessão e Battle Engine — não existe um segundo motor de batalha. Ele combina elenco permanente e reforços temporários das provas, chegando ao estado validado de até 37 Pokémon disponíveis contra um trio Shadow fixo. A batalha também inclui uma tema de boss procedural criado em runtime com Web Audio API; não há asset musical externo para esse tema.
+
+### 24 Arenas Temáticas de Batalha (v1.1.0)
+
+A experiência de combate oferece **24 arenas temáticas** com artes em WebP localmente otimizadas, partículas dinâmicas e vinhetas adaptativas:
+- **18 Type Master Arenas:** Cada Mestre de Tipo da Campanha combate em um campo elemental exclusivo (ex: cratera vulcânica para Fogo, abismo oceânico para Água, usina para Elétrico).
+- **4 Endgame Trial Arenas:** Santuário das Lendas (*Legendary*), Santuário Mítico (*Mythical*), Arena dos Titãs (*Titans*) e Templo Celestial (*Celestial*).
+- **2 Boss Arenas:** Arena do Campeão (*Super Trainer*) e Trono do Eclipse (*Shadow Super Trainer*).
+
+A arquitetura preserva estritamente **uma única Battle View** (`ONE_BATTLE_VIEW = YES`): os temas de arena pertencem unicamente à camada de apresentação (`Presentation Engine`), mantendo o motor determinístico de combate totalmente intocado (`Game Engine ≠ Presentation Engine`).
 
 ## Engenharia em destaque
 
@@ -135,7 +146,7 @@ A evidência completa está em [Performance & Accessibility Audit](docs/PBA_016_
 
 ## Testes automatizados
 
-Na baseline de release candidate v1.0, a suíte contém **575 testes aprovados**, **0 falhas**, **0 cancelados**, em **21 suítes**. A contagem pode evoluir; os testes cobrem Battle Engine, Type Chart, sistema de golpes, trocas, AI, Presentation Engine, VFX/áudio/câmera, Battle Session, Campaign e regressões estruturais de acessibilidade e performance.
+Na versão v1.1.0, a suíte contém **651 testes aprovados**, **0 falhas**, **0 cancelados**, em **21 suítes**. Os testes cobrem Battle Engine, Type Chart, sistema de golpes, trocas, AI, Presentation Engine, VFX/áudio/câmera, catálogo das 24 arenas temáticas, ciclo de vida de partículas, Battle Session, Campaign e regressões estruturais de acessibilidade e performance.
 
 No PowerShell, execute a suíte completa com:
 
@@ -172,6 +183,9 @@ Abra `index.html` em um navegador moderno ou sirva a pasta com um servidor HTTP 
 - [Campaign Mode](docs/CAMPAIGN_MODE.md)
 - [Performance & Accessibility Audit](docs/PBA_016_PERFORMANCE_ACCESSIBILITY_AUDIT.md)
 - [Portfolio & Release Audit](docs/PBA_017_PORTFOLIO_RELEASE_AUDIT.md)
+- [Type Arena System (PBA-018)](docs/PBA_018_TYPE_ARENA_SYSTEM.md)
+- [Special Boss & Trial Arenas (PBA-019)](docs/PBA_019_SPECIAL_ARENAS.md)
+- [Release Notes v1.1.0 (Arena Update)](docs/PBA_019_V1_1_RELEASE_NOTES.md)
 
 ## Licença
 
