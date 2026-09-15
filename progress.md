@@ -988,6 +988,53 @@ NEXT_STEP = WAIT_FOR_HUMAN_PBA_014D_TEST
 - PBA_019 = PASS
 - PBA_019A = PASS
 - PBA_019B = PASS
-- RELEASE_1_1 = READY_TO_START
+- RELEASE_1_1 = PASS
 - PBA_020 = NOT_STARTED
 - PBA_019B_SUMMARY = Validação visual humana de 100% das 6 arenas temáticas especiais aprovada pelo proprietário ("todas aprovadas"). Arquitetura desacoplada mantida, assets otimizados preservados sem edições desnecessárias, zero vazamentos de estado ou partículas, compatibilidade total com Shadow Aura e áudio procedural, suíte de regressão verde (651/651) e catálogo com 24 arenas temáticas completas pronto para release v1.1.0.
+
+---
+
+## RELEASE-1.1 — Pokémon Battle Arena v1.1.0 — Arena Update
+
+- RELEASE_1_1 = PASS
+- RELEASE_VERSION = v1.1.0
+- GITHUB_RELEASE_1_1 = PASS
+- GITHUB_RELEASE_CREATED = YES
+- GITHUB_RELEASE_PUBLIC = YES
+- RELEASE_URL = https://github.com/spiritstonesrafa-ux/js-developer-pokedex/releases/tag/v1.1.0
+- RELEASE_TAG = v1.1.0
+- V1_1_RELEASE_COMMIT = 9a4ab5b09781ba58d9871f0040bd83779f669180
+- V1_1_TAG_OBJECT_SHA = 3ab568ba898a86fafaa39da455e300779c9d95ba
+- V1_1_TAG_TARGET_COMMIT = 9a4ab5b09781ba58d9871f0040bd83779f669180
+- V1_TAG_OBJECT_SHA = 9790f6d97f23e850109c0f8559e489ddc599a0b5
+- V1_TAG_TARGET_COMMIT = 665e91dd00736e47ba4cd702026862ed7044cb0a
+- V1_TAG_MOVED = NO
+- V1_1_TAG_MOVED_AFTER_RELEASE = NO
+- TYPE_MASTER_ARENAS = 18/18
+- SPECIAL_ARENAS = 6/6
+- TOTAL_THEMED_ARENAS = 24
+- ONE_BATTLE_VIEW = YES
+- GAMEPLAY_CHANGED = NO
+- BATTLE_ENGINE_CHANGED = NO
+- AI_CHANGED = NO
+- DAMAGE_CHANGED = NO
+- FULL_REGRESSION = PASS
+- FULL_TESTS_PASS = 651
+- FULL_TESTS_FAIL = 0
+- FULL_TESTS_CANCELLED = 0
+- SUITES = 21
+- PUBLIC_VALIDATION = PASS
+- PUBLIC_BUILD_CURRENT = YES
+- PUBLIC_HTTP_ERRORS = 0
+- PUBLIC_BROKEN_IMAGES = 0
+- PUBLIC_NEW_CONSOLE_ERRORS = 0
+- SECRET_SCAN = PASS
+- REPOSITORY_HYGIENE = PASS
+- BROKEN_LINKS = 0
+- PBA_018 = PASS
+- PBA_019 = PASS
+- PBA_019A = PASS
+- PBA_019B = PASS
+- CRITICAL_OPEN_ISSUES = 0
+- PBA_020 = NOT_STARTED
+- RELEASE_1_1_SUMMARY = Publicação oficial da versão v1.1.0 (Arena Update) no GitHub Releases e GitHub Pages. Introdução de 24 arenas temáticas completas (18 Mestres de Tipo, 4 Endgame Trials, Super Trainer e Shadow Super Trainer) com orquestração centralizada via Arena Registry, preservação estrita de Game Engine ≠ Presentation Engine, zero alteração de regras de combate ou IA, compatibilidade total com acessibilidade (prefers-reduced-motion e contraste) e suíte com 651 testes automatizados aprovados (100% verde).
