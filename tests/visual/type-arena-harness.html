@@ -108,10 +108,16 @@
 </head>
 <body>
   <div class="harness-header">
-    <h1>PBA-018B — Complete 18 Type Arena Visual Harness</h1>
-    <p>Validação visual determinística das 18 arenas temáticas e do fallback default.</p>
+    <h1>PBA-019A — Type & Special Boss/Trial Arena Visual Harness</h1>
+    <p>Validação visual determinística das 18 arenas de tipo, 6 arenas especiais (Boss & Trials) e fallback default.</p>
   </div>
 
+  <div style="font-weight: 700; font-size: 0.85rem; color: #fbbf24; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Arenas Especiais (Boss & Trials — PBA-019A)</div>
+  <div class="harness-controls" id="specialButtonsContainer" style="margin-bottom: 12px;">
+    <!-- Preenchido via JavaScript com as 6 arenas especiais -->
+  </div>
+
+  <div style="font-weight: 700; font-size: 0.85rem; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">18 Type Master Arenas + Default (PBA-018B)</div>
   <div class="harness-controls" id="themeButtonsContainer">
     <!-- Preenchido via JavaScript com todos os 18 tipos + Default -->
   </div>
@@ -147,13 +153,18 @@
       'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy', 'default'
     ];
 
+    const SPECIAL_TYPES = [
+      'super', 'shadow', 'legendary', 'mythical', 'titans', 'celestial'
+    ];
+
     const typeIcons = {
       normal: '⚪', fire: '🔥', water: '💧', electric: '⚡', grass: '🌿', ice: '❄️',
       fighting: '🥊', poison: '☣️', ground: '🏜️', flying: '🦅', psychic: '🔮', bug: '🪲',
-      rock: '🪨', ghost: '👻', dragon: '🐉', dark: '🌑', steel: '⚙️', fairy: '✨', default: '🛡️'
+      rock: '🪨', ghost: '👻', dragon: '🐉', dark: '🌑', steel: '⚙️', fairy: '✨', default: '🛡️',
+      super: '👑', shadow: '🌌', legendary: '🦅', mythical: '✨', titans: '🌋', celestial: '🪐'
     };
 
-    let currentThemeKey = 'normal';
+    let currentThemeKey = 'super';
     let reducedMotionActive = false;
     let battleViewInstance = null;
     let arenaControllerInstance = new window.PBATypeArena.TypeArenaController();
@@ -177,10 +188,30 @@
       dark: { id: 248, name: 'tyranitar', types: ['rock', 'dark'] },
       steel: { id: 212, name: 'scizor', types: ['bug', 'steel'] },
       fairy: { id: 36, name: 'clefable', types: ['fairy'] },
-      default: { id: 133, name: 'eevee', types: ['normal'] }
+      default: { id: 133, name: 'eevee', types: ['normal'] },
+      // Combatentes para as 6 especiais
+      super: { id: 150, name: 'mewtwo', types: ['psychic'] },
+      shadow: { id: 150, name: 'mewtwo', types: ['psychic'] },
+      legendary: { id: 145, name: 'zapdos', types: ['electric', 'flying'] },
+      mythical: { id: 151, name: 'mew', types: ['psychic'] },
+      titans: { id: 383, name: 'groudon', types: ['ground'] },
+      celestial: { id: 487, name: 'giratina', types: ['ghost', 'dragon'] }
     };
 
     function initButtons() {
+      const specialContainer = document.getElementById('specialButtonsContainer');
+      specialContainer.innerHTML = '';
+      SPECIAL_TYPES.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'harness-btn' + (t === currentThemeKey ? ' active' : '');
+        btn.id = 'btnTheme_' + t;
+        const icon = typeIcons[t] || '⚔️';
+        btn.textContent = `${icon} ${t.toUpperCase()}`;
+        btn.style.borderColor = 'rgba(251, 191, 36, 0.4)';
+        btn.onclick = () => renderBattle(t);
+        specialContainer.appendChild(btn);
+      });
+
       const container = document.getElementById('themeButtonsContainer');
       container.innerHTML = '';
       ALL_TYPES.forEach(t => {
@@ -199,6 +230,25 @@
       const theme = window.PBATypeArena.TypeArenaRegistry.getTheme(themeKey);
 
       const enemySpec = sampleMockCombatants[themeKey] || sampleMockCombatants.default;
+
+      let metadata = {};
+      if (themeKey === 'default') {
+        metadata = { mode: 'QUICK' };
+      } else if (themeKey === 'super') {
+        metadata = { mode: 'CAMPAIGN', kind: 'SUPER', opponentName: 'Super Treinador' };
+      } else if (themeKey === 'shadow') {
+        metadata = { mode: 'CAMPAIGN', kind: 'SHADOW', battleFormat: 'FINAL_STAND', opponentName: 'Shadow Super Trainer' };
+      } else if (themeKey === 'legendary') {
+        metadata = { mode: 'CAMPAIGN', kind: 'LEGENDARY_TRIAL', opponentName: 'Trial Lendária' };
+      } else if (themeKey === 'mythical') {
+        metadata = { mode: 'CAMPAIGN', kind: 'MYTHICAL_TRIAL', opponentName: 'Trial Mítica' };
+      } else if (themeKey === 'titans') {
+        metadata = { mode: 'CAMPAIGN', kind: 'TITANS_TRIAL', opponentName: 'Trial dos Titãs' };
+      } else if (themeKey === 'celestial') {
+        metadata = { mode: 'CAMPAIGN', kind: 'CELESTIAL_TRIAL', opponentName: 'Trial Celestial' };
+      } else {
+        metadata = { mode: 'CAMPAIGN', kind: 'MASTER', id: 'master-' + themeKey, masterType: themeKey, opponentTrainer: { displayName: theme.name, type: themeKey } };
+      }
 
       const mockBattleState = {
         player: {
@@ -228,9 +278,7 @@
             moves: []
           }]
         },
-        metadata: themeKey === 'default'
-          ? { mode: 'QUICK' }
-          : { mode: 'CAMPAIGN', kind: 'MASTER', id: 'master-' + themeKey, masterType: themeKey, opponentTrainer: { displayName: theme.name, type: themeKey } },
+        metadata,
         turn: 1
       };
 
@@ -269,7 +317,7 @@
     }
 
     function updateButtons() {
-      ALL_TYPES.forEach(t => {
+      [...ALL_TYPES, ...SPECIAL_TYPES].forEach(t => {
         const btn = document.getElementById('btnTheme_' + t);
         if (btn) {
           if (t === currentThemeKey) {
@@ -300,7 +348,14 @@
       dark: { master: 'Noctis', name: 'Ruínas do Eclipse', asset: 'arena-dark.webp' },
       steel: { master: 'Ferrum', name: 'Fortaleza Siderúrgica', asset: 'arena-steel.webp' },
       fairy: { master: 'Lumi', name: 'Clareira Encantada', asset: 'arena-fairy.webp' },
-      default: { master: 'Treinador Convidado', name: 'Arena Padrão', asset: 'CSS Gradient' }
+      default: { master: 'Treinador Convidado', name: 'Arena Padrão', asset: 'CSS Gradient' },
+      // 6 Arenas Especiais
+      super: { master: 'Super Treinador', name: 'Arena do Campeão', asset: 'arena-super.webp' },
+      shadow: { master: 'Shadow Super Trainer', name: 'Trono do Eclipse', asset: 'arena-shadow.webp' },
+      legendary: { master: 'Legendary Trial', name: 'Santuário das Lendas', asset: 'arena-trial-legendary.webp' },
+      mythical: { master: 'Mythical Trial', name: 'Santuário Mítico', asset: 'arena-trial-mythical.webp' },
+      titans: { master: 'Titans Trial', name: 'Arena dos Titãs', asset: 'arena-trial-titans.webp' },
+      celestial: { master: 'Celestial Trial', name: 'Templo Celestial', asset: 'arena-trial-celestial.webp' }
     };
 
     function updateStatus(theme) {
@@ -314,7 +369,7 @@
 
     // Inicialização
     initButtons();
-    renderBattle('normal');
+    renderBattle('super');
     setViewport('desktop');
   </script>
 </body>

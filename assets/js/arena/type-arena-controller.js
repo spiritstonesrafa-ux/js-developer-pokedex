@@ -25,6 +25,7 @@
         NORMAL: 6, FIRE: 10, WATER: 10, ELECTRIC: 6, GRASS: 10, ICE: 10,
         FIGHTING: 6, POISON: 8, GROUND: 8, FLYING: 8, PSYCHIC: 8, BUG: 10,
         ROCK: 6, GHOST: 8, DRAGON: 8, DARK: 8, STEEL: 6, FAIRY: 10,
+        SUPER: 8, SHADOW: 8, LEGENDARY: 8, MYTHICAL: 8, TITANS: 8, CELESTIAL: 8,
         DEFAULT: 0, REDUCED_MOTION: 0
       },
       ARENA_DOM_IDS: { AMBIENT_CONTAINER: 'arenaAmbientContainer' }
@@ -134,11 +135,11 @@
         const durationMs = 2800 + ((i % 4) * 600);
 
         let sizePx = 4 + (i % 3);
-        if (theme.particleType === 'embers' || theme.particleType === 'sparks' || theme.particleType === 'pebbles') {
+        if (theme.particleType === 'embers' || theme.particleType === 'sparks' || theme.particleType === 'pebbles' || theme.particleType === 'cataclysm') {
           sizePx = 3 + (i % 3);
-        } else if (theme.particleType === 'bubbles' || theme.particleType === 'leaves') {
+        } else if (theme.particleType === 'bubbles' || theme.particleType === 'leaves' || theme.particleType === 'corruption') {
           sizePx = 5 + (i % 4);
-        } else if (theme.particleType === 'snow' || theme.particleType === 'sparkles') {
+        } else if (theme.particleType === 'snow' || theme.particleType === 'sparkles' || theme.particleType === 'champion' || theme.particleType === 'mythic' || theme.particleType === 'celestial' || theme.particleType === 'sanctuary') {
           sizePx = 4 + (i % 3);
         }
 

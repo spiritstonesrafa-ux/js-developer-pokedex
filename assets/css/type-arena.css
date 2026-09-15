@@ -336,7 +336,95 @@
 }
 
 /* ====================================================================
-   4. CONTÊINER DE AMBIENTE E PARTÍCULAS LEVES
+   4. TEMAS DAS 6 ARENAS ESPECIAIS (PBA-019A)
+   ==================================================================== */
+
+/* 1. SUPER: Arena do Campeão */
+.battle-stage.arena-theme-super {
+  background: radial-gradient(circle at 50% 30%, #2a2415 0%, #15120a 65%, #080704 100%);
+}
+.arena-theme-super .arena-backdrop { background-image: url('../images/arenas/arena-super.webp'); }
+.arena-theme-super .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.32) 0%, rgba(21, 18, 10, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 24px rgba(251, 191, 36, 0.22);
+}
+.battle-arena-layout.arena-theme-super {
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 0 28px rgba(251, 191, 36, 0.18), inset 0 0 40px rgba(251, 191, 36, 0.06);
+}
+
+/* 2. SHADOW: Trono do Eclipse */
+.battle-stage.arena-theme-shadow {
+  background: radial-gradient(circle at 50% 30%, #1f0a2a 0%, #100418 65%, #05010a 100%);
+}
+.arena-theme-shadow .arena-backdrop { background-image: url('../images/arenas/arena-shadow.webp'); }
+.arena-theme-shadow .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(192, 38, 211, 0.32) 0%, rgba(16, 4, 24, 0.8) 60%, transparent 100%);
+  box-shadow: 0 4px 24px rgba(192, 38, 211, 0.22);
+}
+.battle-arena-layout.arena-theme-shadow {
+  border-color: rgba(192, 38, 211, 0.45);
+  box-shadow: 0 0 28px rgba(192, 38, 211, 0.18), inset 0 0 40px rgba(192, 38, 211, 0.06);
+}
+
+/* 3. LEGENDARY TRIAL: Santuário das Lendas */
+.battle-stage.arena-theme-trial-legendary {
+  background: radial-gradient(circle at 50% 30%, #172554 0%, #0f172a 65%, #020617 100%);
+}
+.arena-theme-trial-legendary .arena-backdrop { background-image: url('../images/arenas/arena-trial-legendary.webp'); }
+.arena-theme-trial-legendary .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.32) 0%, rgba(15, 23, 42, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 22px rgba(56, 189, 248, 0.20);
+}
+.battle-arena-layout.arena-theme-trial-legendary {
+  border-color: rgba(56, 189, 248, 0.40);
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.16), inset 0 0 40px rgba(56, 189, 248, 0.05);
+}
+
+/* 4. MYTHICAL TRIAL: Santuário Mítico */
+.battle-stage.arena-theme-trial-mythical {
+  background: radial-gradient(circle at 50% 30%, #2e1065 0%, #170738 65%, #090217 100%);
+}
+.arena-theme-trial-mythical .arena-backdrop { background-image: url('../images/arenas/arena-trial-mythical.webp'); }
+.arena-theme-trial-mythical .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.32) 0%, rgba(23, 7, 56, 0.75) 60%, transparent 100%);
+  box-shadow: 0 4px 22px rgba(167, 139, 250, 0.20);
+}
+.battle-arena-layout.arena-theme-trial-mythical {
+  border-color: rgba(167, 139, 250, 0.40);
+  box-shadow: 0 0 26px rgba(167, 139, 250, 0.16), inset 0 0 40px rgba(167, 139, 250, 0.05);
+}
+
+/* 5. TITANS TRIAL: Arena dos Titãs */
+.battle-stage.arena-theme-trial-titans {
+  background: radial-gradient(circle at 50% 30%, #3f1508 0%, #1f0803 65%, #0d0301 100%);
+}
+.arena-theme-trial-titans .arena-backdrop { background-image: url('../images/arenas/arena-trial-titans.webp'); }
+.arena-theme-trial-titans .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(234, 88, 12, 0.32) 0%, rgba(31, 8, 3, 0.8) 60%, transparent 100%);
+  box-shadow: 0 4px 22px rgba(234, 88, 12, 0.20);
+}
+.battle-arena-layout.arena-theme-trial-titans {
+  border-color: rgba(234, 88, 12, 0.40);
+  box-shadow: 0 0 26px rgba(234, 88, 12, 0.16), inset 0 0 40px rgba(234, 88, 12, 0.05);
+}
+
+/* 6. CELESTIAL TRIAL: Templo Celestial */
+.battle-stage.arena-theme-trial-celestial {
+  background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f0d2b 65%, #050414 100%);
+}
+.arena-theme-trial-celestial .arena-backdrop { background-image: url('../images/arenas/arena-trial-celestial.webp'); }
+.arena-theme-trial-celestial .stage-ground-platform {
+  background: radial-gradient(ellipse at center, rgba(253, 224, 71, 0.30) 0%, rgba(15, 13, 43, 0.8) 60%, transparent 100%);
+  box-shadow: 0 4px 24px rgba(253, 224, 71, 0.22);
+}
+.battle-arena-layout.arena-theme-trial-celestial {
+  border-color: rgba(253, 224, 71, 0.40);
+  box-shadow: 0 0 28px rgba(253, 224, 71, 0.16), inset 0 0 40px rgba(253, 224, 71, 0.05);
+}
+
+/* ====================================================================
+   5. CONTÊINER DE AMBIENTE E PARTÍCULAS LEVES
    ==================================================================== */
 .arena-ambient-container {
   position: absolute;
@@ -553,6 +641,72 @@
   background: radial-gradient(circle, #ffffff 0%, #e2e8f0 60%, transparent 100%);
   box-shadow: 0 0 6px rgba(226, 232, 240, 0.6);
   animation: pulseTech var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 19. Brilho do Campeão (Super) */
+.arena-particle--champion {
+  bottom: clamp(16px, 4vw, 40px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #fbbf24 60%, rgba(245, 158, 11, 0.2) 100%);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+  animation: pulseTech var(--particle-duration, 3000ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 20. Fendas de Corrupção (Shadow) */
+.arena-particle--corruption {
+  bottom: 12px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 5px);
+  height: var(--particle-size, 5px);
+  background: radial-gradient(circle, #f0abfc 0%, #c026d3 60%, rgba(88, 28, 135, 0.2) 100%);
+  box-shadow: 0 0 10px rgba(192, 38, 211, 0.7);
+  animation: floatUpward var(--particle-duration, 3400ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 21. Névoa Sagrada (Legendary Trial) */
+.arena-particle--sanctuary {
+  top: clamp(20px, 8vw, 80px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #38bdf8 60%, rgba(14, 165, 233, 0.2) 100%);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+  animation: floatDownward var(--particle-duration, 3800ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 22. Cintilação Mítica (Mythical Trial) */
+.arena-particle--mythic {
+  top: clamp(25px, 6vw, 70px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #a78bfa 50%, rgba(192, 132, 252, 0.2) 100%);
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.75);
+  animation: pulseTech var(--particle-duration, 2900ms) ease-in-out infinite var(--particle-delay, 0ms);
+}
+
+/* 23. Cinzas Vulcânicas (Titans Trial) */
+.arena-particle--cataclysm {
+  bottom: 10px;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 3px);
+  height: var(--particle-size, 3px);
+  background: radial-gradient(circle, #fed7aa 0%, #ea580c 60%, #7c2d12 100%);
+  box-shadow: 0 0 8px rgba(234, 88, 12, 0.8);
+  animation: floatUpward var(--particle-duration, 3100ms) ease-out infinite var(--particle-delay, 0ms);
+}
+
+/* 24. Poeira Cósmica Divina (Celestial Trial) */
+.arena-particle--celestial {
+  top: clamp(20px, 7vw, 75px);
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 4px);
+  height: var(--particle-size, 4px);
+  background: radial-gradient(circle, #ffffff 0%, #fde047 50%, rgba(56, 189, 248, 0.3) 100%);
+  box-shadow: 0 0 12px rgba(253, 224, 71, 0.8);
+  animation: pulseTech var(--particle-duration, 3200ms) ease-in-out infinite var(--particle-delay, 0ms);
 }
 
 /* Animações reutilizáveis e leves */

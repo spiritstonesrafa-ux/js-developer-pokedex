@@ -50,12 +50,19 @@
         DRAGON: 'dragon',
         DARK: 'dark',
         STEEL: 'steel',
-        FAIRY: 'fairy'
+        FAIRY: 'fairy',
+        SUPER: 'super',
+        SHADOW: 'shadow',
+        LEGENDARY: 'legendary',
+        MYTHICAL: 'mythical',
+        TITANS: 'titans',
+        CELESTIAL: 'celestial'
       },
       ARENA_PARTICLE_LIMITS: {
         NORMAL: 6, FIRE: 10, WATER: 10, ELECTRIC: 6, GRASS: 10, ICE: 10,
         FIGHTING: 6, POISON: 8, GROUND: 8, FLYING: 8, PSYCHIC: 8, BUG: 10,
         ROCK: 6, GHOST: 8, DRAGON: 8, DARK: 8, STEEL: 6, FAIRY: 10,
+        SUPER: 8, SHADOW: 8, LEGENDARY: 8, MYTHICAL: 8, TITANS: 8, CELESTIAL: 8,
         DEFAULT: 0, REDUCED_MOTION: 0
       },
       ARENA_CLASSES: {
@@ -78,13 +85,20 @@
         DRAGON: 'arena-theme-dragon',
         DARK: 'arena-theme-dark',
         STEEL: 'arena-theme-steel',
-        FAIRY: 'arena-theme-fairy'
+        FAIRY: 'arena-theme-fairy',
+        SUPER: 'arena-theme-super',
+        SHADOW: 'arena-theme-shadow',
+        LEGENDARY: 'arena-theme-trial-legendary',
+        MYTHICAL: 'arena-theme-trial-mythical',
+        TITANS: 'arena-theme-trial-titans',
+        CELESTIAL: 'arena-theme-trial-celestial'
       }
     };
   }
 
   const {
     ALL_18_TYPES,
+    SPECIAL_ARENA_KEYS,
     ARENA_THEME_KEYS,
     ARENA_PARTICLE_LIMITS,
     ARENA_CLASSES
@@ -376,6 +390,97 @@
       particleType: 'sparkles',
       particleCount: ARENA_PARTICLE_LIMITS.FAIRY,
       reducedMotionBehavior: 'static'
+    }),
+
+    // Arenas Especiais (PBA-019A)
+    [ARENA_THEME_KEYS.SUPER]: Object.freeze({
+      key: ARENA_THEME_KEYS.SUPER,
+      name: 'Arena do Campeão',
+      type: 'super',
+      themeClass: ARENA_CLASSES.SUPER,
+      backgroundSrc: 'assets/images/arenas/arena-super.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #2a2415 0%, #15120a 65%, #080704 100%)',
+      accentColor: '#fbbf24',
+      accentGlow: 'rgba(251, 191, 36, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(251, 191, 36, 0.28) 0%, rgba(21, 18, 10, 0.7) 70%, transparent 100%)',
+      particleType: 'champion',
+      particleCount: ARENA_PARTICLE_LIMITS.SUPER,
+      reducedMotionBehavior: 'static'
+    }),
+
+    [ARENA_THEME_KEYS.SHADOW]: Object.freeze({
+      key: ARENA_THEME_KEYS.SHADOW,
+      name: 'Trono do Eclipse',
+      type: 'shadow',
+      themeClass: ARENA_CLASSES.SHADOW,
+      backgroundSrc: 'assets/images/arenas/arena-shadow.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #1f0a2a 0%, #100418 65%, #05010a 100%)',
+      accentColor: '#c026d3',
+      accentGlow: 'rgba(192, 38, 211, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(192, 38, 211, 0.30) 0%, rgba(16, 4, 24, 0.7) 70%, transparent 100%)',
+      particleType: 'corruption',
+      particleCount: ARENA_PARTICLE_LIMITS.SHADOW,
+      reducedMotionBehavior: 'static'
+    }),
+
+    [ARENA_THEME_KEYS.LEGENDARY]: Object.freeze({
+      key: ARENA_THEME_KEYS.LEGENDARY,
+      name: 'Santuário das Lendas',
+      type: 'legendary',
+      themeClass: ARENA_CLASSES.LEGENDARY,
+      backgroundSrc: 'assets/images/arenas/arena-trial-legendary.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #172554 0%, #0f172a 65%, #020617 100%)',
+      accentColor: '#38bdf8',
+      accentGlow: 'rgba(56, 189, 248, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(56, 189, 248, 0.28) 0%, rgba(15, 23, 42, 0.7) 70%, transparent 100%)',
+      particleType: 'sanctuary',
+      particleCount: ARENA_PARTICLE_LIMITS.LEGENDARY,
+      reducedMotionBehavior: 'static'
+    }),
+
+    [ARENA_THEME_KEYS.MYTHICAL]: Object.freeze({
+      key: ARENA_THEME_KEYS.MYTHICAL,
+      name: 'Santuário Mítico',
+      type: 'mythical',
+      themeClass: ARENA_CLASSES.MYTHICAL,
+      backgroundSrc: 'assets/images/arenas/arena-trial-mythical.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #2e1065 0%, #170738 65%, #090217 100%)',
+      accentColor: '#a78bfa',
+      accentGlow: 'rgba(167, 139, 250, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.28) 0%, rgba(23, 7, 56, 0.7) 70%, transparent 100%)',
+      particleType: 'mythic',
+      particleCount: ARENA_PARTICLE_LIMITS.MYTHICAL,
+      reducedMotionBehavior: 'static'
+    }),
+
+    [ARENA_THEME_KEYS.TITANS]: Object.freeze({
+      key: ARENA_THEME_KEYS.TITANS,
+      name: 'Arena dos Titãs',
+      type: 'titans',
+      themeClass: ARENA_CLASSES.TITANS,
+      backgroundSrc: 'assets/images/arenas/arena-trial-titans.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #3f1508 0%, #1f0803 65%, #0d0301 100%)',
+      accentColor: '#ea580c',
+      accentGlow: 'rgba(234, 88, 12, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(234, 88, 12, 0.28) 0%, rgba(31, 8, 3, 0.7) 70%, transparent 100%)',
+      particleType: 'cataclysm',
+      particleCount: ARENA_PARTICLE_LIMITS.TITANS,
+      reducedMotionBehavior: 'static'
+    }),
+
+    [ARENA_THEME_KEYS.CELESTIAL]: Object.freeze({
+      key: ARENA_THEME_KEYS.CELESTIAL,
+      name: 'Templo Celestial',
+      type: 'celestial',
+      themeClass: ARENA_CLASSES.CELESTIAL,
+      backgroundSrc: 'assets/images/arenas/arena-trial-celestial.webp',
+      baseGradient: 'radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f0d2b 65%, #050414 100%)',
+      accentColor: '#fde047',
+      accentGlow: 'rgba(253, 224, 71, 0.35)',
+      platformGlow: 'radial-gradient(ellipse at center, rgba(253, 224, 71, 0.28) 0%, rgba(15, 13, 43, 0.7) 70%, transparent 100%)',
+      particleType: 'celestial',
+      particleCount: ARENA_PARTICLE_LIMITS.CELESTIAL,
+      reducedMotionBehavior: 'static'
     })
   });
 
@@ -390,13 +495,22 @@
 
     /**
      * Obtém uma arena pelo nome do tipo/chave diretamente.
-     * @param {string} typeKey
+     * Suporta prefixos como 'master:fire', 'boss:super', 'trial:legendary'.
+     * @param {string} query
      * @returns {Object}
      */
-    static getTheme(typeKey) {
-      if (!typeKey || typeof typeKey !== 'string') return DEFAULT_ARENA_THEME;
-      const normalized = typeKey.trim().toLowerCase();
-      if (ALL_18_TYPES.includes(normalized) && ARENA_CATALOG[normalized]) {
+    static getTheme(query) {
+      if (!query || typeof query !== 'string') return DEFAULT_ARENA_THEME;
+      let normalized = query.trim().toLowerCase();
+      if (normalized.startsWith('master:')) {
+        normalized = normalized.replace('master:', '');
+      } else if (normalized.startsWith('boss:')) {
+        normalized = normalized.replace('boss:', '');
+      } else if (normalized.startsWith('trial:')) {
+        normalized = normalized.replace('trial:', '');
+      }
+
+      if (ARENA_CATALOG[normalized]) {
         return ARENA_CATALOG[normalized];
       }
       return DEFAULT_ARENA_THEME;
@@ -405,12 +519,11 @@
     /**
      * Resolve a arena a partir do contexto/metadados da batalha.
      * Regras:
-     * 1. Apenas batalhas com mode === 'CAMPAIGN' e kind === 'MASTER' recebem arena temática.
-     * 2. Quick Battle -> DEFAULT_ARENA_THEME (zero regressão visual).
-     * 3. SUPER e SHADOW -> DEFAULT_ARENA_THEME (visuais próprios preservados).
-     * 4. Trials -> DEFAULT_ARENA_THEME (visuais próprios de trial preservados).
-     * 5. Tipos válidos (18 tipos) -> resolve o tema correspondente.
-     * 6. Erro / dados ausentes -> DEFAULT_ARENA_THEME (resiliência total).
+     * 1. mode !== 'CAMPAIGN' -> DEFAULT_ARENA_THEME (Quick Battle permanece default sem regressão).
+     * 2. Boss Battles (Super Trainer, Shadow Final Stand) -> Arenas especiais dedicadas (PBA-019A).
+     * 3. Endgame Trials (Legendary, Mythical, Titans, Celestial) -> Arenas especiais de trial (PBA-019A).
+     * 4. Masters -> Resolve entre os 18 tipos elementais (PBA-018B).
+     * 5. Falha / desconhecido -> DEFAULT_ARENA_THEME com resiliência total.
      *
      * @param {Object|string} [context]
      * @returns {Object} Tema de arena resolvido.
@@ -419,47 +532,95 @@
       try {
         if (!context) return DEFAULT_ARENA_THEME;
 
-        // Se passado diretamente como string (ex: 'fire', 'water', 'ghost')
+        // Se passado diretamente como string (ex: 'fire', 'boss:super', 'trial:legendary')
         if (typeof context === 'string') {
           return TypeArenaRegistry.getTheme(context);
         }
 
         if (typeof context !== 'object') return DEFAULT_ARENA_THEME;
 
-        // Batalhas especiais (Super Trainer, Shadow Final Stand) nunca recebem type arena
-        if (context.isSuperTrainer || context.isShadowFinalStand || context.kind === 'SUPER' || context.kind === 'SHADOW') {
-          return DEFAULT_ARENA_THEME;
-        }
-
-        // Valida se o contexto pertence à Campaign
+        // Quick Battle e outros modos fora da Campaign permanecem no tema padrão
         if (context.mode !== 'CAMPAIGN') {
           return DEFAULT_ARENA_THEME;
         }
 
-        // Apenas Masters recebem arenas elementais (Trials continuam com visual padrão/próprio)
-        if (context.kind !== 'MASTER') {
-          return DEFAULT_ARENA_THEME;
+        // 1. Boss Arena: Shadow Super Trainer / Final Stand
+        if (context.isShadowFinalStand || context.kind === 'SHADOW' || context.battleFormat === 'FINAL_STAND') {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.SHADOW] || DEFAULT_ARENA_THEME;
         }
 
-        // Identifica o tipo do Master a partir dos metadados
-        let candidateType = null;
-        if (context.masterType && typeof context.masterType === 'string') {
-          candidateType = context.masterType;
-        } else if (context.opponentTrainer && typeof context.opponentTrainer.type === 'string') {
-          candidateType = context.opponentTrainer.type;
-        } else if (typeof context.id === 'string' && context.id.startsWith('master-')) {
-          candidateType = context.id.replace('master-', '');
+        // 2. Boss Arena: Super Trainer
+        if (context.isSuperTrainer || context.kind === 'SUPER') {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.SUPER] || DEFAULT_ARENA_THEME;
         }
 
-        if (!candidateType) return DEFAULT_ARENA_THEME;
+        // 3. Trial Arenas
+        const trialKey = context.trialKind || context.trialId || context.id || '';
+        const kindUpper = (context.kind || '').toUpperCase();
+        const trialKeyLower = String(trialKey).toLowerCase();
+        const opponentNameLower = (context.opponentName || '').toLowerCase();
 
-        const normalized = candidateType.trim().toLowerCase();
-
-        if (ALL_18_TYPES.includes(normalized) && ARENA_CATALOG[normalized]) {
-          return ARENA_CATALOG[normalized];
+        if (
+          kindUpper === 'LEGENDARY_TRIAL' ||
+          trialKeyLower === 'trial-legendary' ||
+          trialKeyLower === 'legendary' ||
+          opponentNameLower.includes('lenda') ||
+          opponentNameLower.includes('legendary')
+        ) {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.LEGENDARY] || DEFAULT_ARENA_THEME;
         }
 
-        // Tipo não reconhecido cai com segurança no default
+        if (
+          kindUpper === 'MYTHICAL_TRIAL' ||
+          trialKeyLower === 'trial-mythical' ||
+          trialKeyLower === 'mythical' ||
+          opponentNameLower.includes('mític') ||
+          opponentNameLower.includes('mitic') ||
+          opponentNameLower.includes('mythical')
+        ) {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.MYTHICAL] || DEFAULT_ARENA_THEME;
+        }
+
+        if (
+          kindUpper === 'TITANS_TRIAL' ||
+          trialKeyLower === 'trial-titans' ||
+          trialKeyLower === 'titans' ||
+          opponentNameLower.includes('titã') ||
+          opponentNameLower.includes('tita') ||
+          opponentNameLower.includes('titans')
+        ) {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.TITANS] || DEFAULT_ARENA_THEME;
+        }
+
+        if (
+          kindUpper === 'CELESTIAL_TRIAL' ||
+          trialKeyLower === 'trial-celestial' ||
+          trialKeyLower === 'celestial' ||
+          opponentNameLower.includes('celestial')
+        ) {
+          return ARENA_CATALOG[ARENA_THEME_KEYS.CELESTIAL] || DEFAULT_ARENA_THEME;
+        }
+
+        // 4. Master Arenas (18 tipos elementais)
+        if (context.kind === 'MASTER') {
+          let candidateType = null;
+          if (context.masterType && typeof context.masterType === 'string') {
+            candidateType = context.masterType;
+          } else if (context.opponentTrainer && typeof context.opponentTrainer.type === 'string') {
+            candidateType = context.opponentTrainer.type;
+          } else if (typeof context.id === 'string' && context.id.startsWith('master-')) {
+            candidateType = context.id.replace('master-', '');
+          }
+
+          if (candidateType) {
+            const normalized = candidateType.trim().toLowerCase();
+            if (ALL_18_TYPES.includes(normalized) && ARENA_CATALOG[normalized]) {
+              return ARENA_CATALOG[normalized];
+            }
+          }
+        }
+
+        // Qualquer contexto não reconhecido cai com segurança no default
         return DEFAULT_ARENA_THEME;
       } catch (err) {
         console.warn('Falha controlada ao resolver arena temática; utilizando default:', err);

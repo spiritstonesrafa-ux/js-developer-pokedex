@@ -35,6 +35,15 @@
   const ACTIVE_PROTOTYPE_TYPES = ALL_18_TYPES;
   const ACTIVE_ARENA_TYPES = ALL_18_TYPES;
 
+  const SPECIAL_ARENA_KEYS = Object.freeze([
+    'super',
+    'shadow',
+    'legendary',
+    'mythical',
+    'titans',
+    'celestial'
+  ]);
+
   const ARENA_THEME_KEYS = Object.freeze({
     DEFAULT: 'default',
     NORMAL: 'normal',
@@ -54,7 +63,14 @@
     DRAGON: 'dragon',
     DARK: 'dark',
     STEEL: 'steel',
-    FAIRY: 'fairy'
+    FAIRY: 'fairy',
+    // Arenas Especiais (PBA-019A)
+    SUPER: 'super',
+    SHADOW: 'shadow',
+    LEGENDARY: 'legendary',
+    MYTHICAL: 'mythical',
+    TITANS: 'titans',
+    CELESTIAL: 'celestial'
   });
 
   const ARENA_PARTICLE_LIMITS = Object.freeze({
@@ -76,6 +92,13 @@
     DARK: 8,
     STEEL: 6,
     FAIRY: 10,
+    // Arenas Especiais (PBA-019A)
+    SUPER: 8,
+    SHADOW: 8,
+    LEGENDARY: 8,
+    MYTHICAL: 8,
+    TITANS: 8,
+    CELESTIAL: 8,
     DEFAULT: 0,
     REDUCED_MOTION: 0
   });
@@ -109,6 +132,13 @@
     DARK: 'arena-theme-dark',
     STEEL: 'arena-theme-steel',
     FAIRY: 'arena-theme-fairy',
+    // Arenas Especiais (PBA-019A)
+    SUPER: 'arena-theme-super',
+    SHADOW: 'arena-theme-shadow',
+    LEGENDARY: 'arena-theme-trial-legendary',
+    MYTHICAL: 'arena-theme-trial-mythical',
+    TITANS: 'arena-theme-trial-titans',
+    CELESTIAL: 'arena-theme-trial-celestial',
     TRANSITIONING: 'arena-transitioning'
   });
 
@@ -116,6 +146,7 @@
     ALL_18_TYPES,
     ACTIVE_PROTOTYPE_TYPES,
     ACTIVE_ARENA_TYPES,
+    SPECIAL_ARENA_KEYS,
     ARENA_THEME_KEYS,
     ARENA_PARTICLE_LIMITS,
     ARENA_DOM_IDS,
