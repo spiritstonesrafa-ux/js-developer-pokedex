@@ -281,8 +281,31 @@
       });
     }
 
+    const MASTER_MAPPINGS = {
+      normal: { master: 'Aster', name: 'Estádio da Liga', asset: 'arena-normal.webp' },
+      fire: { master: 'Kael', name: 'Caldeira Vulcânica', asset: 'arena-fire.webp' },
+      water: { master: 'Marina', name: 'Santuário das Marés', asset: 'arena-water.webp' },
+      electric: { master: 'Volt', name: 'Cúpula Tecnológica', asset: 'arena-electric.webp' },
+      grass: { master: 'Flora', name: 'Bosque Ancestral', asset: 'arena-grass.webp' },
+      ice: { master: 'Yara', name: 'Caverna Glacial', asset: 'arena-ice.webp' },
+      fighting: { master: 'Dante', name: 'Dojo Marcial', asset: 'arena-fighting.webp' },
+      poison: { master: 'Vesper', name: 'Complexo Químico', asset: 'arena-poison.webp' },
+      ground: { master: 'Terra', name: 'Cânion Terracota', asset: 'arena-ground.webp' },
+      flying: { master: 'Aero', name: 'Templo dos Céus', asset: 'arena-flying.webp' },
+      psychic: { master: 'Orion', name: 'Observatório Astral', asset: 'arena-psychic.webp' },
+      bug: { master: 'Nilo', name: 'Bosque dos Esporos', asset: 'arena-bug.webp' },
+      rock: { master: 'Petra', name: 'Pedreira Monolítica', asset: 'arena-rock.webp' },
+      ghost: { master: 'Nyra', name: 'Mausoléu Espectral', asset: 'arena-ghost.webp' },
+      dragon: { master: 'Riven', name: 'Santuário Dracônico', asset: 'arena-dragon.webp' },
+      dark: { master: 'Noctis', name: 'Ruínas do Eclipse', asset: 'arena-dark.webp' },
+      steel: { master: 'Ferrum', name: 'Fortaleza Siderúrgica', asset: 'arena-steel.webp' },
+      fairy: { master: 'Lumi', name: 'Clareira Encantada', asset: 'arena-fairy.webp' },
+      default: { master: 'Treinador Convidado', name: 'Arena Padrão', asset: 'CSS Gradient' }
+    };
+
     function updateStatus(theme) {
-      document.getElementById('statusTheme').textContent = 'Tema: ' + theme.name + ' (' + theme.key + ')';
+      const mapping = MASTER_MAPPINGS[theme.key] || { master: 'Mestre Desconhecido', name: theme.name, asset: theme.backgroundSrc || 'Nenhum' };
+      document.getElementById('statusTheme').textContent = `[${theme.key.toUpperCase()}] ${mapping.master} — ${mapping.name} (${mapping.asset})`;
       const particleNodes = document.querySelectorAll('.arena-particle');
       document.getElementById('statusParticles').textContent = 'Partículas: ' + particleNodes.length + (theme.particleType ? ' (' + theme.particleType + ')' : ' (nenhuma)');
       document.getElementById('statusLeaks').textContent = 'Memory Check: ' + arenaControllerInstance.activeElements.size + ' ativas (0 leaks)';
