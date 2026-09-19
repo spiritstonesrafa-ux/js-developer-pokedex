@@ -794,6 +794,12 @@ function renderFutureModule(moduleKey) {
 }
 
 window.switchAppTab = function(tabName) {
+  if (tabName !== 'campaign') {
+    if (window.campaignView && typeof window.campaignView.deactivate === 'function') {
+      window.campaignView.deactivate();
+    }
+  }
+
   navTabs.forEach(tab => {
     const isActive = tab.dataset.tab === tabName;
     tab.classList.toggle('active', isActive);

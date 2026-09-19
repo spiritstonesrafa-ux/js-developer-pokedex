@@ -1,0 +1,1087 @@
+/* ==========================================================================
+   CAMPAIGN MAP SYSTEM — PHASE 2
+   Modular styling for Campaign Map, declarative regions, routes, nodes,
+   details drawer, list mode and accessibility.
+   ========================================================================== */
+
+:root {
+  --map-aspect-ratio: 16 / 9;
+  --map-focus-ring: #63b3ed;
+  --map-focus-ring-shadow: 0 0 0 4px rgba(99, 179, 237, 0.65);
+  --map-gold: #ffd166;
+  --map-drawer-width: 360px;
+}
+
+/* --------------------------------------------------------------------------
+   SHELL & TOP BAR
+   -------------------------------------------------------------------------- */
+.campaign-map-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2.5rem;
+  box-sizing: border-box;
+}
+
+.campaign-map-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(88, 101, 242, 0.22), rgba(14, 16, 32, 0.85));
+  margin-bottom: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.campaign-map-header__titles {
+  min-width: 220px;
+}
+
+.campaign-map-header__titles .eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+}
+
+.campaign-map-header__titles h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #fff;
+  font-weight: 900;
+}
+
+.campaign-map-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.campaign-map-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.campaign-map-stat-badge strong {
+  color: var(--map-gold);
+}
+
+.campaign-map-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* View Mode Segmented Control */
+.campaign-view-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.campaign-view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 38px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.campaign-view-toggle-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.campaign-view-toggle-btn[aria-pressed="true"] {
+  background: var(--map-gold);
+  color: #171724;
+  box-shadow: 0 2px 8px rgba(255, 209, 102, 0.35);
+}
+
+.campaign-view-toggle-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Campaign Reset CTA */
+.campaign-map-reset-btn {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgba(255, 138, 138, 0.45);
+  border-radius: 10px;
+  background: transparent;
+  color: #ff8a8a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 38px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.campaign-map-reset-btn:hover {
+  background: rgba(255, 138, 138, 0.12);
+  border-color: #ff8a8a;
+}
+
+.campaign-map-reset-btn:focus-visible {
+  outline: 2px solid #ff8a8a;
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   REGION TABS (WAI-ARIA TABLIST)
+   -------------------------------------------------------------------------- */
+.campaign-map-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-overflow-scrolling: touch;
+}
+
+.campaign-map-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px 14px 0 0;
+  background: rgba(20, 24, 44, 0.6);
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.campaign-map-tab:hover {
+  color: #f1f5f9;
+  background: rgba(30, 36, 66, 0.8);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.campaign-map-tab[aria-selected="true"] {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(88, 101, 242, 0.35) 0%, rgba(20, 24, 44, 0.95) 100%);
+  border-color: var(--map-gold);
+  border-bottom-color: transparent;
+  box-shadow: 0 -4px 16px rgba(255, 209, 102, 0.18);
+}
+
+.campaign-map-tab[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--map-gold);
+}
+
+.campaign-map-tab.is-locked {
+  opacity: 0.65;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.campaign-map-tab.is-locked:hover {
+  background: rgba(20, 24, 44, 0.6);
+  color: #94a3b8;
+}
+
+.campaign-map-tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  z-index: 3;
+}
+
+.tab-badge-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.2);
+  border: 1px solid var(--map-gold);
+  color: var(--map-gold);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tab-lock-icon {
+  font-size: 0.8rem;
+  color: #ef4444;
+}
+
+/* --------------------------------------------------------------------------
+   MAP VIEWPORT & 16:9 STAGE
+   -------------------------------------------------------------------------- */
+.campaign-map-panel {
+  position: relative;
+  outline: none;
+}
+
+.campaign-map-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--map-aspect-ratio);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 80px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.campaign-map-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Subtitle & Biome Banner inside map */
+.map-region-info-overlay {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 3;
+  pointer-events: none;
+  max-width: 65%;
+}
+
+.map-region-info-overlay .region-name {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.map-region-info-overlay .region-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Fallback Thematic Backgrounds */
+.theme-region-verdant {
+  background: radial-gradient(circle at 18% 22%, rgba(72, 187, 120, 0.22), transparent 45%),
+              radial-gradient(circle at 82% 78%, rgba(66, 153, 225, 0.18), transparent 50%),
+              linear-gradient(135deg, #0b1f1c 0%, #123326 48%, #0b1b2a 100%);
+}
+
+.theme-region-crags {
+  background: radial-gradient(circle at 25% 65%, rgba(221, 107, 32, 0.24), transparent 48%),
+              radial-gradient(circle at 85% 20%, rgba(99, 179, 237, 0.16), transparent 45%),
+              linear-gradient(135deg, #221008 0%, #341613 46%, #121926 100%);
+}
+
+.theme-region-arcane {
+  background: radial-gradient(circle at 25% 30%, rgba(236, 117, 165, 0.18), transparent 45%),
+              radial-gradient(circle at 75% 70%, rgba(159, 122, 234, 0.22), transparent 50%),
+              linear-gradient(135deg, #110d22 0%, #1d1033 50%, #131b2c 100%);
+}
+
+.theme-region-endgame {
+  background: radial-gradient(circle at 50% 30%, rgba(246, 211, 101, 0.24), transparent 40%),
+              radial-gradient(circle at 50% 80%, rgba(183, 132, 255, 0.22), transparent 45%),
+              linear-gradient(135deg, #161108 0%, #25190b 45%, #130d23 100%);
+}
+
+/* Ambient Grid/Pattern for Fallback Themes */
+.map-ambient-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   SVG ROUTES LAYER
+   -------------------------------------------------------------------------- */
+.campaign-map-routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.map-route-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 8 10;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.map-route-path.is-completed {
+  stroke: var(--map-gold);
+  stroke-width: 5;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.55));
+}
+
+.map-route-path.is-active {
+  stroke: #63b3ed;
+  stroke-width: 4.5;
+  stroke-dasharray: 8 10;
+  animation: mapRouteDash 24s linear infinite;
+}
+
+@keyframes mapRouteDash {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   INTERACTIVE HTML NODES
+   -------------------------------------------------------------------------- */
+.campaign-map-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.45);
+  background: #141726;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease;
+  box-sizing: border-box;
+}
+
+.campaign-map-node:hover {
+  transform: translate(-50%, -50%) scale(1.16);
+  z-index: 5;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+.campaign-map-node:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: var(--map-focus-ring-shadow), 0 8px 20px rgba(0, 0, 0, 0.75);
+  z-index: 6;
+}
+
+/* Node States */
+.campaign-map-node.is-defeated {
+  border-color: var(--map-gold);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 209, 102, 0.4);
+}
+
+.campaign-map-node.is-recommended {
+  border-color: #38bdf8;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(56, 189, 248, 0.55);
+}
+
+.campaign-map-node.is-selected {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+  z-index: 6;
+  transform: translate(-50%, -50%) scale(1.18);
+}
+
+/* Node Image / Thumbnail */
+.campaign-map-node__thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.campaign-map-node__fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+/* Endgame Node Variants */
+.campaign-map-node.node-kind-trial {
+  border-radius: 14px;
+  border-color: #bd8b3d;
+  background: linear-gradient(135deg, #241a0d, #121827);
+}
+
+.campaign-map-node.node-kind-super {
+  width: 60px;
+  height: 60px;
+  border-color: var(--map-gold);
+  background: radial-gradient(circle, #5c4b18, #171724);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 209, 102, 0.6);
+}
+
+.campaign-map-node.node-kind-shadow {
+  width: 60px;
+  height: 60px;
+  border-color: #b784ff;
+  background: radial-gradient(circle, #38125d, #110d20);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 22px rgba(183, 132, 255, 0.75);
+}
+
+.campaign-map-node.node-kind-shadow.is-hidden {
+  display: none !important;
+}
+
+/* Badges on Nodes */
+.node-status-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 1.5px solid #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.62rem;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.node-status-badge.is-defeated {
+  background: var(--map-gold);
+  color: #171724;
+  border-color: #fff;
+}
+
+.node-recommended-pill {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: #0284c7;
+  border: 1px solid #7dd3fc;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Selection Marker Arrow */
+.map-selection-marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  margin-top: -34px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  z-index: 7;
+  color: var(--map-gold);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+  animation: mapMarkerBob 1.6s ease-in-out infinite;
+}
+
+@keyframes mapMarkerBob {
+  0%, 100% { transform: translate(-50%, -100%) translateY(0); }
+  50% { transform: translate(-50%, -100%) translateY(-5px); }
+}
+
+/* --------------------------------------------------------------------------
+   TRAINER DETAILS DRAWER (DESKTOP) & BOTTOM SHEET (MOBILE)
+   -------------------------------------------------------------------------- */
+.campaign-details-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.campaign-details-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.campaign-details-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--map-drawer-width);
+  max-width: 90%;
+  background: rgba(15, 18, 33, 0.96);
+  backdrop-filter: blur(14px);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -10px 0 32px rgba(0, 0, 0, 0.7);
+  box-sizing: border-box;
+}
+
+.campaign-details-drawer.is-open {
+  transform: translateX(0);
+}
+
+.details-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.details-drawer-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #fff;
+  font-weight: 800;
+}
+
+.details-close-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.details-close-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.details-close-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.details-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Portrait Hero */
+.details-portrait-wrap {
+  width: 130px;
+  height: 165px;
+  margin: 0 auto;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.2), transparent 40%),
+              linear-gradient(145deg, #111827, #1f293d);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.details-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.details-trainer-heading {
+  text-align: center;
+}
+
+.details-trainer-heading .eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+}
+
+.details-trainer-heading h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  color: #fff;
+  font-weight: 800;
+}
+
+.details-trainer-heading .trainer-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.details-pill-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/* Meta Stats */
+.details-meta-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+}
+
+.details-meta-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.details-meta-stat span {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.details-meta-stat strong {
+  color: #f1f5f9;
+  font-size: 0.85rem;
+}
+
+/* Mini Team Preview */
+.details-team-preview {
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.details-team-preview .eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.68rem;
+}
+
+.details-team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.details-team-card {
+  padding: 0.45rem 0.25rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.details-team-card img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 0.2rem;
+}
+
+.details-team-card strong {
+  display: block;
+  font-size: 0.72rem;
+  color: #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact Type Guide */
+.details-type-guide {
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: rgba(20, 24, 44, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.details-type-guide h5 {
+  margin: 0 0 0.45rem;
+  font-size: 0.75rem;
+  color: var(--map-gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.type-guide-compact-row {
+  margin: 0.4rem 0;
+}
+
+.type-guide-compact-row span {
+  display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.details-type-disclaimer {
+  margin: 0.5rem 0 0;
+  font-size: 0.68rem;
+  font-style: italic;
+  color: #94a3b8;
+}
+
+/* Action Bar in Drawer */
+.details-drawer-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 12, 24, 0.95);
+}
+
+.details-action-btn {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.details-action-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.details-action-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.details-action-btn.btn-challenge {
+  background: var(--map-gold);
+  color: #171724;
+}
+
+.details-action-btn.btn-rematch {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.details-action-btn.btn-danger {
+  background: #b91c1c;
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   LIST VIEW MODE (PARITY WITH MAP)
+   -------------------------------------------------------------------------- */
+.campaign-list-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.campaign-list-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem;
+  border-radius: 16px;
+  background: rgba(20, 24, 44, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 0.22s ease, border-color 0.22s ease;
+  box-sizing: border-box;
+}
+
+.campaign-list-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.campaign-list-card.is-defeated {
+  border-color: rgba(255, 209, 102, 0.45);
+}
+
+.campaign-list-card.is-recommended {
+  border-color: rgba(56, 189, 248, 0.55);
+}
+
+.campaign-list-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.campaign-list-card__thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: #111827;
+}
+
+.campaign-list-card__titles {
+  min-width: 0;
+  flex: 1;
+}
+
+.campaign-list-card__titles h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #fff;
+  font-weight: 800;
+}
+
+.campaign-list-card__titles p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.campaign-list-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.85rem;
+  font-size: 0.8rem;
+}
+
+.campaign-list-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.campaign-list-card__btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: filter 0.18s ease;
+}
+
+.campaign-list-card__btn:hover {
+  filter: brightness(1.1);
+}
+
+.campaign-list-card__btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.campaign-list-card__btn-details {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   ACCESSIBILITY & LIVE REGION
+   -------------------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.campaign-map-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE DESIGN (MOBILE BREAKPOINTS)
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .campaign-map-shell {
+    padding: 0.5rem 0.75rem 2rem;
+  }
+
+  .campaign-map-header {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .campaign-map-header__titles h2 {
+    font-size: 1.25rem;
+  }
+
+  .campaign-map-header__meta {
+    gap: 0.5rem;
+  }
+
+  .campaign-map-viewport {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    aspect-ratio: auto;
+    height: 380px;
+  }
+
+  .campaign-map-stage {
+    min-width: 580px;
+    min-height: 380px;
+    position: relative;
+    scroll-snap-align: start;
+  }
+
+  /* Mobile scroll cue */
+  .campaign-map-scroll-hint {
+    display: block;
+    text-align: center;
+    font-size: 0.74rem;
+    color: #94a3b8;
+    margin-top: 0.35rem;
+  }
+
+  /* Drawer turns into Bottom Sheet */
+  .campaign-details-backdrop {
+    position: fixed;
+    z-index: 99;
+  }
+
+  .campaign-details-drawer {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 82vh;
+    border-left: none;
+    border-top: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px 24px 0 0;
+    transform: translateY(100%);
+    z-index: 100;
+  }
+
+  .campaign-details-drawer.is-open {
+    transform: translateY(0);
+  }
+
+  .details-drawer-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 8px auto 0;
+  }
+
+  .campaign-map-node {
+    width: 46px;
+    height: 46px;
+  }
+
+  .campaign-list-view {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PREFERS REDUCED MOTION
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .map-route-path.is-active,
+  .map-selection-marker,
+  .campaign-map-node,
+  .campaign-details-drawer,
+  .campaign-details-backdrop,
+  .campaign-list-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
