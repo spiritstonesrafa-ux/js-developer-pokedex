@@ -66,11 +66,12 @@
   }
 
   class CampaignMapView {
-    constructor({ manager, container, onChallenge, onReset, initialRegionId, initialViewMode }) {
+    constructor({ manager, container, onChallenge, onReset, initialRegionId, initialViewMode, assetPrefix } = {}) {
       this.manager = manager;
       this.container = container || (typeof document !== 'undefined' ? document.getElementById('campaignView') : null);
       this.onChallenge = typeof onChallenge === 'function' ? onChallenge : () => {};
       this.onReset = typeof onReset === 'function' ? onReset : () => {};
+      this.assetPrefix = typeof assetPrefix === 'string' ? assetPrefix : '';
 
       this.activeRegionId = initialRegionId || 'region-1';
       this.viewMode = initialViewMode || this._getStoredViewMode();
@@ -404,11 +405,11 @@
         let innerImage = '';
         if (node.thumbnailSrc) {
           innerImage = `
-            <img class="campaign-map-node__thumb" 
-                 src="${node.thumbnailSrc}" 
-                 alt="" 
-                 loading="lazy" 
-                 decoding="async" 
+            <img class="campaign-map-node__thumb"
+                 src="${this.assetPrefix}${node.thumbnailSrc}"
+                 alt=""
+                 loading="lazy"
+                 decoding="async"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
             <span class="campaign-map-node__fallback" style="display:none;">${fallbackIcon}</span>
           `;
@@ -449,6 +450,17 @@
       return `
         <div class="campaign-map-viewport">
           <div class="campaign-map-stage ${region.themeClass || 'theme-region-verdant'}">
+            ${region.bgImage ? `
+              <img class="campaign-map-bg-image"
+                   src="${this.assetPrefix}${region.bgImage}"
+                   alt=""
+                   aria-hidden="true"
+                   width="1280"
+                   height="720"
+                   loading="eager"
+                   decoding="async">
+            ` : ''}
+            <div class="map-contrast-overlay" aria-hidden="true"></div>
             <div class="map-ambient-grid" aria-hidden="true"></div>
             
             <div class="map-region-info-overlay">
@@ -522,7 +534,7 @@
         return `
           <article class="campaign-list-card ${isDefeated ? 'is-defeated' : ''} ${isRecommended ? 'is-recommended' : ''} ${!canChallenge ? 'is-locked' : ''}">
             <div class="campaign-list-card__header">
-              ${node.thumbnailSrc ? `<img class="campaign-list-card__thumb" src="${node.thumbnailSrc}" alt="" loading="lazy">` : `<div class="campaign-list-card__thumb" style="display:grid;place-items:center;">${typeIcon}</div>`}
+              ${node.thumbnailSrc ? `<img class="campaign-list-card__thumb" src="${this.assetPrefix}${node.thumbnailSrc}" alt="" loading="lazy">` : `<div class="campaign-list-card__thumb" style="display:grid;place-items:center;">${typeIcon}</div>`}
               <div class="campaign-list-card__titles">
                 <h4>${nameText}</h4>
                 <p>${titleText}</p>
@@ -610,10 +622,10 @@
       const portraitSrc = selectedNode.avatarSrc || selectedNode.thumbnailSrc || '';
       const portraitHtml = portraitSrc ? `
         <div class="details-portrait-wrap">
-          <img class="details-portrait-img" 
-               src="${portraitSrc}" 
-               alt="Retrato de ${trainerName}" 
-               decoding="async" 
+          <img class="details-portrait-img"
+               src="${this.assetPrefix}${portraitSrc}"
+               alt="Retrato de ${trainerName}"
+               decoding="async"
                onerror="this.style.display='none';">
         </div>
       ` : '';
@@ -877,6 +889,24 @@
             this.triggerChallenge(viewModel.selectedNode);
           }
         };
+      }
+
+      this._setupBackgroundImageFallback();
+    }
+
+    _setupBackgroundImageFallback() {
+      if (!this.container) return;
+      const bgImg = this.container.querySelector('.campaign-map-bg-image');
+      if (bgImg && typeof bgImg.addEventListener === 'function') {
+        const handleImgError = () => {
+          if (bgImg.classList && typeof bgImg.classList.add === 'function') {
+            bgImg.classList.add('is-hidden');
+          }
+        };
+        bgImg.addEventListener('error', handleImgError, { once: true });
+        if (bgImg.complete && bgImg.naturalWidth === 0) {
+          handleImgError();
+        }
       }
     }
 

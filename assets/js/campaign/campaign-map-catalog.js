@@ -7,6 +7,7 @@
       name: 'Planícies & Costas',
       shortName: 'Região 1',
       subtitle: 'Costa das Brisas e Prados Primordiais',
+      bgImage: 'assets/images/campaign/maps/region-1-vales.webp',
       themeClass: 'theme-region-verdant',
       fallbackTheme: {
         background: 'linear-gradient(135deg, #102a27 0%, #16382c 45%, #0f2438 100%)',
@@ -83,6 +84,7 @@
       name: 'Fendas & Picos',
       shortName: 'Região 2',
       subtitle: 'Cordilheira das Fendas e Picos Elementais',
+      bgImage: 'assets/images/campaign/maps/region-2-fendas.webp',
       themeClass: 'theme-region-crags',
       fallbackTheme: {
         background: 'linear-gradient(135deg, #2b140c 0%, #3d1c19 45%, #182236 100%)',
@@ -160,6 +162,7 @@
       name: 'Domínios Arcanos',
       shortName: 'Região 3',
       subtitle: 'Terras Místicas e Fortaleza do Véu',
+      bgImage: 'assets/images/campaign/maps/region-3-arcanas.webp',
       themeClass: 'theme-region-arcane',
       fallbackTheme: {
         background: 'linear-gradient(135deg, #18122c 0%, #2b1744 45%, #12213a 100%)',
@@ -236,6 +239,7 @@
       name: 'Pináculo do Circuito',
       shortName: 'Região Final',
       subtitle: 'Apex Summit: Trono dos Campeões',
+      bgImage: 'assets/images/campaign/maps/region-endgame.webp',
       themeClass: 'theme-region-endgame',
       fallbackTheme: {
         background: 'radial-gradient(circle at 50% 30%, #2a1b4e 0%, #15102a 55%, #0a0816 100%)',
@@ -245,11 +249,11 @@
       routes: [
         { routeId: 'rend-legendary-titans', from: 'node-legendary', to: 'node-titans', pathD: 'M 200 394 C 200 330, 210 260, 220 203' },
         { routeId: 'rend-mythical-celestial', from: 'node-mythical', to: 'node-celestial', pathD: 'M 800 394 C 800 330, 790 260, 780 203' },
-        { routeId: 'rend-titans-super', from: 'node-titans', to: 'node-super', pathD: 'M 220 203 C 300 175, 400 160, 500 158' },
-        { routeId: 'rend-celestial-super', from: 'node-celestial', to: 'node-super', pathD: 'M 780 203 C 700 175, 600 160, 500 158' },
-        { routeId: 'rend-legendary-super', from: 'node-legendary', to: 'node-super', pathD: 'M 200 394 C 300 330, 420 240, 500 158' },
-        { routeId: 'rend-mythical-super', from: 'node-mythical', to: 'node-super', pathD: 'M 800 394 C 700 330, 580 240, 500 158' },
-        { routeId: 'rend-super-shadow', from: 'node-super', to: 'node-shadow', pathD: 'M 500 158 L 500 68' }
+        { routeId: 'rend-titans-super', from: 'node-titans', to: 'node-super', pathD: 'M 220 203 C 300 230, 400 270, 500 315' },
+        { routeId: 'rend-celestial-super', from: 'node-celestial', to: 'node-super', pathD: 'M 780 203 C 700 230, 600 270, 500 315' },
+        { routeId: 'rend-legendary-super', from: 'node-legendary', to: 'node-super', pathD: 'M 200 394 C 290 380, 390 360, 500 315' },
+        { routeId: 'rend-mythical-super', from: 'node-mythical', to: 'node-super', pathD: 'M 800 394 C 710 380, 610 360, 500 315' },
+        { routeId: 'rend-super-shadow', from: 'node-super', to: 'node-shadow', pathD: 'M 500 315 L 500 113' }
       ].map(Object.freeze),
       nodes: [
         {
@@ -297,7 +301,7 @@
           challengeKind: 'SUPER',
           challengeId: 'super',
           type: 'special',
-          position: Object.freeze({ x: 50.0, y: 28.0 }),
+          position: Object.freeze({ x: 50.0, y: 56.0 }),
           biomeLabel: 'Arena do Campeão',
           visibilityPolicy: 'ALWAYS_IN_REGION',
           ariaLabelBase: 'Super Treinador — O Mestre dos Mais Fortes'
@@ -307,7 +311,7 @@
           challengeKind: 'SHADOW',
           challengeId: 'shadow',
           type: 'special',
-          position: Object.freeze({ x: 50.0, y: 12.0 }),
+          position: Object.freeze({ x: 50.0, y: 20.0 }),
           biomeLabel: 'Trono do Eclipse',
           visibilityPolicy: 'SHADOW_REVEALED',
           ariaLabelBase: 'Shadow Super Trainer — O Desafio Final'

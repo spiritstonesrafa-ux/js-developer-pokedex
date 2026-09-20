@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harness Visual — Mapa de Campanha (Fase 2)</title>
+  <title>Harness Visual — Mapa de Campanha (Fase 3)</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,8 +190,8 @@
 <body>
 
   <header class="harness-header">
-    <h1>Harness Visual — Mapa de Campanha (Fase 2)</h1>
-    <p>Ambiente isolado de testes e inspeção arquitetural. Alterne entre os cenários de progresso, modos de visualização, breakpoints e verifique rotas SVG, nós e drawer.</p>
+    <h1>Harness Visual — Mapa de Campanha (Fase 3 — Arte Final & Cenários)</h1>
+    <p>Ambiente isolado de testes e inspeção arquitetural. Valide cenários WebP em pixel art, gradientes de fallback, nós interativos, rotas SVG, responsividade e estados de progresso.</p>
   </header>
 
   <section class="harness-toolbar">
@@ -226,6 +226,7 @@
       <span class="toolbar-label" style="min-width:auto; margin-left:12px;">Opções:</span>
       <button class="harness-btn" id="btnToggleMotion" onclick="toggleReducedMotion()"><i class="fa-solid fa-film"></i> Movimento Normal</button>
       <button class="harness-btn" id="btnToggleCoords" onclick="toggleCoordsDebug()"><i class="fa-solid fa-crosshairs"></i> Debug Coordenadas</button>
+      <button class="harness-btn" id="btnToggleFallback" onclick="toggleImageFallback()"><i class="fa-solid fa-image"></i> Simular Falha de Imagem</button>
     </div>
   </section>
 
@@ -472,6 +473,26 @@
       logEvent('DEBUG_COORDS', { isCoordsDebug });
     }
 
+    let isImageFallbackSimulated = false;
+    function toggleImageFallback() {
+      isImageFallbackSimulated = !isImageFallbackSimulated;
+      const btn = document.getElementById('btnToggleFallback');
+      btn.classList.toggle('active', isImageFallbackSimulated);
+      btn.innerHTML = isImageFallbackSimulated
+        ? '<i class="fa-solid fa-triangle-exclamation"></i> Fallback Ativo (Erro Disparado)'
+        : '<i class="fa-solid fa-image"></i> Simular Falha de Imagem';
+
+      if (isImageFallbackSimulated) {
+        const img = document.querySelector('.campaign-map-bg-image');
+        if (img) {
+          img.dispatchEvent(new Event('error'));
+        }
+      } else {
+        renderMap();
+      }
+      logEvent('FALLBACK_SIMULATION_TOGGLED', { isImageFallbackSimulated });
+    }
+
     function renderMap() {
       const mount = document.getElementById('campaignMountPoint');
       const activeReg = mapViewInstance ? mapViewInstance.activeRegionId : 'region-1';
@@ -480,6 +501,7 @@
       mapViewInstance = new window.PBACampaign.CampaignMapView({
         manager: mockManager,
         container: mount,
+        assetPrefix: '../../',
         initialRegionId: activeReg,
         initialViewMode: activeMode,
         onChallenge: ({ kind, id }) => {
@@ -492,6 +514,12 @@
       });
 
       mapViewInstance.render();
+      if (isImageFallbackSimulated) {
+        const img = mount.querySelector('.campaign-map-bg-image');
+        if (img) {
+          img.dispatchEvent(new Event('error'));
+        }
+      }
     }
 
     // Inicializa com o preset 0 badges

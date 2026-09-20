@@ -1514,3 +1514,443 @@ test('Integração Real switchAppTab — Executa a implementação real de switc
   assert.equal(listeners.filter(l => l.type === 'keydown').length, 1, 'Não deve haver acúmulo de listeners após múltiplas trocas de aba');
 });
 
+// -----------------------------------------------------------------------------
+// FASE 3 — ARTE FINAL E INTEGRAÇÃO DOS MAPAS DE CAMPANHA
+// -----------------------------------------------------------------------------
+test('Map Phase 3 — Catálogo define bgImage local e único para todas as 4 regiões', () => {
+  assert.equal(CAMPAIGN_MAP_CATALOG.regions.length, 4);
+  const bgImages = CAMPAIGN_MAP_CATALOG.regions.map(r => r.bgImage);
+
+  // 1. Todas as regiões possuem bgImage
+  for (const r of CAMPAIGN_MAP_CATALOG.regions) {
+    assert.ok(r.bgImage, `Região ${r.id} deve definir bgImage`);
+    assert.equal(typeof r.bgImage, 'string');
+    // 2. Caminhos locais terminam em .webp
+    assert.ok(r.bgImage.endsWith('.webp'), `bgImage da região ${r.id} deve terminar em .webp`);
+    assert.ok(r.bgImage.startsWith('assets/images/campaign/maps/'), `bgImage deve apontar para assets/images/campaign/maps/`);
+    // 11. Nenhum fundo remoto ou data URL
+    assert.ok(!r.bgImage.startsWith('http://') && !r.bgImage.startsWith('https://') && !r.bgImage.startsWith('//') && !r.bgImage.startsWith('data:'), `Nenhum fundo remoto permitido: ${r.bgImage}`);
+  }
+
+  // 2. Caminhos são únicos
+  assert.equal(new Set(bgImages).size, 4, 'Cada região deve ter um arquivo de fundo WebP exclusivo');
+});
+
+test('Map Phase 3 — Arquivos WebP existem no disco e possuem cabeçalho RIFF/WEBP válido', () => {
+  for (const r of CAMPAIGN_MAP_CATALOG.regions) {
+    const fullPath = path.resolve(__dirname, '../../', r.bgImage);
+    // 3. Os quatro arquivos existem
+    assert.ok(fs.existsSync(fullPath), `Arquivo de fundo não encontrado no disco: ${fullPath}`);
+
+    const buffer = fs.readFileSync(fullPath);
+    assert.ok(buffer.length > 0, `Arquivo vazio: ${fullPath}`);
+
+    // 4. Conteúdo WebP válido: bytes 0..3 = 'RIFF', bytes 8..11 = 'WEBP'
+    const riffHeader = buffer.subarray(0, 4).toString('ascii');
+    const webpHeader = buffer.subarray(8, 12).toString('ascii');
+    assert.equal(riffHeader, 'RIFF', `Cabeçalho inválido no arquivo ${r.bgImage}: esperado RIFF, obtido ${riffHeader}`);
+    assert.equal(webpHeader, 'WEBP', `Cabeçalho inválido no arquivo ${r.bgImage}: esperado WEBP, obtido ${webpHeader}`);
+  }
+});
+
+test('Map Phase 3 — Orçamento de peso e dimensões reais: <= 140 KB por fundo, <= 560 KB total, 1280x720 (16:9)', () => {
+  const MAX_BYTES = 143360; // 140 KB
+  let totalBytes = 0;
+
+  function parseWebPDimensions(buf) {
+    if (buf.length < 30) throw new Error('Buffer muito curto para cabeçalho WebP');
+    const chunkType = buf.subarray(12, 16).toString('ascii');
+    if (chunkType === 'VP8 ') {
+      const width = ((buf[26] | (buf[27] << 8)) & 0x3fff);
+      const height = ((buf[28] | (buf[29] << 8)) & 0x3fff);
+      return { width, height };
+    } else if (chunkType === 'VP8L') {
+      const b21 = buf[21], b22 = buf[22], b23 = buf[23], b24 = buf[24];
+      const width = 1 + (((b22 & 0x3f) << 8) | b21);
+      const height = 1 + (((b24 & 0x0f) << 10) | (b23 << 2) | ((b22 & 0xc0) >> 6));
+      return { width, height };
+    } else if (chunkType === 'VP8X') {
+      const width = 1 + (buf[24] | (buf[25] << 8) | (buf[26] << 16));
+      const height = 1 + (buf[27] | (buf[28] << 8) | (buf[29] << 16));
+      return { width, height };
+    }
+    throw new Error('Tipo de chunk WebP desconhecido: ' + chunkType);
+  }
+
+  for (const r of CAMPAIGN_MAP_CATALOG.regions) {
+    const fullPath = path.resolve(__dirname, '../../', r.bgImage);
+    const stats = fs.statSync(fullPath);
+    const size = stats.size;
+    totalBytes += size;
+
+    // Arquivo existente e conteúdo não vazio
+    assert.ok(stats.isFile(), `Asset deve ser arquivo regular: ${r.bgImage}`);
+    assert.ok(size > 0, `Fundo não pode ser vazio: ${r.bgImage}`);
+
+    // Limite máximo de 140 KB por asset
+    assert.ok(size <= MAX_BYTES, `Fundo ${r.bgImage} ultrapassou o orçamento de 140 KB: ${size} bytes (${(size / 1024).toFixed(2)} KB)`);
+
+    // Validação real das dimensões dos arquivos a partir dos metadados binários WebP
+    const buffer = fs.readFileSync(fullPath);
+    const dims = parseWebPDimensions(buffer);
+    assert.equal(dims.width, 1280, `Largura do arquivo ${r.bgImage} deve ser exatamente 1280px (obtido: ${dims.width})`);
+    assert.equal(dims.height, 720, `Altura do arquivo ${r.bgImage} deve ser exatamente 720px (obtido: ${dims.height})`);
+    assert.equal(dims.width / dims.height, 16 / 9, `Proporção do arquivo ${r.bgImage} deve ser 16:9`);
+  }
+
+  // Total dos 4 fundos não deve ultrapassar 560 KB
+  assert.ok(totalBytes <= MAX_BYTES * 4, `Peso acumulado dos 4 fundos (${totalBytes} bytes) excedeu o limite combinado de 560 KB`);
+});
+
+test('Map Phase 3 — View usa o fundo correspondente à região ativa com atributos decorativos', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // 6. A view usa o fundo correspondente à região ativa
+  assert.ok(capturedHtml.includes('src="assets/images/campaign/maps/region-1-vales.webp"'), 'Stage deve carregar region-1-vales.webp para a região 1');
+
+  // 7. A imagem é decorativa: alt="" e aria-hidden="true"
+  assert.ok(capturedHtml.includes('class="campaign-map-bg-image"'), 'Imagem deve ter classe campaign-map-bg-image');
+  assert.ok(capturedHtml.includes('alt=""'), 'Imagem deve ter alt="" vazio');
+  assert.ok(capturedHtml.includes('aria-hidden="true"'), 'Imagem deve ter aria-hidden="true"');
+  assert.ok(capturedHtml.includes('width="1280"'), 'Imagem deve declarar width="1280"');
+  assert.ok(capturedHtml.includes('height="720"'), 'Imagem deve declarar height="720"');
+
+  // 8. O fallback permanece presente (classe temática no stage)
+  assert.ok(capturedHtml.includes('theme-region-verdant'), 'Stage deve conter a classe de gradiente de fallback theme-region-verdant');
+  assert.ok(capturedHtml.includes('class="map-contrast-overlay"'), 'Stage deve conter overlay de contraste');
+
+  // 1. Somente o fundo da região ativa é solicitado (as outras 3 não devem estar no HTML)
+  assert.ok(!capturedHtml.includes('region-2-fendas.webp'), 'Região inativa 2 não deve ser carregada inicialmente');
+  assert.ok(!capturedHtml.includes('region-3-arcanas.webp'), 'Região inativa 3 não deve ser carregada inicialmente');
+  assert.ok(!capturedHtml.includes('region-endgame.webp'), 'Região inativa endgame não deve ser carregada inicialmente');
+});
+
+test('Map Phase 3 — Troca de região atualiza para o fundo correspondente sem carregar os outros', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  // Troca para Região 2
+  view.activeRegionId = 'region-2';
+  view.render();
+  assert.ok(capturedHtml.includes('src="assets/images/campaign/maps/region-2-fendas.webp"'));
+  assert.ok(!capturedHtml.includes('region-1-vales.webp'));
+  assert.ok(!capturedHtml.includes('region-3-arcanas.webp'));
+  assert.ok(!capturedHtml.includes('region-endgame.webp'));
+  assert.ok(capturedHtml.includes('theme-region-crags'));
+
+  // Troca para Região 3
+  view.activeRegionId = 'region-3';
+  view.render();
+  assert.ok(capturedHtml.includes('src="assets/images/campaign/maps/region-3-arcanas.webp"'));
+  assert.ok(!capturedHtml.includes('region-1-vales.webp'));
+  assert.ok(!capturedHtml.includes('region-2-fendas.webp'));
+  assert.ok(!capturedHtml.includes('region-endgame.webp'));
+  assert.ok(capturedHtml.includes('theme-region-arcane'));
+
+  // Troca para Região Endgame (requer 18 insígnias desbloqueadas)
+  const endgameMgr = freshManager();
+  unlock18Badges(endgameMgr);
+  const endgameView = new CampaignMapView({
+    manager: endgameMgr,
+    container,
+    initialRegionId: 'region-endgame',
+    initialViewMode: 'MAP'
+  });
+  endgameView.render();
+  assert.ok(capturedHtml.includes('src="assets/images/campaign/maps/region-endgame.webp"'));
+  assert.ok(!capturedHtml.includes('region-1-vales.webp'));
+  assert.ok(!capturedHtml.includes('region-2-fendas.webp'));
+  assert.ok(!capturedHtml.includes('region-3-arcanas.webp'));
+  assert.ok(capturedHtml.includes('theme-region-endgame'));
+});
+
+test('Map Phase 3 — Falha de carregamento da imagem dispara listener comportamental e mantém mapa funcional', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const listeners = {};
+  const mockBgImg = {
+    classList: {
+      _classes: new Set(),
+      add(cls) { this._classes.add(cls); },
+      contains(cls) { return this._classes.has(cls); }
+    },
+    addEventListener(event, fn) {
+      listeners[event] = listeners[event] || [];
+      listeners[event].push(fn);
+    },
+    dispatchEvent(event) {
+      const type = typeof event === 'string' ? event : event.type;
+      (listeners[type] || []).forEach(fn => fn(event));
+      return true;
+    },
+    complete: false,
+    naturalWidth: 0
+  };
+
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: (sel) => {
+      if (sel === '.campaign-map-bg-image') return mockBgImg;
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // 1. Confirme que não existe onerror= inline na imagem de fundo
+  const bgImgMatch = capturedHtml.match(/<img[^>]*class="campaign-map-bg-image"[^>]*>/);
+  assert.ok(bgImgMatch, 'Elemento campaign-map-bg-image deve estar presente no HTML gerado');
+  assert.ok(!bgImgMatch[0].includes('onerror='), 'Tag de imagem de fundo não deve conter atributo onerror inline');
+
+  // 2. Confirme que um listener de error foi registrado
+  assert.ok(Array.isArray(listeners.error) && listeners.error.length > 0, 'Listener de error deve ser registrado via addEventListener');
+
+  // 3. Dispare o evento de erro
+  assert.equal(mockBgImg.classList.contains('is-hidden'), false, 'is-hidden não deve estar presente antes do erro');
+  mockBgImg.dispatchEvent({ type: 'error' });
+
+  // 4. Confirme a adição de is-hidden
+  assert.equal(mockBgImg.classList.contains('is-hidden'), true, 'Disparo de evento de erro deve adicionar a classe is-hidden');
+
+  // 5. Confirme que o stage ainda mantém a classe de fallback
+  assert.ok(capturedHtml.includes('theme-region-verdant'), 'Stage deve reter a classe de gradiente temático de fallback');
+
+  // 6. Confirme que nós e rotas continuam presentes
+  assert.ok(capturedHtml.includes('class="campaign-map-routes"'), 'Rotas SVG devem permanecer presentes');
+  assert.ok(capturedHtml.includes('class="campaign-map-node'), 'Nós interativos devem permanecer presentes');
+  assert.ok(capturedHtml.includes('data-node-id="node-grass"'), 'Nó interativo individual deve permanecer presente');
+
+  // Teste de resiliência: imagem que já completou com erro antes da anexação do listener
+  const completedErrorImg = {
+    classList: {
+      _classes: new Set(),
+      add(cls) { this._classes.add(cls); },
+      contains(cls) { return this._classes.has(cls); }
+    },
+    addEventListener() {},
+    complete: true,
+    naturalWidth: 0
+  };
+  const containerCompleted = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: (sel) => sel === '.campaign-map-bg-image' ? completedErrorImg : null,
+    querySelectorAll: () => []
+  };
+  const viewCompleted = new CampaignMapView({
+    manager: mgr,
+    container: containerCompleted,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+  viewCompleted.render();
+  assert.equal(completedErrorImg.classList.contains('is-hidden'), true, 'Imagem já completada com erro (naturalWidth=0) deve receber is-hidden imediatamente');
+});
+
+test('Map Phase 3 — Calibração da Região Final: Coordenadas e Rotas SVG convergem para centros exatos dos nós', () => {
+  const endgame = CAMPAIGN_MAP_CATALOG.regions.find(r => r.id === 'region-endgame');
+  assert.ok(endgame, 'Região Final deve existir no catálogo');
+
+  const nodeMap = new Map(endgame.nodes.map(n => [n.nodeId, n]));
+  const superNode = nodeMap.get('node-super');
+  const shadowNode = nodeMap.get('node-shadow');
+  const titansNode = nodeMap.get('node-titans');
+  const celestialNode = nodeMap.get('node-celestial');
+  const legendaryNode = nodeMap.get('node-legendary');
+  const mythicalNode = nodeMap.get('node-mythical');
+
+  // 1. Super e Shadow possuem coordenadas distintas e coerentes com a composição
+  assert.notDeepEqual(superNode.position, shadowNode.position, 'Super e Shadow devem ter coordenadas distintas');
+  assert.equal(superNode.position.x, 50.0);
+  assert.equal(superNode.position.y, 56.0, 'Super deve estar centralizado na arena dourada (~56%)');
+  assert.equal(shadowNode.position.x, 50.0);
+  assert.equal(shadowNode.position.y, 20.0, 'Shadow deve estar centralizado no trono do eclipse (~20%)');
+  assert.ok(superNode.position.y > shadowNode.position.y, 'Super deve ficar visualmente abaixo de Shadow');
+
+  // 4. Os quatro nós das Provas permanecem inalterados
+  assert.deepEqual(legendaryNode.position, { x: 20.0, y: 70.0 }, 'Prova Lendária deve permanecer inalterada');
+  assert.deepEqual(mythicalNode.position, { x: 80.0, y: 70.0 }, 'Prova Mítica deve permanecer inalterada');
+  assert.deepEqual(titansNode.position, { x: 22.0, y: 36.0 }, 'Prova dos Titãs deve permanecer inalterada');
+  assert.deepEqual(celestialNode.position, { x: 78.0, y: 36.0 }, 'Prova Celestial deve permanecer inalterada');
+
+  // Helper de conversão canônica: percentual para coordenadas SVG (1000 x 562.5)
+  const toSvgCoords = pos => ({
+    x: pos.x * 10,
+    y: pos.y * 5.625
+  });
+
+  const superSvg = toSvgCoords(superNode.position); // { x: 500, y: 315 }
+  const shadowSvg = toSvgCoords(shadowNode.position); // { x: 500, y: 112.5 }
+
+  // Extrator de pontos de início e fim de pathD
+  function extractEndpoints(pathD) {
+    const startMatch = pathD.match(/^M\s*([\d.]+)\s+([\d.]+)/);
+    const endMatch = pathD.match(/[\s,]([\d.]+)\s+([\d.]+)$/);
+    assert.ok(startMatch, `pathD inválido para extração de início: ${pathD}`);
+    assert.ok(endMatch, `pathD inválido para extração de fim: ${pathD}`);
+    return {
+      start: { x: parseFloat(startMatch[1]), y: parseFloat(startMatch[2]) },
+      end: { x: parseFloat(endMatch[1]), y: parseFloat(endMatch[2]) }
+    };
+  }
+
+  // 2. Todas as 4 rotas destinadas ao Super terminem exatamente nas coordenadas SVG derivadas do nó
+  const routesToSuper = [
+    'rend-titans-super',
+    'rend-celestial-super',
+    'rend-legendary-super',
+    'rend-mythical-super'
+  ];
+
+  for (const routeId of routesToSuper) {
+    const route = endgame.routes.find(r => r.routeId === routeId);
+    assert.ok(route, `Rota ${routeId} deve existir`);
+    assert.equal(route.to, 'node-super', `Rota ${routeId} deve terminar em node-super`);
+    const endpoints = extractEndpoints(route.pathD);
+    const fromNode = nodeMap.get(route.from);
+    const fromSvg = toSvgCoords(fromNode.position);
+
+    // Início coincide com nó de origem (tolerância de arredondamento <= 0.5 px)
+    assert.ok(Math.abs(endpoints.start.x - fromSvg.x) <= 0.5, `Início X da rota ${routeId} deve coincidir com origem`);
+    assert.ok(Math.abs(endpoints.start.y - fromSvg.y) <= 0.5, `Início Y da rota ${routeId} deve coincidir com origem`);
+
+    // Fim coincide exatamente com centro do Super
+    assert.equal(endpoints.end.x, superSvg.x, `Fim X da rota ${routeId} deve coincidir com Super SVG X`);
+    assert.equal(endpoints.end.y, superSvg.y, `Fim Y da rota ${routeId} deve coincidir com Super SVG Y`);
+  }
+
+  // 3. rend-super-shadow começa no centro do Super e termina no centro do Shadow
+  const superShadowRoute = endgame.routes.find(r => r.routeId === 'rend-super-shadow');
+  assert.ok(superShadowRoute, 'Rota rend-super-shadow deve existir');
+  assert.equal(superShadowRoute.from, 'node-super');
+  assert.equal(superShadowRoute.to, 'node-shadow');
+  const ssEndpoints = extractEndpoints(superShadowRoute.pathD);
+  assert.equal(ssEndpoints.start.x, superSvg.x, 'rend-super-shadow deve iniciar no centro X do Super');
+  assert.equal(ssEndpoints.start.y, superSvg.y, 'rend-super-shadow deve iniciar no centro Y do Super');
+  assert.equal(ssEndpoints.end.x, shadowSvg.x, 'rend-super-shadow deve terminar no centro X do Shadow');
+  assert.ok(Math.abs(ssEndpoints.end.y - shadowSvg.y) <= 0.5, 'rend-super-shadow deve terminar no centro Y do Shadow (112.5 arredondado para 113)');
+
+  // 5. O Shadow continue seguindo SHADOW_REVEALED
+  assert.equal(shadowNode.visibilityPolicy, 'SHADOW_REVEALED', 'Shadow deve possuir visibilidade SHADOW_REVEALED');
+
+  // 6. O Super continue seguindo suas regras atuais
+  assert.equal(superNode.visibilityPolicy, 'ALWAYS_IN_REGION', 'Super deve possuir visibilidade ALWAYS_IN_REGION');
+  assert.equal(superNode.challengeKind, 'SUPER');
+
+  // 7 & 8. Saves VERSION = 1 continuem compatíveis e sem migração de regras de negócio
+  const mgr = freshManager();
+  unlock18Badges(mgr);
+  const vm = Model.buildMapViewModel({
+    catalog: CAMPAIGN_MAP_CATALOG,
+    campaignState: mgr.getState(),
+    masters: K.MASTERS,
+    manager: mgr,
+    activeRegionId: 'region-endgame'
+  });
+  const endgameVm = vm.regions.find(r => r.id === 'region-endgame');
+  const superVmNode = endgameVm.nodes.find(n => n.nodeId === 'node-super');
+  const shadowVmNode = endgameVm.nodes.find(n => n.nodeId === 'node-shadow');
+  assert.ok(superVmNode.canChallenge, 'Super deve estar disponível com 18 insígnias');
+  assert.equal(shadowVmNode.state, 'HIDDEN', 'Shadow deve permanecer oculto antes de ser revelado');
+  assert.equal(mgr.getState().version, 1, 'Versão do save deve continuar VERSION = 1');
+});
+
+test('Map Phase 3 — Modo lista não renderiza imagem de fundo do mapa', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'LIST'
+  });
+
+  view.render();
+
+  // 12. O comportamento do modo lista não é alterado e não renderiza fundo bitmap
+  assert.ok(!capturedHtml.includes('class="campaign-map-bg-image"'), 'Modo lista não deve conter a imagem de fundo');
+  assert.ok(capturedHtml.includes('class="campaign-list-card'), 'Modo lista deve renderizar os cards de desafios');
+});
+
+test('Map Phase 3 — Contratos de acessibilidade continuam válidos', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // 13. Contratos de acessibilidade: abas com tablist/tab, aria-controls, aria-selected, nós com aria-label
+  assert.ok(capturedHtml.includes('role="tablist"'), 'Abas devem ter role="tablist"');
+  assert.ok(capturedHtml.includes('role="tab"'), 'Cada aba deve ter role="tab"');
+  assert.ok(capturedHtml.includes('role="tabpanel"'), 'Painel deve ter role="tabpanel"');
+  assert.ok(capturedHtml.includes('aria-controls="campaign-map-region-panel"'), 'Abas devem apontar para aria-controls');
+  assert.ok(capturedHtml.includes('aria-label="Mestre Flora, Tipo Planta'), 'Nós devem manter aria-label descritivo');
+});
+
