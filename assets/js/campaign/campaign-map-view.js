@@ -84,7 +84,126 @@
       this._ariaTimer = null;
       this._renderVersion = 0;
 
+      // Phase 4: Controlled transitions, lifecycle & cleanup
+      this._isDestroyed = false;
+      this.transitionCause = 'REGION_CHANGE';
+      this.lastTransitionCause = 'REGION_CHANGE';
+      this._pendingRafIds = new Set();
+      this._pendingTimeoutIds = new Set();
+
+      this._drawerOpenRafId = null;
+      this._drawerTransitionToken = 0;
+      this._drawerCloseFallbackTimer = null;
+      this._drawerCloseElement = null;
+      this._drawerCloseHandler = null;
+      this._drawerClosingToken = 0;
+
       this._handleKeyDown = this._handleKeyDown.bind(this);
+    }
+
+    _isReducedMotion() {
+      if (typeof document !== 'undefined' && document.documentElement && typeof document.documentElement.getAttribute === 'function') {
+        if (document.documentElement.getAttribute('data-simulate-reduced-motion') === 'true') {
+          return true;
+        }
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        try {
+          return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        } catch (e) {
+          return false;
+        }
+      }
+      return false;
+    }
+
+    _safeTimeout(fn, ms) {
+      if (this._isDestroyed) return null;
+      let timerId;
+      timerId = setTimeout(() => {
+        this._pendingTimeoutIds.delete(timerId);
+        if (!this._isDestroyed) {
+          fn();
+        }
+      }, ms);
+      this._pendingTimeoutIds.add(timerId);
+      return timerId;
+    }
+
+    _clearTimeout(timerId) {
+      if (timerId) {
+        clearTimeout(timerId);
+        this._pendingTimeoutIds.delete(timerId);
+      }
+    }
+
+    _safeRaf(fn) {
+      if (this._isDestroyed) return null;
+      if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+        return this._safeTimeout(fn, 16);
+      }
+      let rafId;
+      rafId = window.requestAnimationFrame(() => {
+        this._pendingRafIds.delete(rafId);
+        if (!this._isDestroyed) {
+          fn();
+        }
+      });
+      this._pendingRafIds.add(rafId);
+      return rafId;
+    }
+
+    _clearRaf(rafId) {
+      if (rafId) {
+        if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+          window.cancelAnimationFrame(rafId);
+        }
+        this._pendingRafIds.delete(rafId);
+      }
+    }
+
+    _cancelDrawerOpening() {
+      this._drawerTransitionToken++;
+      if (this._drawerOpenRafId) {
+        this._clearRaf(this._drawerOpenRafId);
+        this._drawerOpenRafId = null;
+      }
+    }
+
+    _cancelDrawerClosing() {
+      this._drawerClosingToken++;
+      if (this._drawerCloseFallbackTimer) {
+        this._clearTimeout(this._drawerCloseFallbackTimer);
+        this._drawerCloseFallbackTimer = null;
+      }
+      if (this._drawerCloseElement && this._drawerCloseHandler) {
+        if (typeof this._drawerCloseElement.removeEventListener === 'function') {
+          this._drawerCloseElement.removeEventListener('transitionend', this._drawerCloseHandler);
+        }
+      }
+      this._drawerCloseElement = null;
+      this._drawerCloseHandler = null;
+    }
+
+    _clearAllPendingWork() {
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+
+      if (this._ariaTimer) {
+        this._clearTimeout(this._ariaTimer);
+        this._ariaTimer = null;
+      }
+      for (const timerId of this._pendingTimeoutIds) {
+        clearTimeout(timerId);
+      }
+      this._pendingTimeoutIds.clear();
+
+      if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+        for (const rafId of this._pendingRafIds) {
+          window.cancelAnimationFrame(rafId);
+        }
+      }
+      this._pendingRafIds.clear();
     }
 
     _getStoredViewMode() {
@@ -106,10 +225,8 @@
     }
 
     destroy() {
-      if (this._ariaTimer) {
-        clearTimeout(this._ariaTimer);
-        this._ariaTimer = null;
-      }
+      this._isDestroyed = true;
+      this._clearAllPendingWork();
       this.pendingAriaAnnouncement = '';
       this.isDrawerOpen = false;
       this.selectedNodeId = null;
@@ -132,23 +249,23 @@
     }
 
     announce(message) {
-      if (!message) return;
+      if (this._isDestroyed || !message) return;
       this.ariaLiveMessage = message;
       this.pendingAriaAnnouncement = message;
       this._deliverPendingAriaAnnouncement();
     }
 
     _deliverPendingAriaAnnouncement() {
-      if (!this.pendingAriaAnnouncement) return;
+      if (this._isDestroyed || !this.pendingAriaAnnouncement) return;
       if (this._ariaTimer) {
-        clearTimeout(this._ariaTimer);
+        this._clearTimeout(this._ariaTimer);
         this._ariaTimer = null;
       }
       const messageToDeliver = this.pendingAriaAnnouncement;
       const currentVersion = this._renderVersion;
 
-      this._ariaTimer = setTimeout(() => {
-        if (this._renderVersion !== currentVersion) return;
+      this._ariaTimer = this._safeTimeout(() => {
+        if (this._isDestroyed || this._renderVersion !== currentVersion) return;
         const live = this.container ? this.container.querySelector('#mapAriaLive') : null;
         if (live && live.isConnected !== false) {
           live.textContent = messageToDeliver;
@@ -184,6 +301,7 @@
 
     render() {
       if (!this.container) return;
+      this._isDestroyed = false;
 
       const campaignState = this.manager ? this.manager.getState() : {};
       const masters = (window.PBACampaign && window.PBACampaign.MASTERS) || [];
@@ -203,12 +321,15 @@
 
       this._renderVersion = (this._renderVersion || 0) + 1;
       if (this._ariaTimer) {
-        clearTimeout(this._ariaTimer);
+        this._clearTimeout(this._ariaTimer);
         this._ariaTimer = null;
       }
 
       const activeRegion = viewModel.activeRegion || viewModel.regions[0];
       const selectedNode = viewModel.selectedNode;
+
+      const isSwitchingView = this.transitionCause === 'VIEW_MODE_CHANGE' && !this._isReducedMotion();
+      const shouldAnimateDrawerOpen = this.transitionCause === 'DRAWER_OPEN' && !this._isReducedMotion();
 
       let stageContentHtml = '';
       if (this.viewMode === 'LIST') {
@@ -216,6 +337,13 @@
       } else {
         stageContentHtml = this._renderMapView(activeRegion, viewModel);
       }
+
+      const panelClasses = ['campaign-map-panel'];
+      if (isSwitchingView) {
+        panelClasses.push('is-switching-view');
+      }
+
+      const backdropOpenClass = (this.isDrawerOpen && !shouldAnimateDrawerOpen) ? 'is-open' : '';
 
       this.container.innerHTML = `
         <section class="campaign-map-shell">
@@ -225,16 +353,16 @@
           ${this._renderTabs(viewModel)}
 
           <!-- Tabpanel dinâmico estável: ID único com aria-labelledby apontando para a aba ativa -->
-          <div id="campaign-map-region-panel" 
-               class="campaign-map-panel" 
-               role="tabpanel" 
-               aria-labelledby="tab-${activeRegion.id}" 
+          <div id="campaign-map-region-panel"
+               class="${panelClasses.join(' ')}"
+               role="tabpanel"
+               aria-labelledby="tab-${activeRegion.id}"
                tabindex="0">
             ${stageContentHtml}
           </div>
 
-          <div id="detailsBackdrop" 
-               class="campaign-details-backdrop ${this.isDrawerOpen ? 'is-open' : ''}" 
+          <div id="detailsBackdrop"
+               class="campaign-details-backdrop ${backdropOpenClass}"
                aria-hidden="true"></div>
 
           ${this._renderDrawer(selectedNode, viewModel)}
@@ -359,11 +487,13 @@
         return `<path id="${route.routeId}" class="${routeClass}" d="${route.pathD}" />`;
       }).join('');
 
+      let visibleNodeIndex = 0;
       const nodesHtml = region.nodes.map(node => {
         if (node.isHidden || (node.challengeKind === 'SHADOW' && node.state === 'HIDDEN')) {
           return ''; // Shadow completely hidden before reveal
         }
 
+        const staggerIndex = visibleNodeIndex++;
         const isSelected = node.nodeId === this.selectedNodeId;
         const left = Number(node.position.x).toFixed(1);
         const top = Number(node.position.y).toFixed(1);
@@ -423,8 +553,9 @@
           <button type="button"
                   id="${node.nodeId}"
                   class="campaign-map-node ${kindClass} ${stateClass}"
-                  style="left: ${left}%; top: ${top}%;"
+                  style="left: ${left}%; top: ${top}%; --node-index: ${staggerIndex};"
                   data-node-id="${node.nodeId}"
+                  data-node-index="${staggerIndex}"
                   aria-label="${node.ariaLabel}"
                   title="${titleAttr}">
             ${innerImage}
@@ -447,9 +578,15 @@
         }
       }
 
+      const isRegionEntering = this.transitionCause === 'REGION_CHANGE' && !this._isReducedMotion();
+      const stageClasses = ['campaign-map-stage', region.themeClass || 'theme-region-verdant'];
+      if (isRegionEntering) {
+        stageClasses.push('is-entering');
+      }
+
       return `
         <div class="campaign-map-viewport">
-          <div class="campaign-map-stage ${region.themeClass || 'theme-region-verdant'}">
+          <div class="${stageClasses.join(' ')}">
             ${region.bgImage ? `
               <img class="campaign-map-bg-image"
                    src="${this.assetPrefix}${region.bgImage}"
@@ -693,11 +830,16 @@
         ? `<div class="details-locked-notice" role="note" style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> <span>${selectedNode.cannotChallengeReason}</span></div>`
         : '';
 
+      const shouldAnimateOpen = this.transitionCause === 'DRAWER_OPEN' && !this._isReducedMotion();
+      const drawerOpenClass = shouldAnimateOpen ? '' : 'is-open';
+      const drawerAriaHidden = shouldAnimateOpen ? 'true' : 'false';
+
       return `
-        <aside id="trainerDetailsDrawer" 
-               class="campaign-details-drawer is-open" 
-               role="dialog" 
-               aria-modal="true" 
+        <aside id="trainerDetailsDrawer"
+               class="campaign-details-drawer ${drawerOpenClass}"
+               role="dialog"
+               aria-modal="true"
+               aria-hidden="${drawerAriaHidden}"
                aria-labelledby="drawerTrainerTitle">
           <div class="details-drawer-handle" aria-hidden="true"></div>
           
@@ -775,18 +917,32 @@
       const listBtn = this.container.querySelector('#viewModeListBtn');
       if (mapBtn) {
         mapBtn.onclick = () => {
-          this.viewMode = 'MAP';
-          this._setStoredViewMode('MAP');
-          this.announce('Visualização alterada para Modo Mapa.');
-          this.render();
+          if (this.viewMode !== 'MAP') {
+            this._cancelDrawerOpening();
+            this._cancelDrawerClosing();
+            this.isDrawerOpen = false;
+            this.selectedNodeId = null;
+            this.viewMode = 'MAP';
+            this._setStoredViewMode('MAP');
+            this.transitionCause = 'VIEW_MODE_CHANGE';
+            this.announce('Visualização alterada para Modo Mapa.');
+            this.render();
+          }
         };
       }
       if (listBtn) {
         listBtn.onclick = () => {
-          this.viewMode = 'LIST';
-          this._setStoredViewMode('LIST');
-          this.announce('Visualização alterada para Modo Lista.');
-          this.render();
+          if (this.viewMode !== 'LIST') {
+            this._cancelDrawerOpening();
+            this._cancelDrawerClosing();
+            this.isDrawerOpen = false;
+            this.selectedNodeId = null;
+            this.viewMode = 'LIST';
+            this._setStoredViewMode('LIST');
+            this.transitionCause = 'VIEW_MODE_CHANGE';
+            this.announce('Visualização alterada para Modo Lista.');
+            this.render();
+          }
         };
       }
 
@@ -810,16 +966,26 @@
           }
 
           if (this.activeRegionId !== regionId) {
+            this._cancelDrawerOpening();
+            this._cancelDrawerClosing();
             this.activeRegionId = regionId;
             this.selectedNodeId = null;
             this.isDrawerOpen = false;
+            this.transitionCause = 'REGION_CHANGE';
             const targetRegion = viewModel.regions.find(r => r.id === regionId);
             this.announce(`Região selecionada: ${targetRegion?.name || regionId}`);
             this.render();
-            setTimeout(() => {
+            if (this._isReducedMotion()) {
               const newTab = this.container.querySelector(`#tab-${regionId}`);
               if (newTab && typeof newTab.focus === 'function') newTab.focus();
-            }, 50);
+            } else {
+              const currentVer = this._renderVersion;
+              this._safeTimeout(() => {
+                if (this._isDestroyed || this._renderVersion !== currentVer) return;
+                const newTab = this.container.querySelector(`#tab-${regionId}`);
+                if (newTab && typeof newTab.focus === 'function') newTab.focus();
+              }, 50);
+            }
           }
         };
 
@@ -891,47 +1057,240 @@
         };
       }
 
+      const currentVer = this._renderVersion;
+      const wasRegionEntering = this.transitionCause === 'REGION_CHANGE' && !this._isReducedMotion();
+      const wasSwitchingView = this.transitionCause === 'VIEW_MODE_CHANGE' && !this._isReducedMotion();
+      const wasDrawerOpening = this.transitionCause === 'DRAWER_OPEN' && !this._isReducedMotion();
+
+      if (wasRegionEntering) {
+        this._safeTimeout(() => {
+          if (this._renderVersion !== currentVer) return;
+          const stage = this.container ? this.container.querySelector('.campaign-map-stage') : null;
+          if (stage && stage.classList) stage.classList.remove('is-entering');
+        }, 360);
+      }
+
+      if (wasSwitchingView) {
+        this._safeTimeout(() => {
+          if (this._renderVersion !== currentVer) return;
+          const panel = this.container ? this.container.querySelector('.campaign-map-panel') : null;
+          if (panel && panel.classList) panel.classList.remove('is-switching-view');
+        }, 250);
+      }
+
+      if (wasDrawerOpening) {
+        const openToken = ++this._drawerTransitionToken;
+        this._drawerOpenRafId = this._safeRaf(() => {
+          this._drawerOpenRafId = null;
+          if (this._isDestroyed) return;
+          if (this._renderVersion !== currentVer) return;
+          if (this._drawerTransitionToken !== openToken) return;
+          if (!this.isDrawerOpen) return;
+
+          const drawer = this.container ? this.container.querySelector('#trainerDetailsDrawer') : null;
+          const backdropEl = this.container ? this.container.querySelector('#detailsBackdrop') : null;
+          if (drawer && drawer.classList) {
+            drawer.classList.add('is-open');
+            if (typeof drawer.setAttribute === 'function') {
+              drawer.setAttribute('aria-hidden', 'false');
+            }
+          }
+          if (backdropEl && backdropEl.classList) {
+            backdropEl.classList.add('is-open');
+          }
+          const drawerClose = drawer ? drawer.querySelector('#detailsCloseBtn') : null;
+          if (drawerClose && typeof drawerClose.focus === 'function') {
+            drawerClose.focus();
+          }
+        });
+      } else if (this.isDrawerOpen) {
+        const drawer = this.container ? this.container.querySelector('#trainerDetailsDrawer') : null;
+        const drawerClose = drawer ? drawer.querySelector('#detailsCloseBtn') : null;
+        if (drawerClose && typeof drawerClose.focus === 'function') {
+          if (this._isReducedMotion()) {
+            drawerClose.focus();
+          } else {
+            this._safeTimeout(() => {
+              if (this._isDestroyed || this._renderVersion !== currentVer || !this.isDrawerOpen) return;
+              drawerClose.focus();
+            }, 50);
+          }
+        }
+      }
+
       this._setupBackgroundImageFallback();
+
+      // Clear transient cause after scheduling animations
+      this.lastTransitionCause = this.transitionCause;
+      this.transitionCause = 'NONE';
     }
 
     _setupBackgroundImageFallback() {
       if (!this.container) return;
       const bgImg = this.container.querySelector('.campaign-map-bg-image');
-      if (bgImg && typeof bgImg.addEventListener === 'function') {
-        const handleImgError = () => {
-          if (bgImg.classList && typeof bgImg.classList.add === 'function') {
+      if (!bgImg) return;
+
+      const markLoaded = () => {
+        if (bgImg.classList) {
+          if (typeof bgImg.classList.remove === 'function') {
+            bgImg.classList.remove('is-loading');
+            bgImg.classList.remove('is-hidden');
+          }
+          if (typeof bgImg.classList.add === 'function') {
+            bgImg.classList.add('is-loaded');
+          }
+        }
+      };
+
+      const markError = () => {
+        if (bgImg.classList) {
+          if (typeof bgImg.classList.remove === 'function') {
+            bgImg.classList.remove('is-loading');
+            bgImg.classList.remove('is-loaded');
+          }
+          if (typeof bgImg.classList.add === 'function') {
             bgImg.classList.add('is-hidden');
           }
-        };
-        bgImg.addEventListener('error', handleImgError, { once: true });
-        if (bgImg.complete && bgImg.naturalWidth === 0) {
-          handleImgError();
         }
+      };
+
+      const isReduced = this._isReducedMotion();
+
+      if (bgImg.complete) {
+        if (typeof bgImg.naturalWidth === 'number' && bgImg.naturalWidth === 0) {
+          markError();
+        } else {
+          markLoaded();
+        }
+        return;
+      }
+
+      if (isReduced) {
+        markLoaded();
+      } else {
+        if (bgImg.classList && typeof bgImg.classList.add === 'function') {
+          bgImg.classList.add('is-loading');
+        }
+      }
+
+      if (typeof bgImg.addEventListener === 'function') {
+        bgImg.addEventListener('load', markLoaded, { once: true });
+        bgImg.addEventListener('error', markError, { once: true });
       }
     }
 
     openNode(nodeId, originElement, originAction = 'map-node') {
+      if (this._isDestroyed) return;
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+
+      const wasOpen = this.isDrawerOpen;
       this.selectedNodeId = nodeId;
       this.isDrawerOpen = true;
       this.lastFocusedNodeId = nodeId;
       this.lastFocusedAction = originAction;
+      this.transitionCause = wasOpen ? 'NODE_SELECTION' : 'DRAWER_OPEN';
       this.render();
-
-      setTimeout(() => {
-        const closeBtn = this.container ? this.container.querySelector('#detailsCloseBtn') : null;
-        if (closeBtn && typeof closeBtn.focus === 'function') {
-          closeBtn.focus();
-        }
-      }, 50);
     }
 
     closeDrawer() {
-      this.isDrawerOpen = false;
-      this.render();
-      this._restoreFocus();
+      if (this._isDestroyed) return;
+
+      // 1. Cancel pending opening RAF and invalidate opening tokens
+      this._cancelDrawerOpening();
+
+      if (!this.isDrawerOpen) {
+        this._cancelDrawerClosing();
+        return;
+      }
+
+      // 2. Cancel previous closing cycle if one was already in progress
+      this._cancelDrawerClosing();
+
+      const drawer = this.container ? this.container.querySelector('#trainerDetailsDrawer') : null;
+      const backdrop = this.container ? this.container.querySelector('#detailsBackdrop') : null;
+
+      const isVisuallyOpen = Boolean(drawer && drawer.classList && typeof drawer.classList.contains === 'function' && drawer.classList.contains('is-open'));
+
+      if (this._isReducedMotion() || !drawer || !isVisuallyOpen) {
+        if (drawer && drawer.classList) {
+          drawer.classList.remove('is-open');
+          if (typeof drawer.setAttribute === 'function') {
+            drawer.setAttribute('aria-hidden', 'true');
+          }
+        }
+        if (backdrop && backdrop.classList) {
+          backdrop.classList.remove('is-open');
+        }
+        this.isDrawerOpen = false;
+        this.selectedNodeId = null;
+        this.transitionCause = 'DRAWER_CLOSE';
+        this.render();
+        this._restoreFocus();
+        return;
+      }
+
+      if (drawer.classList) {
+        drawer.classList.remove('is-open');
+      }
+      if (typeof drawer.setAttribute === 'function') {
+        drawer.setAttribute('aria-hidden', 'true');
+      }
+      if (backdrop && backdrop.classList) {
+        backdrop.classList.remove('is-open');
+      }
+
+      const closingToken = ++this._drawerClosingToken;
+      const currentVer = this._renderVersion;
+
+      let finished = false;
+      const finishClose = () => {
+        if (finished) return;
+        finished = true;
+
+        if (this._isDestroyed) {
+          this._cancelDrawerClosing();
+          return;
+        }
+        if (this._drawerClosingToken !== closingToken) {
+          return;
+        }
+
+        this._cancelDrawerClosing();
+
+        if (this._renderVersion !== currentVer) return;
+
+        this.isDrawerOpen = false;
+        this.selectedNodeId = null;
+        this.transitionCause = 'DRAWER_CLOSE';
+        this.render();
+        this._restoreFocus();
+      };
+
+      const onTransitionEnd = (e) => {
+        if (!e) {
+          finishClose();
+          return;
+        }
+        if (e.target === drawer) {
+          if (!e.propertyName || e.propertyName === 'transform') {
+            finishClose();
+          }
+        }
+      };
+
+      this._drawerCloseElement = drawer;
+      this._drawerCloseHandler = onTransitionEnd;
+
+      if (typeof drawer.addEventListener === 'function') {
+        drawer.addEventListener('transitionend', onTransitionEnd);
+      }
+
+      this._drawerCloseFallbackTimer = this._safeTimeout(finishClose, 320);
     }
 
     _restoreFocus() {
+      if (this._isDestroyed || this.isDrawerOpen) return;
       if (!this.lastFocusedNodeId || !this.container) return;
       let target = null;
       if (this.lastFocusedAction === 'list-details') {
@@ -943,11 +1302,17 @@
       }
 
       if (target && typeof target.focus === 'function') {
-        setTimeout(() => {
-          if (target && typeof target.focus === 'function') {
-            target.focus();
-          }
-        }, 50);
+        if (this._isReducedMotion()) {
+          target.focus();
+        } else {
+          const currentVer = this._renderVersion;
+          this._safeTimeout(() => {
+            if (this._isDestroyed || this._renderVersion !== currentVer || this.isDrawerOpen) return;
+            if (target && typeof target.focus === 'function') {
+              target.focus();
+            }
+          }, 50);
+        }
       }
     }
 

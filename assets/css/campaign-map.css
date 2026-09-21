@@ -1,7 +1,7 @@
 /* ==========================================================================
-   CAMPAIGN MAP SYSTEM — PHASE 2
+   CAMPAIGN MAP SYSTEM — PHASE 4 (POLISH, TRANSITIONS & MICRO-INTERACTIONS)
    Modular styling for Campaign Map, declarative regions, routes, nodes,
-   details drawer, list mode and accessibility.
+   details drawer, list mode, transitions, micro-interactions and accessibility.
    ========================================================================== */
 
 :root {
@@ -179,7 +179,7 @@
   cursor: pointer;
   white-space: nowrap;
   min-height: 44px;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .campaign-map-tab:hover {
@@ -271,7 +271,39 @@
   user-select: none;
 }
 
-/* Final Art Background & Contrast Overlay (Phase 3) */
+/* Stage Entrance Transition on Region Change */
+.campaign-map-stage.is-entering {
+  animation: mapStageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mapStageEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* View Mode Switching Transition */
+.campaign-map-panel.is-switching-view {
+  animation: mapPanelFadeIn 0.22s ease forwards;
+}
+
+@keyframes mapPanelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Final Art Background & Contrast Overlay (Phase 3 & 4) */
 .campaign-map-bg-image {
   position: absolute;
   inset: 0;
@@ -283,8 +315,16 @@
   pointer-events: none;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.campaign-map-bg-image.is-loading {
+  opacity: 0;
+}
+
+.campaign-map-bg-image.is-loaded {
   opacity: 1;
-  transition: opacity 0.3s ease;
 }
 
 .campaign-map-bg-image.is-hidden {
@@ -375,6 +415,20 @@
   z-index: 1;
 }
 
+/* Route Revelation during Stage Entrance */
+.campaign-map-stage.is-entering .campaign-map-routes {
+  animation: mapRoutesFadeIn 0.35s ease forwards;
+}
+
+@keyframes mapRoutesFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .map-route-path {
   fill: none;
   stroke: rgba(255, 255, 255, 0.28);
@@ -454,11 +508,42 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(56, 189, 248, 0.55);
 }
 
+/* Staggered Entrance on Region Change */
+.campaign-map-stage.is-entering .campaign-map-node {
+  animation: mapNodeStaggerEnter 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+  animation-delay: calc(var(--node-index, 0) * 40ms);
+}
+
+@keyframes mapNodeStaggerEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Node Selection Micro-interaction */
+@keyframes nodeSelectPulse {
+  0% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), 0 0 0 0 rgba(255, 255, 255, 0.85);
+  }
+  60% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75), 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75), 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
 .campaign-map-node.is-selected {
   outline: 3px solid #fff;
   outline-offset: 3px;
   z-index: 6;
   transform: translate(-50%, -50%) scale(1.18);
+  animation: nodeSelectPulse 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Node Image / Thumbnail */
@@ -1102,17 +1187,47 @@
 }
 
 /* --------------------------------------------------------------------------
-   PREFERS REDUCED MOTION
+   PREFERS REDUCED MOTION & SIMULATED REDUCED MOTION (PHASE 4)
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  .campaign-map-stage,
+  .campaign-map-panel,
+  .campaign-map-routes,
   .campaign-map-bg-image,
   .map-route-path.is-active,
   .map-selection-marker,
   .campaign-map-node,
   .campaign-details-drawer,
   .campaign-details-backdrop,
-  .campaign-list-card {
+  .campaign-list-card,
+  .campaign-map-tab {
     animation: none !important;
     transition: none !important;
   }
+
+  .campaign-map-bg-image {
+    opacity: 1 !important;
+  }
+}
+
+/* Simulated Reduced Motion attribute for testing harness and runtime overrides */
+[data-simulate-reduced-motion="true"],
+[data-simulate-reduced-motion="true"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  transition-delay: 0ms !important;
+}
+
+[data-simulate-reduced-motion="true"] .campaign-map-bg-image {
+  opacity: 1 !important;
+}
+
+[data-simulate-reduced-motion="true"] .map-route-path.is-active {
+  animation: none !important;
+}
+
+[data-simulate-reduced-motion="true"] .map-selection-marker {
+  animation: none !important;
 }

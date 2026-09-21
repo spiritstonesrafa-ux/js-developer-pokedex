@@ -1954,3 +1954,1019 @@ test('Map Phase 3 — Contratos de acessibilidade continuam válidos', () => {
   assert.ok(capturedHtml.includes('aria-label="Mestre Flora, Tipo Planta'), 'Nós devem manter aria-label descritivo');
 });
 
+// -----------------------------------------------------------------------------
+// FASE 4 — POLIMENTO, TRANSIÇÕES E MICROINTERAÇÕES CONTROLADAS
+// -----------------------------------------------------------------------------
+
+test('Map Phase 4 — 1. Troca de região define o tipo de transição correto e limpa estado transitório', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  // Render inicial é uma entrada de região
+  assert.equal(view.transitionCause, 'REGION_CHANGE');
+  view.render();
+  assert.equal(view.lastTransitionCause, 'REGION_CHANGE');
+  assert.equal(view.transitionCause, 'NONE', 'Estado transitório deve ser limpo para NONE após render');
+  assert.ok(capturedHtml.includes('is-entering'), 'Stage deve conter classe is-entering no render inicial de região');
+
+  // Próximo render sem causa explícita não deve adicionar is-entering
+  view.render();
+  assert.equal(view.lastTransitionCause, 'NONE');
+  assert.ok(!capturedHtml.includes('is-entering'), 'Render subsequente sem causa não deve ter is-entering');
+});
+
+test('Map Phase 4 — 2 & 3. Abrir e fechar drawer não reiniciam a entrada da região', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // Abrir nó
+  view.openNode('node-normal');
+  assert.equal(view.lastTransitionCause, 'DRAWER_OPEN');
+  assert.equal(view.transitionCause, 'NONE');
+  assert.ok(!capturedHtml.includes('is-entering'), 'Abrir drawer não deve reiniciar a entrada da região');
+
+  // Fechar drawer
+  view.closeDrawer();
+  assert.equal(view.lastTransitionCause, 'DRAWER_CLOSE');
+  assert.equal(view.transitionCause, 'NONE');
+  assert.ok(!capturedHtml.includes('is-entering'), 'Fechar drawer não deve reiniciar a entrada da região');
+});
+
+test('Map Phase 4 — 4. Alternar Mapa/Lista preserva a região ativa e aplica classe de transição', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-2',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+  assert.equal(view.activeRegionId, 'region-2');
+
+  // Alternar para LIST
+  view.transitionCause = 'VIEW_MODE_CHANGE';
+  view.viewMode = 'LIST';
+  view.render();
+
+  assert.equal(view.activeRegionId, 'region-2', 'Região ativa deve permanecer inalterada ao alternar modo');
+  assert.equal(view.lastTransitionCause, 'VIEW_MODE_CHANGE');
+  assert.ok(capturedHtml.includes('is-switching-view'), 'Painel deve receber is-switching-view');
+  assert.ok(!capturedHtml.includes('is-entering'), 'Troca de modo não deve disparar entrada de região');
+});
+
+test('Map Phase 4 — 5, 6, 7 & 8. Fundo: listeners de load/error, cache e ausência de handlers inline', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const listeners = {};
+  const classes = new Set();
+  const mockBgImg = {
+    classList: {
+      add(cls) { classes.add(cls); },
+      remove(cls) { classes.delete(cls); },
+      contains(cls) { return classes.has(cls); }
+    },
+    addEventListener(event, fn) {
+      listeners[event] = listeners[event] || [];
+      listeners[event].push(fn);
+    },
+    dispatchEvent(event) {
+      const type = typeof event === 'string' ? event : event.type;
+      (listeners[type] || []).forEach(fn => fn(event));
+      return true;
+    },
+    complete: false,
+    naturalWidth: 0
+  };
+
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: (sel) => {
+      if (sel === '.campaign-map-bg-image') return mockBgImg;
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // 8. Sem handlers inline na imagem de fundo
+  const bgImgMatch = capturedHtml.match(/<img[^>]*class="campaign-map-bg-image"[^>]*>/);
+  assert.ok(bgImgMatch, 'Elemento de fundo deve estar presente');
+  assert.ok(!bgImgMatch[0].includes('onload='), 'Fundo não deve ter handler onload inline');
+  assert.ok(!bgImgMatch[0].includes('onerror='), 'Fundo não deve ter handler onerror inline');
+
+  // 5. Listener de load registrado e is-loading inicial adicionado
+  assert.ok(Array.isArray(listeners.load) && listeners.load.length > 0, 'Listener de load deve ser registrado');
+  assert.equal(classes.has('is-loading'), true, 'Imagem não em cache deve iniciar com is-loading');
+
+  // Simular evento load
+  mockBgImg.dispatchEvent('load');
+  assert.equal(classes.has('is-loading'), false, 'is-loading deve ser removido após load');
+  assert.equal(classes.has('is-loaded'), true, 'is-loaded deve ser adicionado após load');
+
+  // 6. Imagem em cache entra diretamente em is-loaded
+  classes.clear();
+  mockBgImg.complete = true;
+  mockBgImg.naturalWidth = 1280;
+  view.render();
+  assert.equal(classes.has('is-loaded'), true, 'Imagem já em cache com naturalWidth > 0 deve receber is-loaded imediatamente');
+
+  // 7. Falha aplica is-hidden
+  classes.clear();
+  mockBgImg.complete = false;
+  mockBgImg.naturalWidth = 0;
+  view.render();
+  mockBgImg.dispatchEvent('error');
+  assert.equal(classes.has('is-hidden'), true, 'Evento de erro deve aplicar is-hidden');
+});
+
+test('Map Phase 4 — 9, 10 & 11. Nós recebem índices de stagger, nós ocultos não participam e coordenadas intactas', () => {
+  const mgr = freshManager();
+  unlock18Badges(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-endgame',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // 9. Índices de stagger
+  assert.ok(capturedHtml.includes('style="left: 20.0%; top: 70.0%; --node-index: 0;"'), 'Primeiro nó deve ter --node-index: 0');
+  assert.ok(capturedHtml.includes('data-node-index="0"'), 'Primeiro nó deve ter data-node-index="0"');
+  assert.ok(capturedHtml.includes('--node-index: 1;'), 'Segundo nó deve ter --node-index: 1');
+
+  // 10. Shadow oculto não participa do stagger
+  // Na Região Final antes de derrotar o Super, Shadow está oculto.
+  // Devem existir exatamente 5 nós visíveis (4 provas + 1 super) indexados de 0 a 4.
+  assert.ok(!capturedHtml.includes('id="node-shadow"'), 'Shadow deve estar oculto');
+  assert.ok(capturedHtml.includes('data-node-index="4"'), 'Último nó visível antes de Shadow deve ter índice 4');
+  assert.ok(!capturedHtml.includes('data-node-index="5"'), 'Nenhum nó invisível deve ocupar o índice 5');
+
+  // 11. Coordenadas do Super permanecem intactas em 50.0%, 56.0%
+  assert.ok(capturedHtml.includes('left: 50.0%; top: 56.0%;'), 'Coordenadas do Super devem ser mantidas exatamente');
+});
+
+test('Map Phase 4 — 12. Rotas SVG mantêm estados semânticos corretos', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // Todas as rotas da Região 1 devem possuir classes semânticas válidas
+  assert.ok(capturedHtml.includes('class="map-route-path is-active"'), 'Rotas devem manter classes semânticas');
+  assert.ok(capturedHtml.includes(CAMPAIGN_MAP_CATALOG.regions[0].routes[0].pathD), 'Coordenadas SVG das rotas permanecem inalteradas');
+});
+
+function createMockElement(initialTag = 'div') {
+  const classes = new Set();
+  const attrs = new Map();
+  const listeners = new Map();
+  let focused = false;
+
+  const el = {
+    tagName: initialTag.toUpperCase(),
+    style: {},
+    dataset: {},
+    classList: {
+      add(...names) { names.forEach(n => classes.add(n)); },
+      remove(...names) { names.forEach(n => classes.delete(n)); },
+      contains(name) { return classes.has(name); },
+      toggle(name, force) {
+        if (typeof force === 'boolean') {
+          if (force) classes.add(name); else classes.delete(name);
+          return force;
+        }
+        if (classes.has(name)) { classes.delete(name); return false; }
+        classes.add(name); return true;
+      },
+      has(name) { return classes.has(name); },
+      clear() { classes.clear(); }
+    },
+    setAttribute(name, val) { attrs.set(name, String(val)); },
+    getAttribute(name) { return attrs.has(name) ? attrs.get(name) : null; },
+    removeAttribute(name) { attrs.delete(name); },
+    addEventListener(type, fn) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(fn);
+    },
+    removeEventListener(type, fn) {
+      if (listeners.has(type)) {
+        listeners.get(type).delete(fn);
+      }
+    },
+    dispatchEvent(event) {
+      const type = typeof event === 'string' ? event : event.type;
+      const evt = typeof event === 'string' ? { type: event, target: el } : event;
+      if (!evt.target) evt.target = el;
+      if (listeners.has(type)) {
+        const fns = Array.from(listeners.get(type));
+        for (const fn of fns) {
+          fn.call(el, evt);
+        }
+      }
+    },
+    focus() { focused = true; },
+    get isFocused() { return focused; },
+    set isFocused(v) { focused = v; },
+    listeners,
+    hasListener(type) {
+      return listeners.has(type) && listeners.get(type).size > 0;
+    },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  return el;
+}
+
+function createDeterministicEnvironment() {
+  let nextTimerId = 1;
+  let nextRafId = 1;
+  const timers = new Map();
+  const rafs = new Map();
+
+  const origSetTimeout = global.setTimeout;
+  const origClearTimeout = global.clearTimeout;
+  const origRaf = global.requestAnimationFrame;
+  const origCaf = global.cancelAnimationFrame;
+
+  function setTimeoutMock(fn, ms) {
+    const id = nextTimerId++;
+    timers.set(id, { fn, ms });
+    return id;
+  }
+
+  function clearTimeoutMock(id) {
+    timers.delete(id);
+  }
+
+  function rafMock(fn) {
+    const id = nextRafId++;
+    rafs.set(id, fn);
+    return id;
+  }
+
+  function cafMock(id) {
+    rafs.delete(id);
+  }
+
+  function runAllRafs() {
+    const entries = Array.from(rafs.entries());
+    rafs.clear();
+    for (const [, fn] of entries) {
+      fn();
+    }
+  }
+
+  function runAllTimers() {
+    const entries = Array.from(timers.entries());
+    timers.clear();
+    for (const [, item] of entries) {
+      item.fn();
+    }
+  }
+
+  function install() {
+    global.setTimeout = setTimeoutMock;
+    global.clearTimeout = clearTimeoutMock;
+    if (global.window) {
+      global.window.requestAnimationFrame = rafMock;
+      global.window.cancelAnimationFrame = cafMock;
+      global.window.setTimeout = setTimeoutMock;
+      global.window.clearTimeout = clearTimeoutMock;
+    }
+  }
+
+  function restore() {
+    global.setTimeout = origSetTimeout;
+    global.clearTimeout = origClearTimeout;
+    if (global.window) {
+      global.window.requestAnimationFrame = origRaf;
+      global.window.cancelAnimationFrame = origCaf;
+      global.window.setTimeout = origSetTimeout;
+      global.window.clearTimeout = origClearTimeout;
+    }
+  }
+
+  return {
+    timers,
+    rafs,
+    runAllRafs,
+    runAllTimers,
+    install,
+    restore
+  };
+}
+
+function createMockMapHarness({ manager, initialRegionId = 'region-1', initialViewMode = 'MAP', isReducedMotion = false } = {}) {
+  const clock = createDeterministicEnvironment();
+  const elements = new Map();
+
+  function getOrCreateElement(sel, tag = 'div') {
+    if (!elements.has(sel)) {
+      const el = createMockElement(tag);
+      el.selectorId = sel;
+      elements.set(sel, el);
+    }
+    return elements.get(sel);
+  }
+
+  const drawerEl = getOrCreateElement('#trainerDetailsDrawer', 'aside');
+  const backdropEl = getOrCreateElement('#detailsBackdrop', 'div');
+  const detailsCloseBtn = getOrCreateElement('#detailsCloseBtn', 'button');
+  const mapBtn = getOrCreateElement('#viewModeMapBtn', 'button');
+  const listBtn = getOrCreateElement('#viewModeListBtn', 'button');
+  const resetBtn = getOrCreateElement('#campaignResetBtn', 'button');
+  const actionBtn = getOrCreateElement('#drawerActionBtn', 'button');
+  const stageEl = getOrCreateElement('.campaign-map-stage', 'div');
+  const panelEl = getOrCreateElement('.campaign-map-panel', 'div');
+  const bgImgEl = getOrCreateElement('.campaign-map-bg-image', 'img');
+  bgImgEl.complete = false;
+  bgImgEl.naturalWidth = 0;
+
+  drawerEl.querySelector = (sel) => {
+    if (sel === '#detailsCloseBtn') return detailsCloseBtn;
+    if (sel === '#drawerActionBtn') return actionBtn;
+    return null;
+  };
+
+  const tabs = [];
+  const nodeButtons = new Map();
+
+  for (const reg of CAMPAIGN_MAP_CATALOG.regions) {
+    const tabEl = getOrCreateElement(`#tab-${reg.id}`, 'button');
+    tabEl.dataset.regionId = reg.id;
+    tabEl.dataset.isLocked = String(reg.id === 'region-endgame' && (!manager || manager.getBadgeCount() < 18));
+    tabs.push(tabEl);
+
+    for (const node of reg.nodes) {
+      const nodeEl = getOrCreateElement(`#${node.nodeId}`, 'button');
+      nodeEl.dataset.nodeId = node.nodeId;
+      nodeButtons.set(node.nodeId, nodeEl);
+    }
+  }
+
+  let capturedHtml = '';
+  let renderCount = 0;
+  const keydownListeners = [];
+
+  const fakeDoc = {
+    addEventListener: (type, fn) => {
+      if (type === 'keydown') keydownListeners.push(fn);
+    },
+    removeEventListener: (type, fn) => {
+      if (type === 'keydown') {
+        const idx = keydownListeners.indexOf(fn);
+        if (idx >= 0) keydownListeners.splice(idx, 1);
+      }
+    },
+    activeElement: null
+  };
+
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) {
+      capturedHtml = val;
+      renderCount++;
+    },
+    querySelector: (sel) => {
+      if (elements.has(sel)) return elements.get(sel);
+      if (sel.startsWith('#tab-')) return getOrCreateElement(sel, 'button');
+      if (sel.startsWith('#node-')) return getOrCreateElement(sel, 'button');
+      if (sel.startsWith('[data-node-open=')) {
+        const id = sel.slice('[data-node-open="'.length, -2);
+        return getOrCreateElement(`open-${id}`, 'button');
+      }
+      if (sel.startsWith('[data-node-challenge=')) {
+        const id = sel.slice('[data-node-challenge="'.length, -2);
+        return getOrCreateElement(`chal-${id}`, 'button');
+      }
+      return null;
+    },
+    querySelectorAll: (sel) => {
+      if (sel === '.campaign-map-tab') return tabs;
+      if (sel === '.campaign-map-node') return Array.from(nodeButtons.values());
+      return [];
+    }
+  };
+
+  const origDocument = global.document;
+  clock.install();
+  global.document = fakeDoc;
+
+  const view = new CampaignMapView({
+    manager,
+    container,
+    initialRegionId,
+    initialViewMode
+  });
+
+  if (isReducedMotion) {
+    view._isReducedMotion = () => true;
+  }
+
+  function uninstallHarness() {
+    clock.restore();
+    global.document = origDocument;
+  }
+
+  return {
+    view,
+    container,
+    clock,
+    drawerEl,
+    backdropEl,
+    detailsCloseBtn,
+    bgImgEl,
+    mapBtn,
+    listBtn,
+    resetBtn,
+    tabs,
+    nodeButtons,
+    keydownListeners,
+    getRenderCount: () => renderCount,
+    getCapturedHtml: () => capturedHtml,
+    uninstallHarness
+  };
+}
+
+test('Map Phase 4 — 13 & 14. Drawer: ciclo de abertura e fechamento com fallback e classes', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+
+    // 1. Initial state: drawer not open
+    assert.equal(harness.view.isDrawerOpen, false);
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false);
+
+    // 2. Open node -> DRAWER_OPEN, schedules RAF, does not have is-open yet
+    const nodeNormal = harness.nodeButtons.get('node-normal');
+    harness.view.openNode('node-normal', nodeNormal, 'map-node');
+    assert.equal(harness.view.isDrawerOpen, true);
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false, 'Não deve ter is-open antes do RAF');
+    assert.equal(harness.clock.rafs.size, 1, 'Deve agendar 1 RAF de abertura');
+
+    // 3. Execute RAF -> drawer receives is-open, aria-hidden="false", backdrop receives is-open, focus moved
+    harness.clock.runAllRafs();
+    assert.equal(harness.drawerEl.classList.contains('is-open'), true, 'Deve receber is-open após RAF');
+    assert.equal(harness.drawerEl.getAttribute('aria-hidden'), 'false');
+    assert.equal(harness.backdropEl.classList.contains('is-open'), true);
+    assert.equal(harness.detailsCloseBtn.isFocused, true, 'Foco deve ser movido para o botão de fechar');
+
+    // 4. Close drawer -> is-open removed, aria-hidden="true", backdrop closed, transitionend registered
+    harness.view.closeDrawer();
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false, 'is-open deve ser removido ao iniciar fechamento');
+    assert.equal(harness.drawerEl.getAttribute('aria-hidden'), 'true');
+    assert.equal(harness.backdropEl.classList.contains('is-open'), false);
+    assert.equal(harness.drawerEl.hasListener('transitionend'), true, 'Deve registrar listener de transitionend');
+    assert.notEqual(harness.view._drawerCloseFallbackTimer, null, 'Fallback timer deve estar agendado');
+
+    // 5. Fallback timer fires -> finishClose completes, isDrawerOpen=false, focus restored to nodeNormal
+    harness.clock.runAllTimers();
+    harness.clock.runAllTimers();
+    assert.equal(harness.view.isDrawerOpen, false);
+    assert.equal(harness.drawerEl.hasListener('transitionend'), false, 'Listener transitionend deve ser removido');
+    assert.equal(nodeNormal.isFocused, true, 'Foco deve ser restaurado ao elemento de origem');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste A: Escape antes do RAF de abertura cancela abertura e fecha imediatamente', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    const nodeEl = harness.nodeButtons.get('node-normal');
+
+    // 1. Abrir nó
+    harness.view.openNode('node-normal', nodeEl, 'map-node');
+    assert.equal(harness.view.isDrawerOpen, true);
+    assert.equal(harness.clock.rafs.size, 1, 'RAF de abertura deve estar pendente');
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false, 'Ainda não chegou a abrir visualmente');
+
+    // 2. Não executar o RAF; pressionar Escape
+    assert.ok(harness.keydownListeners.length > 0, 'Listener de keydown deve existir');
+    harness.keydownListeners[0]({ key: 'Escape', preventDefault() {}, stopPropagation() {} });
+
+    // 3. Executar o RAF que estava pendente (se não foi cancelado ou se o callback foi capturado)
+    harness.clock.runAllRafs();
+    harness.clock.runAllTimers();
+
+    // 4. Confirmar estado
+    assert.equal(harness.view.isDrawerOpen, false, 'Drawer deve estar fechado');
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false, 'is-open deve estar ausente');
+    assert.equal(harness.backdropEl.classList.contains('is-open'), false, 'Backdrop deve estar fechado');
+    assert.equal(nodeEl.isFocused, true, 'Foco deve ser restaurado ao nó de origem');
+    assert.equal(harness.detailsCloseBtn.isFocused, false, 'Nenhum foco tardio no botão de fechar');
+    assert.equal(harness.view._pendingRafIds.size, 0, 'Nenhum RAF pendente');
+    assert.equal(harness.view._pendingTimeoutIds.size, 0, 'Nenhum timer pendente');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste B: Clique no backdrop antes do RAF cancela abertura e fecha imediatamente', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    const nodeEl = harness.nodeButtons.get('node-normal');
+
+    // 1. Abrir nó
+    harness.view.openNode('node-normal', nodeEl, 'map-node');
+    assert.equal(harness.view.isDrawerOpen, true);
+    assert.equal(harness.clock.rafs.size, 1);
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false);
+
+    // 2. Clicar no backdrop antes do RAF
+    assert.ok(typeof harness.backdropEl.onclick === 'function', 'Backdrop deve ter handler de clique');
+    harness.backdropEl.onclick();
+
+    // 3. Executar RAFs e timers
+    harness.clock.runAllRafs();
+    harness.clock.runAllTimers();
+
+    // 4. Confirmar
+    assert.equal(harness.view.isDrawerOpen, false, 'Drawer deve estar fechado');
+    assert.equal(harness.drawerEl.classList.contains('is-open'), false, 'is-open não pode estar presente');
+    assert.equal(harness.backdropEl.classList.contains('is-open'), false, 'Backdrop não pode estar aberto');
+    assert.equal(nodeEl.isFocused, true, 'Foco deve retornar ao nó de origem');
+    assert.equal(harness.detailsCloseBtn.isFocused, false, 'Botão de fechar não deve receber foco');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste C: destroy() durante fechamento invalida callbacks e limpa listeners', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    // 1. Abrir o drawer
+    harness.view.openNode('node-normal');
+    // 2. Executar RAF de abertura
+    harness.clock.runAllRafs();
+    assert.equal(harness.drawerEl.classList.contains('is-open'), true);
+
+    // 3. Iniciar fechamento
+    harness.view.closeDrawer();
+    assert.equal(harness.drawerEl.hasListener('transitionend'), true, 'Listener transitionend deve estar instalado');
+    assert.ok(harness.clock.timers.size > 0, 'Fallback timer deve estar agendado');
+
+    // 4. Chamar destroy() antes do transitionend
+    const rendersBefore = harness.getRenderCount();
+    harness.view.destroy();
+
+    // 5. Disparar manualmente o antigo transitionend no drawer
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', propertyName: 'transform' });
+
+    // 6. Executar timers pendentes
+    harness.clock.runAllTimers();
+
+    // 7. Confirmar
+    assert.equal(harness.getRenderCount(), rendersBefore, 'Nenhum novo render() deve ocorrer após destroy()');
+    assert.equal(harness.keydownListeners.length, 0, 'Nenhum listener keydown deve estar instalado');
+    assert.equal(harness.drawerEl.hasListener('transitionend'), false, 'Listener de transição deve ser removido');
+    assert.equal(harness.view._drawerCloseFallbackTimer, null, 'Timer de fallback deve ser cancelado');
+    assert.equal(harness.view._pendingRafIds.size, 0, 'Conjunto de RAFs deve estar vazio');
+    assert.equal(harness.view._pendingTimeoutIds.size, 0, 'Conjunto de timeouts deve estar vazio');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste D: Abrir nó B durante fechamento do nó A cancela fechamento e mantém nó B', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    const nodeA = harness.nodeButtons.get('node-normal');
+    const nodeB = harness.nodeButtons.get('node-grass');
+
+    // 1. Abrir A
+    harness.view.openNode('node-normal', nodeA, 'map-node');
+    harness.clock.runAllRafs();
+    assert.equal(harness.drawerEl.classList.contains('is-open'), true);
+
+    // 2. Iniciar fechamento
+    harness.view.closeDrawer();
+
+    // 3. Abrir B antes do término
+    harness.view.openNode('node-grass', nodeB, 'map-node');
+
+    // 4. Disparar evento transitionend antigo e timers antigos
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', propertyName: 'transform' });
+    harness.clock.runAllTimers();
+
+    // 5. Confirmar
+    assert.equal(harness.view.selectedNodeId, 'node-grass', 'Nó B continua selecionado');
+    assert.equal(harness.view.isDrawerOpen, true, 'Drawer continua aberto');
+    assert.ok(harness.getCapturedHtml().includes('Flora') || harness.getCapturedHtml().includes('Planta'), 'Conteúdo deve corresponder ao nó B');
+    assert.equal(nodeA.isFocused, false, 'Foco não pode retornar para o nó A');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste E: Evento transitionend de descendente não consome o fechamento', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    harness.view.openNode('node-normal');
+    harness.clock.runAllRafs();
+
+    // 1. Iniciar fechamento
+    harness.view.closeDrawer();
+    assert.equal(harness.drawerEl.hasListener('transitionend'), true);
+
+    // 2. Disparar transitionend com target diferente do drawer (ex.: tag span filha)
+    const childEl = createMockElement('span');
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', target: childEl, propertyName: 'opacity' });
+
+    // 3. Confirmar que o fechamento ainda não terminou
+    assert.equal(harness.drawerEl.hasListener('transitionend'), true, 'Listener deve continuar ativo após evento de descendente');
+    assert.notEqual(harness.view._drawerCloseFallbackTimer, null, 'Fallback timer deve continuar ativo');
+
+    // 4. Disparar transitionend do drawer para transform
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', target: harness.drawerEl, propertyName: 'transform' });
+
+    // 5. Confirmar fechamento único e correto
+    assert.equal(harness.view.isDrawerOpen, false, 'Drawer deve estar fechado');
+    assert.equal(harness.drawerEl.hasListener('transitionend'), false, 'Listener deve ter sido removido');
+    assert.equal(harness.view._drawerCloseFallbackTimer, null, 'Timer deve ter sido limpo');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste F: Fallback de imagem em movimento reduzido preserva tratamento de erro', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  // 1. Ativar movimento reduzido
+  const harness = createMockMapHarness({ manager: mgr, isReducedMotion: true });
+  try {
+    // 2. Fornecer imagem ainda não concluída
+    harness.bgImgEl.complete = false;
+    harness.bgImgEl.naturalWidth = 0;
+    harness.view.render();
+
+    // 3. Confirmar registro de error listener
+    assert.equal(harness.bgImgEl.hasListener('error'), true, 'Listener de error deve ser registrado mesmo em movimento reduzido');
+
+    // 4. Disparar erro
+    harness.bgImgEl.dispatchEvent('error');
+
+    // 5. Confirmar classes
+    assert.equal(harness.bgImgEl.classList.contains('is-hidden'), true, 'is-hidden deve ser adicionado');
+    assert.equal(harness.bgImgEl.classList.contains('is-loaded'), false, 'is-loaded deve ser removido');
+    assert.equal(harness.bgImgEl.classList.contains('is-loading'), false, 'is-loading não deve estar presente');
+    assert.ok(harness.getCapturedHtml().includes('theme-region-verdant'), 'Fallback regional preservado');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste G: Troca de região durante fechamento cancela drawer e prevalece última ação', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    harness.view.openNode('node-normal');
+    harness.clock.runAllRafs();
+
+    // Iniciar fechamento
+    harness.view.closeDrawer();
+
+    // Trocar de região clicando na aba da Região 2
+    const tab2 = harness.tabs.find(t => t.dataset.regionId === 'region-2');
+    assert.ok(tab2, 'Aba da região 2 deve existir');
+    tab2.onclick();
+
+    // Disparar callbacks antigos
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', propertyName: 'transform' });
+    harness.clock.runAllTimers();
+
+    // Confirmar que a última região continua ativa e drawer não reaparece
+    assert.equal(harness.view.activeRegionId, 'region-2', 'Região 2 deve permanecer ativa');
+    assert.equal(harness.view.isDrawerOpen, false, 'Drawer não deve reabrir');
+    assert.equal(harness.view.selectedNodeId, null, 'Seleção de nó anterior deve ser limpa');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — Teste H: Troca Mapa/Lista durante fechamento cancela drawer e prevalece último modo', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const harness = createMockMapHarness({ manager: mgr });
+  try {
+    harness.view.render();
+    harness.view.openNode('node-normal');
+    harness.clock.runAllRafs();
+
+    // Iniciar fechamento
+    harness.view.closeDrawer();
+
+    // Alternar para Modo Lista clicando no botão
+    assert.ok(typeof harness.listBtn.onclick === 'function', 'Botão de modo lista deve ter onclick');
+    harness.listBtn.onclick();
+
+    // Disparar callbacks antigos
+    harness.drawerEl.dispatchEvent({ type: 'transitionend', propertyName: 'transform' });
+    harness.clock.runAllTimers();
+
+    // Confirmar que o último modo prevalece
+    assert.equal(harness.view.viewMode, 'LIST', 'Modo Lista deve prevalecer');
+    assert.equal(harness.view.isDrawerOpen, false, 'Drawer não deve reabrir');
+    assert.equal(harness.view.selectedNodeId, null, 'Seleção deve ser limpa');
+  } finally {
+    harness.uninstallHarness();
+  }
+});
+
+test('Map Phase 4 — 15. Movimento reduzido elimina animações e delays artificiais', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const classes = new Set();
+  const mockBgImg = {
+    classList: {
+      add(cls) { classes.add(cls); },
+      remove(cls) { classes.delete(cls); },
+      contains(cls) { return classes.has(cls); }
+    },
+    addEventListener() {},
+    complete: false,
+    naturalWidth: 0
+  };
+
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: (sel) => {
+      if (sel === '.campaign-map-bg-image') return mockBgImg;
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  // Forçar _isReducedMotion para retornar true
+  view._isReducedMotion = () => true;
+
+  view.render();
+
+  // Em movimento reduzido, stage não tem is-entering
+  assert.ok(!capturedHtml.includes('is-entering'), 'Movimento reduzido não deve adicionar is-entering');
+  // Fundo entra diretamente em is-loaded sem fade
+  assert.equal(classes.has('is-loaded'), true, 'Movimento reduzido deve aplicar is-loaded imediatamente');
+
+  // Abrir nó em movimento reduzido renderiza com is-open imediatamente
+  view.openNode('node-normal');
+  assert.ok(capturedHtml.includes('class="campaign-details-drawer is-open"'), 'Drawer deve nascer is-open em movimento reduzido');
+
+  // Fechar fecha imediatamente sem esperar timer
+  view.closeDrawer();
+  assert.equal(view.isDrawerOpen, false);
+});
+
+test('Map Phase 4 — 16 & 17. Teclado Escape e clique no backdrop fecham drawer e restauram foco', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let focused = false;
+  const mockTarget = {
+    focus() { focused = true; }
+  };
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: (sel) => {
+      if (sel === '#node-normal') return mockTarget;
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view._isReducedMotion = () => true;
+  view.render();
+
+  // Abrir nó
+  view.openNode('node-normal', mockTarget, 'map-node');
+  assert.equal(view.isDrawerOpen, true);
+
+  // Pressionar Escape
+  view._handleKeyDown({
+    key: 'Escape',
+    preventDefault() {},
+    stopPropagation() {}
+  });
+
+  assert.equal(view.isDrawerOpen, false, 'Escape deve fechar o drawer');
+  assert.equal(focused, true, 'Foco deve ser restaurado no nó de origem');
+});
+
+test('Map Phase 4 — 18 & 19. Ações rápidas não deixam callbacks obsoletos e mantém última região', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let capturedHtml = '';
+  const container = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container,
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // Simulação de cliques rápidos consecutivos entre regiões
+  view.activeRegionId = 'region-2';
+  view.transitionCause = 'REGION_CHANGE';
+  view.render();
+
+  view.activeRegionId = 'region-3';
+  view.transitionCause = 'REGION_CHANGE';
+  view.render();
+
+  assert.equal(view.activeRegionId, 'region-3', 'Última região deve prevalecer');
+  assert.ok(capturedHtml.includes('region-3-arcanas.webp'), 'HTML final deve refletir a última região selecionada');
+});
+
+test('Map Phase 4 — 20 & 21. destroy() cancela timers, RAFs e não acumula listeners', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  const view = new CampaignMapView({
+    manager: mgr,
+    container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] },
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  // Criar timers pendentes
+  view._safeTimeout(() => {}, 1000);
+  view._safeRaf(() => {});
+  view.announce('Mensagem teste');
+
+  assert.ok(view._pendingTimeoutIds.size > 0);
+
+  // Chamar destroy
+  view.destroy();
+
+  assert.equal(view._pendingTimeoutIds.size, 0, 'Todos os timeouts pendentes devem ser cancelados no destroy()');
+  assert.equal(view._pendingRafIds.size, 0, 'Todos os RAFs pendentes devem ser cancelados no destroy()');
+  assert.equal(view._ariaTimer, null, 'Timer ARIA deve ser cancelado');
+  assert.equal(view._drawerCloseFallbackTimer, null, 'Timer de fechamento do drawer deve ser cancelado');
+});
+
+test('Map Phase 4 — 22, 23 & 24. triggerChallenge, saves VERSION = 1 e integridade browser', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let challengedPayload = null;
+  const view = new CampaignMapView({
+    manager: mgr,
+    container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] },
+    onChallenge: (payload) => { challengedPayload = payload; },
+    initialRegionId: 'region-1',
+    initialViewMode: 'MAP'
+  });
+
+  view.render();
+
+  const activeRegion = CAMPAIGN_MAP_CATALOG.regions[0];
+  const normalNode = activeRegion.nodes[0];
+
+  const ok = view.triggerChallenge({
+    ...normalNode,
+    canChallenge: true
+  });
+
+  assert.equal(ok, true);
+  assert.deepEqual(challengedPayload, { kind: 'MASTER', id: 'master-normal' });
+  assert.equal(mgr.getState().version, 1, 'Save deve continuar VERSION = 1');
+});

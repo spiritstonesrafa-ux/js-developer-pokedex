@@ -190,8 +190,8 @@
 <body>
 
   <header class="harness-header">
-    <h1>Harness Visual — Mapa de Campanha (Fase 3 — Arte Final & Cenários)</h1>
-    <p>Ambiente isolado de testes e inspeção arquitetural. Valide cenários WebP em pixel art, gradientes de fallback, nós interativos, rotas SVG, responsividade e estados de progresso.</p>
+    <h1>Harness Visual — Mapa de Campanha (Fase 4 — Polimento & Microinterações)</h1>
+    <p>Ambiente isolado de testes e inspeção arquitetural. Valide transições de entrada, ciclo de abertura/fechamento do drawer, simulação de movimento reduzido, carregamento do fundo e interações rápidas.</p>
   </header>
 
   <section class="harness-toolbar">
@@ -214,6 +214,7 @@
       <button class="harness-btn" onclick="switchRegion('region-2')">Região 2 (Picos)</button>
       <button class="harness-btn" onclick="switchRegion('region-3')">Região 3 (Crepúsculo)</button>
       <button class="harness-btn" onclick="switchRegion('region-endgame')">Região Final</button>
+      <button class="harness-btn" onclick="replayRegionEntrance()"><i class="fa-solid fa-rotate-right"></i> Repetir Entrada</button>
     </div>
 
     <!-- Simulador de Viewport e Recursos -->
@@ -223,10 +224,19 @@
       <button class="harness-btn" id="btnTablet" onclick="setDevice('tablet')"><i class="fa-solid fa-tablet-screen-button"></i> Tablet (768px)</button>
       <button class="harness-btn" id="btnMobile" onclick="setDevice('mobile')"><i class="fa-solid fa-mobile-screen"></i> Mobile (375px)</button>
       
-      <span class="toolbar-label" style="min-width:auto; margin-left:12px;">Opções:</span>
+      <span class="toolbar-label" style="min-width:auto; margin-left:12px;">Fase 4:</span>
       <button class="harness-btn" id="btnToggleMotion" onclick="toggleReducedMotion()"><i class="fa-solid fa-film"></i> Movimento Normal</button>
       <button class="harness-btn" id="btnToggleCoords" onclick="toggleCoordsDebug()"><i class="fa-solid fa-crosshairs"></i> Debug Coordenadas</button>
-      <button class="harness-btn" id="btnToggleFallback" onclick="toggleImageFallback()"><i class="fa-solid fa-image"></i> Simular Falha de Imagem</button>
+      <button class="harness-btn" id="btnSimulateSlow" onclick="simulateSlowImageLoading()"><i class="fa-solid fa-hourglass-half"></i> Fundo Lento (1.5s)</button>
+      <button class="harness-btn" id="btnToggleFallback" onclick="toggleImageFallback()"><i class="fa-solid fa-image"></i> Simular Falha Imagem</button>
+    </div>
+
+    <!-- Simulação de Concorrência e Corridas (Fase 4) -->
+    <div class="toolbar-row">
+      <span class="toolbar-label">Testes de Corrida:</span>
+      <button class="harness-btn" onclick="testFastClose()"><i class="fa-solid fa-bolt"></i> Abrir & Fechar Imediato</button>
+      <button class="harness-btn" onclick="testQuickSwitchNode()"><i class="fa-solid fa-forward-step"></i> Abrir A → Fechar → Abrir B</button>
+      <button class="harness-btn" onclick="testDestroyDuringClose()"><i class="fa-solid fa-ban"></i> Destruir Durante Fechamento</button>
     </div>
   </section>
 
@@ -430,8 +440,19 @@
     function switchRegion(regionId) {
       if (mapViewInstance) {
         mapViewInstance.activeRegionId = regionId;
+        mapViewInstance.selectedNodeId = null;
+        mapViewInstance.isDrawerOpen = false;
+        mapViewInstance.transitionCause = 'REGION_CHANGE';
         mapViewInstance.render();
         logEvent('REGION_SWITCHED', { regionId });
+      }
+    }
+
+    function replayRegionEntrance() {
+      if (mapViewInstance) {
+        mapViewInstance.transitionCause = 'REGION_CHANGE';
+        mapViewInstance.render();
+        logEvent('REGION_ENTRANCE_REPLAYED', { regionId: mapViewInstance.activeRegionId });
       }
     }
 
@@ -460,8 +481,17 @@
       const btn = document.getElementById('btnToggleMotion');
       btn.innerHTML = isReducedMotion ? '<i class="fa-solid fa-pause"></i> Movimento Reduzido (Ativo)' : '<i class="fa-solid fa-film"></i> Movimento Normal';
       btn.classList.toggle('active', isReducedMotion);
-      document.documentElement.style.setProperty('--reduced-motion', isReducedMotion ? 'reduce' : 'no-preference');
-      logEvent('REDUCED_MOTION', { isReducedMotion });
+      if (isReducedMotion) {
+        document.documentElement.setAttribute('data-simulate-reduced-motion', 'true');
+        document.documentElement.style.setProperty('--reduced-motion', 'reduce');
+      } else {
+        document.documentElement.removeAttribute('data-simulate-reduced-motion');
+        document.documentElement.style.setProperty('--reduced-motion', 'no-preference');
+      }
+      logEvent('REDUCED_MOTION_TOGGLED', { isReducedMotion });
+      if (mapViewInstance) {
+        mapViewInstance.render();
+      }
     }
 
     let isCoordsDebug = false;
@@ -473,6 +503,23 @@
       logEvent('DEBUG_COORDS', { isCoordsDebug });
     }
 
+    function simulateSlowImageLoading() {
+      if (!mapViewInstance) return;
+      mapViewInstance.transitionCause = 'REGION_CHANGE';
+      mapViewInstance.render();
+      const img = document.querySelector('.campaign-map-bg-image');
+      if (img) {
+        img.classList.remove('is-loaded');
+        img.classList.add('is-loading');
+        logEvent('IMAGE_LOAD_SIMULATED_START', { note: 'Fundo em estado is-loading (simulação de 1.5s)' });
+        setTimeout(() => {
+          img.classList.remove('is-loading');
+          img.classList.add('is-loaded');
+          logEvent('IMAGE_LOADED', { note: 'Fundo transicionou suavemente para is-loaded após 1.5s' });
+        }, 1500);
+      }
+    }
+
     let isImageFallbackSimulated = false;
     function toggleImageFallback() {
       isImageFallbackSimulated = !isImageFallbackSimulated;
@@ -480,17 +527,46 @@
       btn.classList.toggle('active', isImageFallbackSimulated);
       btn.innerHTML = isImageFallbackSimulated
         ? '<i class="fa-solid fa-triangle-exclamation"></i> Fallback Ativo (Erro Disparado)'
-        : '<i class="fa-solid fa-image"></i> Simular Falha de Imagem';
+        : '<i class="fa-solid fa-image"></i> Simular Falha Imagem';
 
       if (isImageFallbackSimulated) {
         const img = document.querySelector('.campaign-map-bg-image');
         if (img) {
           img.dispatchEvent(new Event('error'));
         }
+        logEvent('IMAGE_FALLBACK_ACTIVATED', { note: 'Evento de erro disparado no fundo' });
       } else {
         renderMap();
+        logEvent('FALLBACK_DEACTIVATED', { note: 'Mapa restaurado' });
       }
-      logEvent('FALLBACK_SIMULATION_TOGGLED', { isImageFallbackSimulated });
+    }
+
+    function testFastClose() {
+      if (!mapViewInstance) return;
+      logEvent('DRAWER_OPEN_REQUESTED', { scenario: 'Abrir & Fechar Imediato', nodeId: 'node-normal' });
+      mapViewInstance.openNode('node-normal');
+      mapViewInstance.closeDrawer();
+    }
+
+    function testQuickSwitchNode() {
+      if (!mapViewInstance) return;
+      logEvent('DRAWER_OPEN_REQUESTED', { scenario: 'Abrir A -> Fechar -> Abrir B', nodeId: 'node-normal' });
+      mapViewInstance.openNode('node-normal');
+      mapViewInstance.closeDrawer();
+      mapViewInstance.openNode('node-water');
+    }
+
+    function testDestroyDuringClose() {
+      if (!mapViewInstance) return;
+      logEvent('DRAWER_OPEN_REQUESTED', { scenario: 'Destruir Durante Fechamento', nodeId: 'node-normal' });
+      mapViewInstance.openNode('node-normal');
+      requestAnimationFrame(() => {
+        mapViewInstance.closeDrawer();
+        setTimeout(() => {
+          mapViewInstance.destroy();
+          logEvent('COMPONENT_DESTROYED', { note: 'Instância destruída durante a transição' });
+        }, 50);
+      });
     }
 
     function renderMap() {
@@ -513,7 +589,76 @@
         }
       });
 
+      // Instrument instance to log Phase 4 audit events
+      const origOpenNode = mapViewInstance.openNode.bind(mapViewInstance);
+      mapViewInstance.openNode = (nodeId, originElement, originAction) => {
+        logEvent('DRAWER_OPEN_REQUESTED', { nodeId, originAction });
+        return origOpenNode(nodeId, originElement, originAction);
+      };
+
+      const origCancelDrawerOpening = mapViewInstance._cancelDrawerOpening.bind(mapViewInstance);
+      mapViewInstance._cancelDrawerOpening = () => {
+        if (mapViewInstance._drawerOpenRafId) {
+          logEvent('DRAWER_OPEN_CANCELLED', { token: mapViewInstance._drawerTransitionToken });
+        }
+        return origCancelDrawerOpening();
+      };
+
+      const origCloseDrawer = mapViewInstance.closeDrawer.bind(mapViewInstance);
+      mapViewInstance.closeDrawer = () => {
+        logEvent('DRAWER_CLOSE_STARTED', { token: mapViewInstance._drawerClosingToken });
+        const res = origCloseDrawer();
+        if (!mapViewInstance.isDrawerOpen) {
+          logEvent('DRAWER_CLOSE_COMPLETED', {});
+        }
+        return res;
+      };
+
+      const origCancelDrawerClosing = mapViewInstance._cancelDrawerClosing.bind(mapViewInstance);
+      mapViewInstance._cancelDrawerClosing = () => {
+        if (mapViewInstance._drawerCloseElement || mapViewInstance._drawerCloseFallbackTimer) {
+          logEvent('DRAWER_CLOSE_CANCELLED', { token: mapViewInstance._drawerClosingToken });
+        }
+        return origCancelDrawerClosing();
+      };
+
+      const origDestroy = mapViewInstance.destroy.bind(mapViewInstance);
+      mapViewInstance.destroy = () => {
+        logEvent('COMPONENT_DESTROYED', {});
+        return origDestroy();
+      };
+
       mapViewInstance.render();
+
+      // Monitor view mode toggles
+      const mapBtn = mount.querySelector('#viewModeMapBtn');
+      const listBtn = mount.querySelector('#viewModeListBtn');
+      if (mapBtn) {
+        const origMapClick = mapBtn.onclick;
+        mapBtn.onclick = (e) => {
+          logEvent('VIEW_MODE_CHANGED', { viewMode: 'MAP' });
+          if (origMapClick) origMapClick(e);
+        };
+      }
+      if (listBtn) {
+        const origListClick = listBtn.onclick;
+        listBtn.onclick = (e) => {
+          logEvent('VIEW_MODE_CHANGED', { viewMode: 'LIST' });
+          if (origListClick) origListClick(e);
+        };
+      }
+
+      // Monitor background image load/error
+      const bgImg = mount.querySelector('.campaign-map-bg-image');
+      if (bgImg) {
+        bgImg.addEventListener('load', () => {
+          logEvent('IMAGE_LOADED', { src: bgImg.src });
+        });
+        bgImg.addEventListener('error', () => {
+          logEvent('IMAGE_FALLBACK_ACTIVATED', { note: 'Imagem com erro, fallback ativado' });
+        });
+      }
+
       if (isImageFallbackSimulated) {
         const img = mount.querySelector('.campaign-map-bg-image');
         if (img) {
