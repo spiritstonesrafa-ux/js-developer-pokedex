@@ -2970,3 +2970,742 @@ test('Map Phase 4 — 22, 23 & 24. triggerChallenge, saves VERSION = 1 e integri
   assert.deepEqual(challengedPayload, { kind: 'MASTER', id: 'master-normal' });
   assert.equal(mgr.getState().version, 1, 'Save deve continuar VERSION = 1');
 });
+
+/* --------------------------------------------------------------------------
+   FASE 5 — HOMOLOGAÇÃO FINAL: HARDENING DE RAF FALLBACK, VIEWPORTS & A11Y
+   -------------------------------------------------------------------------- */
+
+test('Map Phase 5 — 1. Fallback sem requestAnimationFrame executa determinísticamente via timeout', () => {
+  const env = createDeterministicEnvironment();
+  env.install();
+
+  // Simular ambiente de navegador antigo ou headless sem RAF
+  const origWindow = global.window;
+  global.window = {
+    setTimeout: env.setTimeoutMock,
+    clearTimeout: env.clearTimeoutMock
+    // requestAnimationFrame e cancelAnimationFrame intencionalmente ausentes
+  };
+
+  try {
+    const mgr = freshManager();
+    startCampaign(mgr);
+
+    const view = new CampaignMapView({
+      manager: mgr,
+      container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] }
+    });
+
+    let executed = false;
+    const fallbackId = view._safeRaf(() => {
+      executed = true;
+    });
+
+    assert.ok(fallbackId !== null && fallbackId !== undefined, 'Deve retornar ID válido de fallback');
+    assert.ok(view._fallbackRafTimeoutIds.has(fallbackId), 'ID deve ser rastreado em _fallbackRafTimeoutIds');
+    assert.ok(view._pendingTimeoutIds.has(fallbackId), 'ID deve ser rastreado em _pendingTimeoutIds');
+    assert.equal(executed, false, 'Callback não deve executar de forma síncrona');
+
+    env.runAllTimers();
+
+    assert.equal(executed, true, 'Callback de fallback deve executar após avanço dos timers');
+    assert.equal(view._fallbackRafTimeoutIds.has(fallbackId), false, 'ID deve ser removido de _fallbackRafTimeoutIds após execução');
+    assert.equal(view._pendingTimeoutIds.has(fallbackId), false, 'ID deve ser removido de _pendingTimeoutIds após execução');
+
+    view.destroy();
+  } finally {
+    global.window = origWindow;
+    env.restore();
+  }
+});
+
+test('Map Phase 5 — 2. Cancelamento antes da execução do fallback remove timeout imediatamente', () => {
+  const env = createDeterministicEnvironment();
+  env.install();
+
+  const origWindow = global.window;
+  global.window = {
+    setTimeout: env.setTimeoutMock,
+    clearTimeout: env.clearTimeoutMock
+  };
+
+  try {
+    const mgr = freshManager();
+    startCampaign(mgr);
+
+    const view = new CampaignMapView({
+      manager: mgr,
+      container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] }
+    });
+
+    let executed = false;
+    const fallbackId = view._safeRaf(() => {
+      executed = true;
+    });
+
+    assert.ok(view._fallbackRafTimeoutIds.has(fallbackId));
+    assert.ok(view._pendingTimeoutIds.has(fallbackId));
+
+    // Cancelar imediatamente antes de rodar os timers
+    view._clearRaf(fallbackId);
+
+    assert.equal(view._fallbackRafTimeoutIds.has(fallbackId), false, 'ID deve ser removido de _fallbackRafTimeoutIds');
+    assert.equal(view._pendingTimeoutIds.has(fallbackId), false, 'ID deve ser removido de _pendingTimeoutIds');
+    assert.equal(env.timers.has(fallbackId), false, 'Timeout nativo/mock deve ser cancelado do loop');
+
+    env.runAllTimers();
+    assert.equal(executed, false, 'Callback cancelada NÃO deve executar');
+
+    view.destroy();
+  } finally {
+    global.window = origWindow;
+    env.restore();
+  }
+});
+
+test('Map Phase 5 — 3. Hardening de ID igual a zero (0) não é ignorado por truthiness', () => {
+  let clearedTimerId = null;
+  let clearedCafId = null;
+
+  const origWindow = global.window;
+  const origClearTimeout = global.clearTimeout;
+
+  global.clearTimeout = (id) => { clearedTimerId = id; };
+  global.window = {
+    cancelAnimationFrame: (id) => { clearedCafId = id; },
+    clearTimeout: (id) => { clearedTimerId = id; }
+  };
+
+  try {
+    const mgr = freshManager();
+    startCampaign(mgr);
+
+    const view = new CampaignMapView({
+      manager: mgr,
+      container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] }
+    });
+
+    // Simular que timerId 0 foi alocado
+    view._pendingTimeoutIds.add(0);
+    view._clearTimeout(0);
+    assert.equal(clearedTimerId, 0, '_clearTimeout(0) deve chamar clearTimeout(0)');
+    assert.equal(view._pendingTimeoutIds.has(0), false, 'ID 0 deve ser deletado de _pendingTimeoutIds');
+
+    // Simular que rafId 0 foi alocado
+    view._pendingRafIds.add(0);
+    view._clearRaf(0);
+    assert.equal(clearedCafId, 0, '_clearRaf(0) deve chamar cancelAnimationFrame(0)');
+    assert.equal(view._pendingRafIds.has(0), false, 'ID 0 deve ser deletado de _pendingRafIds');
+
+    // Simular fallback timer com ID 0
+    clearedTimerId = null;
+    view._fallbackRafTimeoutIds.add(0);
+    view._pendingTimeoutIds.add(0);
+    view._clearRaf(0);
+    assert.equal(clearedTimerId, 0, '_clearRaf(0) em fallback deve chamar clearTimeout(0)');
+    assert.equal(view._fallbackRafTimeoutIds.has(0), false, 'ID 0 de fallback deve ser deletado');
+    assert.equal(view._pendingTimeoutIds.has(0), false, 'ID 0 deve ser deletado de _pendingTimeoutIds');
+
+    // Testar _cancelDrawerOpening com ID 0
+    clearedCafId = null;
+    view._drawerOpenRafId = 0;
+    view._pendingRafIds.add(0);
+    view._cancelDrawerOpening();
+    assert.equal(clearedCafId, 0, '_cancelDrawerOpening deve cancelar quando _drawerOpenRafId === 0');
+    assert.equal(view._drawerOpenRafId, null, '_drawerOpenRafId deve ser resetado para null');
+
+    // Testar _cancelDrawerClosing com fallback timer ID 0
+    clearedTimerId = null;
+    view._drawerCloseFallbackTimer = 0;
+    view._pendingTimeoutIds.add(0);
+    view._cancelDrawerClosing();
+    assert.equal(clearedTimerId, 0, '_cancelDrawerClosing deve cancelar quando _drawerCloseFallbackTimer === 0');
+    assert.equal(view._drawerCloseFallbackTimer, null, '_drawerCloseFallbackTimer deve ser resetado para null');
+
+    view.destroy();
+  } finally {
+    global.clearTimeout = origClearTimeout;
+    global.window = origWindow;
+  }
+});
+
+test('Map Phase 5 — 4. destroy() durante fallback pendente cancela callbacks e impede reabertura', () => {
+  const env = createDeterministicEnvironment();
+  env.install();
+
+  const origWindow = global.window;
+  global.window = {
+    setTimeout: env.setTimeoutMock,
+    clearTimeout: env.clearTimeoutMock
+  };
+
+  try {
+    const mgr = freshManager();
+    startCampaign(mgr);
+
+    let focusedElement = null;
+    const mockContainer = {
+      innerHTML: '',
+      querySelector: (sel) => {
+        if (sel === '#trainerDetailsDrawer') {
+          return {
+            classList: { add: () => {}, remove: () => {} },
+            setAttribute: () => {},
+            querySelector: (btnSel) => {
+              if (btnSel === '#detailsCloseBtn') {
+                return { focus: () => { focusedElement = 'detailsCloseBtn'; } };
+              }
+              return null;
+            }
+          };
+        }
+        if (sel === '#detailsBackdrop') {
+          return { classList: { add: () => {}, remove: () => {} }, setAttribute: () => {} };
+        }
+        return null;
+      },
+      querySelectorAll: () => []
+    };
+
+    const view = new CampaignMapView({
+      manager: mgr,
+      container: mockContainer,
+      initialRegionId: 'region-1'
+    });
+
+    view.render();
+    view.openNode('node-normal');
+
+    // O fallback de abertura está pendente
+    assert.ok(view._pendingTimeoutIds.size > 0, 'Deve ter timeouts pendentes agendados');
+    assert.ok(view._fallbackRafTimeoutIds.size > 0, 'Deve ter fallback RAF agendado');
+
+    // Chamar destroy enquanto pendente
+    view.destroy();
+
+    assert.equal(view._pendingTimeoutIds.size, 0, 'destroy() deve esvaziar todos os timeouts');
+    assert.equal(view._fallbackRafTimeoutIds.size, 0, 'destroy() deve esvaziar _fallbackRafTimeoutIds');
+    assert.equal(view.isDrawerOpen, false, 'Drawer deve estar fechado no destroy');
+
+    // Avançar relógio para simular timers expirando
+    env.runAllTimers();
+
+    assert.equal(focusedElement, null, 'Nenhum foco tardio deve ocorrer após destroy()');
+    assert.equal(view.isDrawerOpen, false, 'Drawer não deve reabrir tardiamente');
+  } finally {
+    global.window = origWindow;
+    env.restore();
+  }
+});
+
+test('Map Phase 5 — 5. Interações rápidas: troca de região durante abertura de nó cancela drawer e prevalece última ação', () => {
+  const env = createDeterministicEnvironment();
+  env.install();
+
+  const origWindow = global.window;
+  global.window = {
+    setTimeout: env.setTimeoutMock,
+    clearTimeout: env.clearTimeoutMock,
+    requestAnimationFrame: env.rafMock,
+    cancelAnimationFrame: env.cafMock
+  };
+
+  try {
+    const mgr = freshManager();
+    startCampaign(mgr);
+
+    const view = new CampaignMapView({
+      manager: mgr,
+      container: { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] },
+      initialRegionId: 'region-1'
+    });
+
+    view.render();
+
+    // 1. Iniciar abertura do nó
+    view.openNode('node-normal');
+    assert.equal(view.isDrawerOpen, true);
+    assert.equal(view.selectedNodeId, 'node-normal');
+
+    // 2. Antes de qualquer RAF rodar, o usuário troca rapidamente para a Região 2
+    view.activeRegionId = 'region-2';
+    view.selectedNodeId = null;
+    view.isDrawerOpen = false;
+    view.transitionCause = 'REGION_CHANGE';
+    view.render();
+
+    // 3. Avançar todos os RAFs e timers pendentes
+    env.runAllRafs();
+    env.runAllTimers();
+
+    // 4. Prevalece a última ação do usuário: Região 2 ativa, drawer fechado
+    assert.equal(view.activeRegionId, 'region-2');
+    assert.equal(view.isDrawerOpen, false);
+    assert.equal(view.selectedNodeId, null);
+
+    view.destroy();
+  } finally {
+    global.window = origWindow;
+    env.restore();
+  }
+});
+
+test('Map Phase 5 — 6. Contratos de Acessibilidade WAI-ARIA: abas, painel, leitor de tela e foco', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+
+  let mountedHtml = '';
+  const view = new CampaignMapView({
+    manager: mgr,
+    container: {
+      set innerHTML(val) { mountedHtml = val; },
+      get innerHTML() { return mountedHtml; },
+      querySelector: () => null,
+      querySelectorAll: () => []
+    },
+    initialRegionId: 'region-1'
+  });
+
+  view.render();
+
+  // Helper para extrair atributos de uma tag de botão específica (eliminando falsos positivos cruzados)
+  function parseTabButton(tabId) {
+    const match = mountedHtml.match(new RegExp(`<button[^>]*id="${tabId}"[^>]*>`, 'i'));
+    assert.ok(match, `Botão com id="${tabId}" deve existir na marcação`);
+    const tag = match[0];
+    const getAttr = (name) => {
+      const m = tag.match(new RegExp(`${name}="([^"]*)"`, 'i'));
+      return m ? m[1] : null;
+    };
+    return {
+      tag,
+      role: getAttr('role'),
+      id: getAttr('id'),
+      regionId: getAttr('data-region-id'),
+      isLocked: getAttr('data-is-locked'),
+      ariaSelected: getAttr('aria-selected'),
+      ariaDisabled: getAttr('aria-disabled'),
+      ariaControls: getAttr('aria-controls'),
+      tabindex: getAttr('tabindex')
+    };
+  }
+
+  // 1. Validação de tablist
+  assert.ok(mountedHtml.includes('role="tablist"'), 'Deve conter container com role="tablist"');
+  assert.ok(mountedHtml.includes('aria-label="Regiões do Circuito"'), 'Tablist deve ter rótulo acessível');
+
+  // 2. Validação atômica de cada aba (atributos no mesmo elemento)
+  const tab1 = parseTabButton('tab-region-1');
+  assert.equal(tab1.role, 'tab', 'tab-region-1 deve ter role="tab"');
+  assert.equal(tab1.regionId, 'region-1', 'tab-region-1 deve apontar para region-1');
+  assert.equal(tab1.ariaSelected, 'true', 'Aba ativa (region-1) deve ter aria-selected="true"');
+  assert.equal(tab1.ariaDisabled, 'false', 'Aba ativa deve ter aria-disabled="false"');
+  assert.equal(tab1.ariaControls, 'campaign-map-region-panel', 'Aba deve controlar campaign-map-region-panel');
+  assert.equal(tab1.tabindex, '0', 'Aba ativa deve ter tabindex="0" (roving tabindex)');
+
+  const tab2 = parseTabButton('tab-region-2');
+  assert.equal(tab2.role, 'tab');
+  assert.equal(tab2.regionId, 'region-2');
+  assert.equal(tab2.ariaSelected, 'false', 'Aba inativa deve ter aria-selected="false"');
+  assert.equal(tab2.ariaDisabled, 'false');
+  assert.equal(tab2.ariaControls, 'campaign-map-region-panel');
+  assert.equal(tab2.tabindex, '-1', 'Aba inativa deve ter tabindex="-1"');
+
+  const tab3 = parseTabButton('tab-region-3');
+  assert.equal(tab3.role, 'tab');
+  assert.equal(tab3.regionId, 'region-3');
+  assert.equal(tab3.ariaSelected, 'false');
+  assert.equal(tab3.ariaDisabled, 'false');
+  assert.equal(tab3.ariaControls, 'campaign-map-region-panel');
+  assert.equal(tab3.tabindex, '-1');
+
+  const tabEndgame = parseTabButton('tab-region-endgame');
+  assert.equal(tabEndgame.role, 'tab');
+  assert.equal(tabEndgame.regionId, 'region-endgame');
+  assert.equal(tabEndgame.ariaSelected, 'false');
+  assert.equal(tabEndgame.ariaDisabled, 'true', 'Região final com 0 insígnias deve ter aria-disabled="true" no botão');
+  assert.equal(tabEndgame.isLocked, 'true');
+  assert.equal(tabEndgame.ariaControls, 'campaign-map-region-panel');
+  assert.equal(tabEndgame.tabindex, '-1');
+
+  // 3. Validação do tabpanel relacionado à aba ativa
+  const panelMatch = mountedHtml.match(/<div[^>]*id="campaign-map-region-panel"[^>]*>/i);
+  assert.ok(panelMatch, 'Tabpanel com id="campaign-map-region-panel" deve existir');
+  const panelTag = panelMatch[0];
+  assert.ok(panelTag.includes('role="tabpanel"'), 'Elemento deve ter role="tabpanel"');
+  assert.ok(panelTag.includes('aria-labelledby="tab-region-1"'), 'Tabpanel deve ter aria-labelledby apontando para a aba ativa');
+  assert.ok(panelTag.includes('tabindex="0"'), 'Tabpanel deve ter tabindex="0"');
+
+  // 4. Live region para leitores de tela
+  assert.ok(mountedHtml.includes('id="mapAriaLive"'));
+  assert.ok(mountedHtml.includes('role="status"'));
+  assert.ok(mountedHtml.includes('aria-live="polite"'));
+
+  view.destroy();
+});
+
+test('Map Phase 5 — 7. Paridade Funcional entre Mapa e Lista: desafios, estados e ações idênticas nó a nó', () => {
+  function testParityForState(label, setupFn, regionId) {
+    const mgr = freshManager();
+    setupFn(mgr);
+
+    let mapHtml = '';
+    let listHtml = '';
+
+    let challengedPayloadMap = null;
+    let challengedPayloadList = null;
+
+    const mapView = new CampaignMapView({
+      manager: mgr,
+      container: {
+        set innerHTML(val) { mapHtml = val; },
+        get innerHTML() { return mapHtml; },
+        querySelector: () => null,
+        querySelectorAll: () => []
+      },
+      onChallenge: (p) => { challengedPayloadMap = p; },
+      initialRegionId: regionId,
+      initialViewMode: 'MAP'
+    });
+    mapView.render();
+
+    const listView = new CampaignMapView({
+      manager: mgr,
+      container: {
+        set innerHTML(val) { listHtml = val; },
+        get innerHTML() { return listHtml; },
+        querySelector: () => null,
+        querySelectorAll: () => []
+      },
+      onChallenge: (p) => { challengedPayloadList = p; },
+      initialRegionId: regionId,
+      initialViewMode: 'LIST'
+    });
+    listView.render();
+
+    const model = Model.buildMapViewModel({
+      catalog: CAMPAIGN_MAP_CATALOG,
+      campaignState: mgr.getState(),
+      masters: K.MASTERS,
+      manager: mgr,
+      activeRegionId: regionId,
+      selectedNodeId: null
+    });
+
+    const activeRegion = model.activeRegion;
+
+    for (const node of activeRegion.nodes) {
+      const isHidden = Boolean(node.isHidden || (node.challengeKind === 'SHADOW' && node.state === 'HIDDEN'));
+
+      const mapBtnMatch = mapHtml.match(new RegExp(`<button[^>]*data-node-id="${node.nodeId}"[^>]*>`, 'i'));
+      const listDetailsMatch = listHtml.match(new RegExp(`<button[^>]*data-node-open="${node.nodeId}"[^>]*>`, 'i'));
+      const listChallengeMatch = listHtml.match(new RegExp(`<button[^>]*data-node-challenge="${node.nodeId}"[^>]*>`, 'i'));
+
+      if (isHidden) {
+        assert.equal(mapBtnMatch, null, `[${label}] Nó oculto ${node.nodeId} não deve estar no mapa`);
+        assert.equal(listDetailsMatch, null, `[${label}] Nó oculto ${node.nodeId} não deve estar na lista`);
+        assert.equal(listChallengeMatch, null, `[${label}] Nó oculto ${node.nodeId} não deve ter botão na lista`);
+        continue;
+      }
+
+      assert.ok(mapBtnMatch, `[${label}] Mapa deve conter nó ${node.nodeId}`);
+      assert.ok(listDetailsMatch, `[${label}] Lista deve conter botão de detalhes para ${node.nodeId}`);
+      assert.ok(listChallengeMatch, `[${label}] Lista deve conter botão de desafio para ${node.nodeId}`);
+
+      const mapTag = mapBtnMatch[0];
+      const listBtnTag = listChallengeMatch[0];
+
+      const getAttr = (tag, name) => {
+        const m = tag.match(new RegExp(`${name}="([^"]*)"`, 'i'));
+        return m ? m[1] : null;
+      };
+
+      const mapIsLocked = mapTag.includes('is-locked');
+      const mapIsDefeated = mapTag.includes('is-defeated');
+      const listIsDisabled = listBtnTag.includes('disabled');
+      const listAriaDisabled = getAttr(listBtnTag, 'aria-disabled');
+      const listTitle = getAttr(listBtnTag, 'title') || '';
+      const mapTitle = getAttr(mapTag, 'title') || '';
+
+      if (node.canChallenge) {
+        assert.equal(mapIsLocked, false, `[${label}] Nó ${node.nodeId} disponível não deve ter classe is-locked no mapa`);
+        assert.equal(listIsDisabled, false, `[${label}] Botão ${node.nodeId} disponível não deve ter atributo disabled na lista`);
+        assert.equal(listAriaDisabled, null, `[${label}] Botão ${node.nodeId} disponível não deve ter aria-disabled`);
+
+        if (node.isDefeated) {
+          assert.equal(mapIsDefeated, true, `[${label}] Nó ${node.nodeId} derrotado deve ter is-defeated no mapa`);
+          assert.ok(listBtnTag.includes('btn-rematch'), `[${label}] Botão ${node.nodeId} derrotado deve ter classe btn-rematch na lista`);
+        } else {
+          assert.equal(mapIsDefeated, false, `[${label}] Nó ${node.nodeId} pendente não deve ter is-defeated no mapa`);
+          assert.ok(listBtnTag.includes('btn-challenge') || listBtnTag.includes('btn-danger'), `[${label}] Botão ${node.nodeId} deve ter classe de desafio`);
+        }
+
+        // Testar disparo real de desafio
+        challengedPayloadMap = null;
+        challengedPayloadList = null;
+        const resMap = mapView.triggerChallenge(node);
+        assert.equal(resMap, true, `[${label}] triggerChallenge deve aceitar nó ${node.nodeId}`);
+        assert.ok(challengedPayloadMap, `[${label}] Payload deve ser gerado`);
+
+        const resList = listView.triggerChallenge(node);
+        assert.equal(resList, true, `[${label}] triggerChallenge na lista deve aceitar nó ${node.nodeId}`);
+        if (node.challengeKind === 'SHADOW') {
+          assert.deepEqual(challengedPayloadMap, { kind: 'SHADOW', id: null }, `[${label}] Payload do Shadow no Mapa deve ser { kind: 'SHADOW', id: null }`);
+          assert.deepEqual(challengedPayloadList, { kind: 'SHADOW', id: null }, `[${label}] Payload do Shadow na Lista deve ser { kind: 'SHADOW', id: null }`);
+        }
+      } else {
+        assert.equal(mapIsLocked, true, `[${label}] Nó ${node.nodeId} bloqueado deve ter classe is-locked no mapa`);
+        assert.equal(listIsDisabled, true, `[${label}] Botão ${node.nodeId} bloqueado deve ter atributo disabled na lista`);
+        assert.equal(listAriaDisabled, 'true', `[${label}] Botão ${node.nodeId} bloqueado deve ter aria-disabled="true" na lista`);
+        assert.ok(listTitle.length > 0 || node.cannotChallengeReason, `[${label}] Botão ${node.nodeId} bloqueado deve ter motivo de bloqueio`);
+
+        // Testar que disparo é bloqueado
+        challengedPayloadMap = null;
+        const resMap = mapView.triggerChallenge(node);
+        assert.equal(resMap, false, `[${label}] triggerChallenge deve rejeitar nó bloqueado ${node.nodeId}`);
+        assert.equal(challengedPayloadMap, null, `[${label}] Nenhum payload deve ser emitido`);
+      }
+    }
+
+    mapView.destroy();
+    listView.destroy();
+  }
+
+  // 1. Mestre disponível no início (0 insígnias)
+  testParityForState('0 Insígnias - Região 1 (Mestre disponível)', (m) => startCampaign(m), 'region-1');
+
+  // 2. Mestre derrotado (revanche)
+  testParityForState('Mestre Derrotado / Revanche - Região 1', (m) => {
+    startCampaign(m);
+    m.recordBattle({ battleId: 'test-norm', kind: 'MASTER', id: 'master-normal', winner: 'player' });
+  }, 'region-1');
+
+  // 3. Região Final liberada com 18 insígnias — provas e Super disponíveis, Shadow oculto
+  testParityForState('Endgame Liberado - 18 Insígnias (Provas e Super disponíveis, Shadow oculto)', (m) => unlock18Badges(m), 'region-endgame');
+
+  // 4. Região Final após recompensa do Super — Shadow realmente revelado e disponível
+  testParityForState('Shadow Revelado e Disponível (Após vitória e recompensa do Super)', (m) => {
+    unlock18Badges(m);
+    m.recordBattle({ battleId: 'phase5-super-win', kind: 'SUPER', id: null, winner: 'player' });
+    m.acknowledgeSuperVictory();
+    const reward = m.getRewardCandidates().find(c => c.selectable);
+    assert.ok(reward, 'Deve existir uma recompensa selecionável do Super');
+    m.claimReward(reward.id);
+    assert.equal(m.getState().shadowTrainer.revealed, true, 'Shadow deve estar efetivamente revelado');
+    m.acknowledgeShadowReveal();
+    assert.equal(m.canChallenge('SHADOW'), true, 'Shadow deve estar disponível para desafio');
+  }, 'region-endgame');
+});
+
+test('Map Phase 5 — 10. Região Final bloqueada redireciona para Região 1 e permanece inacessível', () => {
+  // 1. Campanha iniciada com zero insígnias
+  const mgr = freshManager();
+  startCampaign(mgr);
+  assert.equal(mgr.getBadgeCount(), 0, 'Campanha deve iniciar com 0 insígnias');
+
+  // 2. Solicitação inicial de region-endgame
+  const model = Model.buildMapViewModel({
+    catalog: CAMPAIGN_MAP_CATALOG,
+    campaignState: mgr.getState(),
+    masters: K.MASTERS,
+    manager: mgr,
+    activeRegionId: 'region-endgame',
+    selectedNodeId: null
+  });
+
+  // 3. Modelo resolve activeRegionId para region-1
+  assert.equal(model.activeRegionId, 'region-1', 'Modelo deve redirecionar region-endgame para region-1 quando bloqueada');
+  assert.equal(model.activeRegion.id, 'region-1', 'Região ativa resolvida no modelo deve ser region-1');
+
+  // 4. CampaignMapView.activeRegionId também termina em region-1
+  let capturedHtml = '';
+  let announcedMessage = null;
+  let challengeTriggered = false;
+
+  const mockEndgameTab = {
+    dataset: {
+      regionId: 'region-endgame',
+      isLocked: 'true'
+    },
+    onclick: null,
+    focus: () => {}
+  };
+
+  const mockTab1 = {
+    dataset: {
+      regionId: 'region-1',
+      isLocked: 'false'
+    },
+    onclick: null,
+    focus: () => {}
+  };
+
+  const mockContainer = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector(sel) {
+      if (sel === '#mapAriaLive') {
+        return { textContent: '', innerText: '' };
+      }
+      return null;
+    },
+    querySelectorAll(sel) {
+      if (sel === '.campaign-map-tab') {
+        return [mockTab1, mockEndgameTab];
+      }
+      return [];
+    }
+  };
+
+  const mapView = new CampaignMapView({
+    manager: mgr,
+    container: mockContainer,
+    initialRegionId: 'region-endgame',
+    onChallenge: () => { challengeTriggered = true; }
+  });
+
+  mapView.announce = (msg) => {
+    announcedMessage = msg;
+  };
+
+  mapView.render();
+
+  assert.equal(mapView.activeRegionId, 'region-1', 'CampaignMapView.activeRegionId deve resolver e terminar em region-1');
+
+  // 5. Aba da Região Final existe na renderização
+  const endgameTabMatch = capturedHtml.match(/<button[^>]*id="tab-region-endgame"[^>]*>[\s\S]*?<\/button>/i);
+  assert.ok(endgameTabMatch, 'Aba da Região Final deve existir no HTML renderizado');
+
+  // 6. A própria aba final possui aria-selected="false", aria-disabled="true", data-is-locked="true", tabindex="-1"
+  const endgameTabTag = endgameTabMatch[0];
+  assert.ok(endgameTabTag.includes('aria-selected="false"'), 'Aba final bloqueada deve ter aria-selected="false"');
+  assert.ok(endgameTabTag.includes('aria-disabled="true"'), 'Aba final bloqueada deve ter aria-disabled="true"');
+  assert.ok(endgameTabTag.includes('data-is-locked="true"'), 'Aba final bloqueada deve ter data-is-locked="true"');
+  assert.ok(endgameTabTag.includes('tabindex="-1"'), 'Aba final bloqueada deve ter tabindex="-1"');
+
+  // 7. tabpanel permanece relacionado à Região 1
+  assert.ok(capturedHtml.includes('id="campaign-map-region-panel"'), 'Elemento tabpanel deve existir');
+  assert.ok(capturedHtml.includes('aria-labelledby="tab-region-1"'), 'tabpanel deve estar associado à aba da Região 1');
+
+  // 8. Nós da Região 1 são renderizados
+  assert.ok(capturedHtml.includes('data-node-id="node-normal"'), 'Mestres da Região 1 devem ser renderizados');
+  assert.ok(capturedHtml.includes('data-node-id="node-grass"'), 'Mestre Grass da Região 1 deve ser renderizado');
+  assert.ok(capturedHtml.includes('data-node-id="node-water"'), 'Mestre Water da Região 1 deve ser renderizado');
+
+  // 9. Nós exclusivos do endgame NÃO são renderizados
+  assert.equal(capturedHtml.includes('data-node-id="node-super"'), false, 'Nó Super Trainer não deve ser renderizado');
+  assert.equal(capturedHtml.includes('data-node-id="node-shadow"'), false, 'Nó Shadow Trainer não deve ser renderizado');
+  assert.equal(capturedHtml.includes('data-node-id="node-legendary"'), false, 'Prova Lendária não deve ser renderizada');
+  assert.equal(capturedHtml.includes('data-node-id="node-mythical"'), false, 'Prova Mítica não deve ser renderizada');
+  assert.equal(capturedHtml.includes('data-node-id="node-titans"'), false, 'Prova dos Titãs não deve ser renderizada');
+  assert.equal(capturedHtml.includes('data-node-id="node-celestial"'), false, 'Prova Celestial não deve ser renderizada');
+
+  // 10. Tentar ativar a aba bloqueada
+  assert.equal(typeof mockEndgameTab.onclick, 'function', 'Listener de clique deve estar vinculado à aba');
+  mockEndgameTab.onclick();
+
+  assert.equal(mapView.activeRegionId, 'region-1', 'Clicar na aba bloqueada NÃO deve trocar a região ativa');
+  assert.equal(mapView.isDrawerOpen, false, 'Clicar na aba bloqueada NÃO deve abrir drawer');
+  assert.equal(challengeTriggered, false, 'Clicar na aba bloqueada NÃO deve disparar desafio');
+  assert.ok(announcedMessage && announcedMessage.includes('Região Final bloqueada'), 'Deve produzir anúncio sonoro/leitor de tela de Região Final bloqueada');
+});
+
+test('Map Phase 5 — 8. Integração CampaignView: estado COMPLETED desmonta mapa e exibe True Ending com reset', () => {
+  const mgr = freshManager();
+  unlock18Badges(mgr);
+
+  // Derrotar Super Trainer e resolver recompensa de elite
+  mgr.recordBattle({ battleId: 'test-super-win', kind: 'SUPER', id: null, winner: 'player' });
+  mgr.acknowledgeSuperVictory();
+  const elite = mgr.getRewardCandidates().find(c => c.selectable);
+  if (elite) mgr.claimReward(elite.id);
+  mgr.acknowledgeShadowReveal();
+
+  // Derrotar Shadow Trainer -> status torna-se COMPLETED
+  mgr.recordBattle({ battleId: 'test-shadow-win', kind: 'SHADOW', id: null, winner: 'player' });
+
+  assert.equal(mgr.getState().status, 'COMPLETED', 'Status da campanha deve ser COMPLETED após vitória no Shadow');
+  assert.equal(mgr.getState().pendingReward, null, 'Nenhuma recompensa pendente ao concluir');
+
+  let capturedHtml = '';
+  let resetTriggered = false;
+
+  const mockContainer = {
+    get innerHTML() { return capturedHtml; },
+    set innerHTML(val) { capturedHtml = val; },
+    querySelector(sel) {
+      if (sel === '#campaignReset') {
+        return {
+          onclick: () => { resetTriggered = true; }
+        };
+      }
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+
+  const campaignView = new CampaignView({
+    manager: mgr,
+    coordinator: null,
+    container: mockContainer
+  });
+
+  // Simula mapView previamente existente para comprovar que é destruído
+  let mapViewDestroyed = false;
+  campaignView.mapView = {
+    destroy: () => { mapViewDestroyed = true; }
+  };
+
+  campaignView.render();
+
+  // 1. O mapa não deve ser renderizado
+  assert.equal(capturedHtml.includes('campaign-map-shell'), false, 'Mapa NÃO deve permanecer montado quando COMPLETED');
+  assert.equal(capturedHtml.includes('campaign-map-viewport'), false, 'Viewport do mapa não deve existir na tela de conclusão');
+  assert.equal(capturedHtml.includes('Revanche'), false, 'Nenhum CTA de revanche deve ser renderizado pós-campanha');
+
+  // 2. Tela de conclusão da campanha deve ser renderizada (renderComplete)
+  assert.ok(
+    capturedHtml.includes('CAMPANHA 100% CONCLUÍDA') || capturedHtml.includes('True Ending'),
+    'Deve conter título de conclusão da campanha'
+  );
+  assert.ok(
+    capturedHtml.includes('CAMPEÃO DO CIRCUITO') || capturedHtml.includes('JORNADA CONCLUÍDA'),
+    'Deve conter eyebrow de conclusão'
+  );
+
+  // 3. Ação de reset deve existir
+  assert.ok(capturedHtml.includes('id="campaignReset"'), 'Deve conter botão de resetar campanha');
+
+  // 4. mapView deve ser destruído
+  assert.strictEqual(mapViewDestroyed, true, 'mapView deve ser destruído ao entrar em status COMPLETED');
+});
+
+test('Map Phase 5 — 9. Métricas reais dos WebP em disco: conformidade estrita em bytes e KiB', () => {
+  const EXPECTED_FILES = [
+    { name: 'region-1-vales.webp', expectedBytes: 134778, maxBytes: 140 * 1024 },
+    { name: 'region-2-fendas.webp', expectedBytes: 133436, maxBytes: 140 * 1024 },
+    { name: 'region-3-arcanas.webp', expectedBytes: 134350, maxBytes: 140 * 1024 },
+    { name: 'region-endgame.webp', expectedBytes: 133408, maxBytes: 140 * 1024 }
+  ];
+
+  let accumulatedBytes = 0;
+
+  for (const fileInfo of EXPECTED_FILES) {
+    const fullPath = path.resolve(__dirname, '../../assets/images/campaign/maps', fileInfo.name);
+    assert.ok(fs.existsSync(fullPath), `Arquivo ${fileInfo.name} deve existir`);
+
+    const stats = fs.statSync(fullPath);
+    const actualBytes = stats.size;
+    accumulatedBytes += actualBytes;
+
+    // Conferência de bytes exatos com o disco real
+    assert.equal(actualBytes, fileInfo.expectedBytes, `Tamanho real do ${fileInfo.name} deve ser exatamente ${fileInfo.expectedBytes} bytes (obtido: ${actualBytes})`);
+
+    // Orçamento individual <= 140 KiB (143.360 bytes)
+    assert.ok(actualBytes <= fileInfo.maxBytes, `${fileInfo.name} excede o limite de 140 KiB: ${actualBytes} > ${fileInfo.maxBytes}`);
+  }
+
+  // Orçamento total: 535.972 bytes (523,41 KiB) <= 560 KiB (573.440 bytes)
+  assert.equal(accumulatedBytes, 535972, `Total acumulado dos WebP deve ser exatamente 535.972 bytes (obtido: ${accumulatedBytes})`);
+  assert.ok(accumulatedBytes <= 560 * 1024, `Total acumulado excede o limite combinado de 560 KiB: ${accumulatedBytes} > ${560 * 1024}`);
+});

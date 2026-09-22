@@ -90,6 +90,7 @@
       this.lastTransitionCause = 'REGION_CHANGE';
       this._pendingRafIds = new Set();
       this._pendingTimeoutIds = new Set();
+      this._fallbackRafTimeoutIds = new Set();
 
       this._drawerOpenRafId = null;
       this._drawerTransitionToken = 0;
@@ -131,16 +132,29 @@
     }
 
     _clearTimeout(timerId) {
-      if (timerId) {
+      if (timerId !== null && timerId !== undefined) {
         clearTimeout(timerId);
         this._pendingTimeoutIds.delete(timerId);
+        if (this._fallbackRafTimeoutIds) {
+          this._fallbackRafTimeoutIds.delete(timerId);
+        }
       }
     }
 
     _safeRaf(fn) {
       if (this._isDestroyed) return null;
       if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
-        return this._safeTimeout(fn, 16);
+        let timerId;
+        timerId = setTimeout(() => {
+          this._pendingTimeoutIds.delete(timerId);
+          this._fallbackRafTimeoutIds.delete(timerId);
+          if (!this._isDestroyed) {
+            fn();
+          }
+        }, 16);
+        this._pendingTimeoutIds.add(timerId);
+        this._fallbackRafTimeoutIds.add(timerId);
+        return timerId;
       }
       let rafId;
       rafId = window.requestAnimationFrame(() => {
@@ -154,17 +168,22 @@
     }
 
     _clearRaf(rafId) {
-      if (rafId) {
+      if (rafId !== null && rafId !== undefined) {
         if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
           window.cancelAnimationFrame(rafId);
         }
         this._pendingRafIds.delete(rafId);
+        if (this._fallbackRafTimeoutIds && this._fallbackRafTimeoutIds.has(rafId)) {
+          clearTimeout(rafId);
+          this._fallbackRafTimeoutIds.delete(rafId);
+          this._pendingTimeoutIds.delete(rafId);
+        }
       }
     }
 
     _cancelDrawerOpening() {
       this._drawerTransitionToken++;
-      if (this._drawerOpenRafId) {
+      if (this._drawerOpenRafId !== null && this._drawerOpenRafId !== undefined) {
         this._clearRaf(this._drawerOpenRafId);
         this._drawerOpenRafId = null;
       }
@@ -172,7 +191,7 @@
 
     _cancelDrawerClosing() {
       this._drawerClosingToken++;
-      if (this._drawerCloseFallbackTimer) {
+      if (this._drawerCloseFallbackTimer !== null && this._drawerCloseFallbackTimer !== undefined) {
         this._clearTimeout(this._drawerCloseFallbackTimer);
         this._drawerCloseFallbackTimer = null;
       }
@@ -189,7 +208,7 @@
       this._cancelDrawerOpening();
       this._cancelDrawerClosing();
 
-      if (this._ariaTimer) {
+      if (this._ariaTimer !== null && this._ariaTimer !== undefined) {
         this._clearTimeout(this._ariaTimer);
         this._ariaTimer = null;
       }
@@ -197,6 +216,9 @@
         clearTimeout(timerId);
       }
       this._pendingTimeoutIds.clear();
+      if (this._fallbackRafTimeoutIds) {
+        this._fallbackRafTimeoutIds.clear();
+      }
 
       if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
         for (const rafId of this._pendingRafIds) {
@@ -257,7 +279,7 @@
 
     _deliverPendingAriaAnnouncement() {
       if (this._isDestroyed || !this.pendingAriaAnnouncement) return;
-      if (this._ariaTimer) {
+      if (this._ariaTimer !== null && this._ariaTimer !== undefined) {
         this._clearTimeout(this._ariaTimer);
         this._ariaTimer = null;
       }
@@ -320,7 +342,7 @@
       }
 
       this._renderVersion = (this._renderVersion || 0) + 1;
-      if (this._ariaTimer) {
+      if (this._ariaTimer !== null && this._ariaTimer !== undefined) {
         this._clearTimeout(this._ariaTimer);
         this._ariaTimer = null;
       }

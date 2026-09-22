@@ -112,18 +112,120 @@
       position: relative;
     }
 
-    .preview-container.device-tablet {
+    .preview-container.device-320 {
+      max-width: 320px;
+      border: 2px dashed rgba(244, 63, 94, 0.4);
+      border-radius: 20px;
+      padding: 6px;
+    }
+
+    .preview-container.device-375 {
+      max-width: 375px;
+      border: 2px dashed rgba(244, 63, 94, 0.4);
+      border-radius: 20px;
+      padding: 8px;
+    }
+
+    .preview-container.device-768 {
       max-width: 768px;
       border: 2px dashed rgba(56, 189, 248, 0.4);
       border-radius: 16px;
       padding: 8px;
     }
 
-    .preview-container.device-mobile {
-      max-width: 375px;
-      border: 2px dashed rgba(244, 63, 94, 0.4);
-      border-radius: 20px;
+    .preview-container.device-1024 {
+      max-width: 1024px;
+      border: 2px dashed rgba(168, 85, 247, 0.4);
+      border-radius: 16px;
       padding: 8px;
+    }
+
+    .preview-container.device-1180 {
+      max-width: 1180px;
+    }
+
+    .preview-container.device-1366 {
+      max-width: 1366px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 8px;
+    }
+
+    .preview-container.device-1920 {
+      max-width: 1920px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 8px;
+    }
+
+    /* Diagnostics Bar */
+    .harness-diagnostics-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 1180px;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-size: 0.78rem;
+      color: #94a3b8;
+      box-sizing: border-box;
+    }
+
+    .harness-diagnostics-bar strong {
+      color: #ffd166;
+    }
+
+    .harness-diagnostics-bar code {
+      color: #38bdf8;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .harness-viewport-warning {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 1180px;
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      color: #fef08a;
+      font-size: 0.8rem;
+      box-sizing: border-box;
+      line-height: 1.4;
+    }
+
+    .harness-viewport-warning code {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #ffd166;
+    }
+
+    .harness-completed-notice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 1180px;
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
+      font-size: 0.8rem;
+      box-sizing: border-box;
+      line-height: 1.4;
     }
 
     /* Event log console */
@@ -190,8 +292,8 @@
 <body>
 
   <header class="harness-header">
-    <h1>Harness Visual — Mapa de Campanha (Fase 4 — Polimento & Microinterações)</h1>
-    <p>Ambiente isolado de testes e inspeção arquitetural. Valide transições de entrada, ciclo de abertura/fechamento do drawer, simulação de movimento reduzido, carregamento do fundo e interações rápidas.</p>
+    <h1>Harness Visual — Mapa de Campanha (Fase 5 — Homologação Final)</h1>
+    <p>Ambiente isolado para homologação técnica, acessibilidade (foco, leitor de tela), responsividade (320px a 1920px), auditoria de callbacks pendentes e ciclo de vida.</p>
   </header>
 
   <section class="harness-toolbar">
@@ -204,7 +306,7 @@
       <button class="harness-btn" onclick="setPreset('17_BADGES')">17 Insígnias (Pré-Endgame)</button>
       <button class="harness-btn" onclick="setPreset('18_BADGES')">18 Insígnias (Provas & Super)</button>
       <button class="harness-btn" onclick="setPreset('SHADOW_REVEALED')">Shadow Revelado</button>
-      <button class="harness-btn" onclick="setPreset('100_PERCENT')">100% Concluído</button>
+      <button class="harness-btn" onclick="setPreset('100_PERCENT')">100% — inspeção isolada do mapa</button>
     </div>
 
     <!-- Alternadores de Região -->
@@ -217,14 +319,18 @@
       <button class="harness-btn" onclick="replayRegionEntrance()"><i class="fa-solid fa-rotate-right"></i> Repetir Entrada</button>
     </div>
 
-    <!-- Simulador de Viewport e Recursos -->
+    <!-- Controles de Largura de Inspeção do Contêiner -->
     <div class="toolbar-row">
-      <span class="toolbar-label">Dispositivo:</span>
-      <button class="harness-btn active" id="btnDesktop" onclick="setDevice('desktop')"><i class="fa-solid fa-desktop"></i> Desktop (1180px)</button>
-      <button class="harness-btn" id="btnTablet" onclick="setDevice('tablet')"><i class="fa-solid fa-tablet-screen-button"></i> Tablet (768px)</button>
-      <button class="harness-btn" id="btnMobile" onclick="setDevice('mobile')"><i class="fa-solid fa-mobile-screen"></i> Mobile (375px)</button>
+      <span class="toolbar-label">Largura Contêiner:</span>
+      <button class="harness-btn" id="btn320" onclick="setDevice('320')">320px</button>
+      <button class="harness-btn" id="btn375" onclick="setDevice('375')">375px</button>
+      <button class="harness-btn" id="btn768" onclick="setDevice('768')">768px</button>
+      <button class="harness-btn" id="btn1024" onclick="setDevice('1024')">1024px</button>
+      <button class="harness-btn active" id="btn1180" onclick="setDevice('1180')">1180px (Padrão)</button>
+      <button class="harness-btn" id="btn1366" onclick="setDevice('1366')">1366px</button>
+      <button class="harness-btn" id="btn1920" onclick="setDevice('1920')">1920px</button>
       
-      <span class="toolbar-label" style="min-width:auto; margin-left:12px;">Fase 4:</span>
+      <span class="toolbar-label" style="min-width:auto; margin-left:12px;">A11y/Fx:</span>
       <button class="harness-btn" id="btnToggleMotion" onclick="toggleReducedMotion()"><i class="fa-solid fa-film"></i> Movimento Normal</button>
       <button class="harness-btn" id="btnToggleCoords" onclick="toggleCoordsDebug()"><i class="fa-solid fa-crosshairs"></i> Debug Coordenadas</button>
       <button class="harness-btn" id="btnSimulateSlow" onclick="simulateSlowImageLoading()"><i class="fa-solid fa-hourglass-half"></i> Fundo Lento (1.5s)</button>
@@ -239,6 +345,34 @@
       <button class="harness-btn" onclick="testDestroyDuringClose()"><i class="fa-solid fa-ban"></i> Destruir Durante Fechamento</button>
     </div>
   </section>
+
+  <!-- Aviso de Auditoria Responsiva -->
+  <div class="harness-viewport-warning" role="note">
+    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    <span>
+      <strong>Aviso de Auditoria:</strong> A largura do contêiner de inspeção <em>não altera o viewport CSS real do navegador</em>. Breakpoints <code>@media</code> de produção devem ser auditados redimensionando a janela/viewport real do navegador. O modo mobile é considerado ativo exclusivamente quando <code>window.matchMedia('(max-width: 640px)').matches</code> retornar <code>true</code>.
+    </span>
+  </div>
+
+  <!-- Aviso de Estado 100% Concluído -->
+  <div id="harnessCompletedWarning" class="harness-completed-notice" style="display:none;" role="note">
+    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+    <span>
+      <strong>Nota do Estado Concluído:</strong> Este preset exibe o mapa 100% preenchido apenas como estado isolado de inspeção. Na integração real de produção (<code>CampaignView</code>), quando <code>status === 'COMPLETED'</code>, o mapa é desmontado e a tela True Ending (<code>renderComplete()</code>) é exibida oferecendo apenas a ação de reset, sem revanches pós-campanha.
+    </span>
+  </div>
+
+  <!-- Painel de Diagnóstico de Homologação da Fase 5 -->
+  <div class="harness-diagnostics-bar" id="diagnosticsBar">
+    <div><strong>Viewport Real:</strong> <span id="diagViewport">0×0 px</span></div>
+    <div><strong>Largura Contêiner:</strong> <span id="diagContainerWidth">0 px</span></div>
+    <div><strong>Media Query Mobile (&le;640px):</strong> <span id="diagMobileMq">false</span></div>
+    <div><strong>Modo Esperado Drawer:</strong> <span id="diagExpectedDrawer">LATERAL</span></div>
+    <div><strong>Callbacks Pendentes:</strong> <span id="diagPendingCallbacks">0</span> (Timeouts: <span id="diagTimeouts">0</span>, RAFs: <span id="diagRafs">0</span>)</div>
+    <div><strong>Foco Ativo:</strong> <code id="diagFocusElement">none</code></div>
+    <div><strong>Aria-Label:</strong> <span id="diagAriaName">-</span></div>
+    <div><strong>Região:</strong> <span id="diagActiveRegion">-</span> | <strong>Modo:</strong> <span id="diagActiveMode">-</span></div>
+  </div>
 
   <!-- Container onde o Mapa é renderizado -->
   <main class="preview-container" id="previewContainer">
@@ -435,6 +569,12 @@
       mockManager = createMockManager(mockState);
       renderMap();
       logEvent('PRESET_CHANGED', { preset, badgeCount: mockManager.getBadgeCount() });
+
+      const completedWarn = document.getElementById('harnessCompletedWarning');
+      if (completedWarn) {
+        completedWarn.style.display = (preset === '100_PERCENT') ? 'flex' : 'none';
+      }
+      updateDiagnostics();
     }
 
     function switchRegion(regionId) {
@@ -459,20 +599,22 @@
     function setDevice(device) {
       const container = document.getElementById('previewContainer');
       container.className = 'preview-container';
-      document.getElementById('btnDesktop').classList.remove('active');
-      document.getElementById('btnTablet').classList.remove('active');
-      document.getElementById('btnMobile').classList.remove('active');
+      ['320', '375', '768', '1024', '1180', '1366', '1920'].forEach(id => {
+        const btn = document.getElementById(`btn${id}`);
+        if (btn) btn.classList.remove('active');
+      });
 
-      if (device === 'tablet') {
-        container.classList.add('device-tablet');
-        document.getElementById('btnTablet').classList.add('active');
-      } else if (device === 'mobile') {
-        container.classList.add('device-mobile');
-        document.getElementById('btnMobile').classList.add('active');
+      if (['320', '375', '768', '1024', '1180', '1366', '1920'].includes(device)) {
+        container.classList.add(`device-${device}`);
+        const activeBtn = document.getElementById(`btn${device}`);
+        if (activeBtn) activeBtn.classList.add('active');
       } else {
-        document.getElementById('btnDesktop').classList.add('active');
+        container.classList.add('device-1180');
+        const activeBtn = document.getElementById('btn1180');
+        if (activeBtn) activeBtn.classList.add('active');
       }
-      logEvent('DEVICE_VIEWPORT', { device });
+      logEvent('CONTAINER_WIDTH_CHANGED', { device, note: 'Altera max-width do contêiner, não o viewport real do navegador' });
+      updateDiagnostics();
     }
 
     let isReducedMotion = false;
@@ -667,9 +809,74 @@
       }
     }
 
+    function updateDiagnostics() {
+      if (!mapViewInstance) return;
+      const timeouts = mapViewInstance._pendingTimeoutIds ? mapViewInstance._pendingTimeoutIds.size : 0;
+      const rafs = mapViewInstance._pendingRafIds ? mapViewInstance._pendingRafIds.size : 0;
+      const total = timeouts + rafs;
+
+      const pendingEl = document.getElementById('diagPendingCallbacks');
+      if (pendingEl) pendingEl.textContent = total;
+      const timeoutsEl = document.getElementById('diagTimeouts');
+      if (timeoutsEl) timeoutsEl.textContent = timeouts;
+      const rafsEl = document.getElementById('diagRafs');
+      if (rafsEl) rafsEl.textContent = rafs;
+
+      const regEl = document.getElementById('diagActiveRegion');
+      if (regEl) regEl.textContent = mapViewInstance.activeRegionId || '-';
+      const modeEl = document.getElementById('diagActiveMode');
+      if (modeEl) modeEl.textContent = mapViewInstance.viewMode || '-';
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const containerEl = document.getElementById('previewContainer');
+      const cw = containerEl ? containerEl.offsetWidth : 0;
+      const isMobileMq = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 640px)').matches;
+      const expectedDrawer = isMobileMq ? 'BOTTOM_SHEET' : 'LATERAL';
+
+      const vpEl = document.getElementById('diagViewport');
+      if (vpEl) vpEl.textContent = `${vw}×${vh} px`;
+
+      const cwEl = document.getElementById('diagContainerWidth');
+      if (cwEl) cwEl.textContent = `${cw} px`;
+
+      const mqEl = document.getElementById('diagMobileMq');
+      if (mqEl) {
+        mqEl.textContent = isMobileMq ? 'true (ativo)' : 'false (inativo)';
+        mqEl.style.color = isMobileMq ? '#4ade80' : '#94a3b8';
+      }
+
+      const drawerModeEl = document.getElementById('diagExpectedDrawer');
+      if (drawerModeEl) {
+        drawerModeEl.textContent = expectedDrawer;
+        drawerModeEl.style.color = isMobileMq ? '#f43f5e' : '#38bdf8';
+      }
+
+      const activeEl = document.activeElement;
+      const focusEl = document.getElementById('diagFocusElement');
+      const ariaEl = document.getElementById('diagAriaName');
+      if (activeEl && activeEl !== document.body) {
+        let tagDesc = activeEl.tagName.toLowerCase();
+        if (activeEl.id) tagDesc += `#${activeEl.id}`;
+        else if (activeEl.className && typeof activeEl.className === 'string') tagDesc += `.${activeEl.className.split(' ')[0]}`;
+        if (focusEl) focusEl.textContent = tagDesc;
+
+        const ariaName = activeEl.getAttribute('aria-label') || activeEl.getAttribute('title') || (activeEl.textContent ? activeEl.textContent.trim().slice(0, 35) : '') || '(sem nome)';
+        if (ariaEl) ariaEl.textContent = ariaName;
+      } else {
+        if (focusEl) focusEl.textContent = 'body (sem foco)';
+        if (ariaEl) ariaEl.textContent = '-';
+      }
+    }
+
+    setInterval(updateDiagnostics, 250);
+    window.addEventListener('resize', updateDiagnostics);
+    document.addEventListener('focusin', updateDiagnostics);
+
     // Inicializa com o preset 0 badges
     window.addEventListener('DOMContentLoaded', () => {
       setPreset('0_BADGES');
+      updateDiagnostics();
     });
   </script>
 </body>
