@@ -21,9 +21,12 @@
   let sessionConstants;
   let pokeApiService;
   let BattleStatNormalizer;
+  let campaignBattleFallbackCatalog;
+  let battleConstants;
 
   if (typeof module !== 'undefined' && module.exports) {
     sessionConstants = require('./battle-session-constants.js');
+    battleConstants = require('../battle/battle-constants.js');
     try {
       pokeApiService = require('../poke-api.js');
     } catch {
@@ -34,10 +37,17 @@
     } catch {
       BattleStatNormalizer = null;
     }
+    try {
+      campaignBattleFallbackCatalog = require('../campaign/campaign-battle-fallback-catalog.js');
+    } catch {
+      campaignBattleFallbackCatalog = null;
+    }
   } else if (typeof window !== 'undefined') {
     sessionConstants = window.PBABattleSession || {};
+    battleConstants = window.PBABattle || {};
     pokeApiService = window.pokeApi;
     BattleStatNormalizer = window.PBABattle ? window.PBABattle.BattleStatNormalizer : null;
+    campaignBattleFallbackCatalog = (window.PBACampaign && window.PBACampaign.CampaignBattleFallbackCatalog) || null;
   }
 
   const {
@@ -94,7 +104,7 @@
     electric: { id: 84, name: 'thunder-shock', type: 'electric', power: 40, accuracy: 100, pp: 30, damageClass: 'special' },
     grass: { id: 71, name: 'vine-whip', type: 'grass', power: 45, accuracy: 100, pp: 25, damageClass: 'physical' },
     ice: { id: 181, name: 'powder-snow', type: 'ice', power: 40, accuracy: 100, pp: 25, damageClass: 'special' },
-    fighting: { id: 67, name: 'low-kick', type: 'fighting', power: 50, accuracy: 100, pp: 20, damageClass: 'physical' },
+    fighting: { id: 280, name: 'brick-break', type: 'fighting', power: 75, accuracy: 100, pp: 15, damageClass: 'physical' },
     poison: { id: 40, name: 'poison-sting', type: 'poison', power: 35, accuracy: 100, pp: 35, damageClass: 'physical' },
     ground: { id: 189, name: 'mud-slap', type: 'ground', power: 20, accuracy: 100, pp: 20, damageClass: 'special' },
     flying: { id: 16, name: 'gust', type: 'flying', power: 40, accuracy: 100, pp: 35, damageClass: 'special' },
@@ -103,24 +113,24 @@
     rock: { id: 88, name: 'rock-throw', type: 'rock', power: 50, accuracy: 90, pp: 15, damageClass: 'physical' },
     ghost: { id: 122, name: 'lick', type: 'ghost', power: 30, accuracy: 100, pp: 30, damageClass: 'physical' },
     dragon: { id: 225, name: 'dragon-breath', type: 'dragon', power: 60, accuracy: 100, pp: 20, damageClass: 'special' },
-    dark: { id: 228, name: 'pursuit', type: 'dark', power: 40, accuracy: 100, pp: 20, damageClass: 'physical' },
+    dark: { id: 44, name: 'bite', type: 'dark', power: 60, accuracy: 100, pp: 25, damageClass: 'physical' },
     steel: { id: 232, name: 'metal-claw', type: 'steel', power: 50, accuracy: 95, pp: 35, damageClass: 'physical' },
     fairy: { id: 577, name: 'disarming-voice', type: 'fairy', power: 40, accuracy: null, pp: 15, damageClass: 'special' }
   });
 
   const FALLBACK_SPECIES = Object.freeze({
-    1: { id: 1, number: 1, name: 'bulbasaur', types: ['grass', 'poison'], stats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/1.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/1.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
-    2: { id: 2, number: 2, name: 'ivysaur', types: ['grass', 'poison'], stats: { hp: 60, attack: 62, defense: 63, specialAttack: 80, specialDefense: 80, speed: 60 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/2.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/2.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
-    3: { id: 3, number: 3, name: 'venusaur', types: ['grass', 'poison'], stats: { hp: 80, attack: 82, defense: 83, specialAttack: 100, specialDefense: 100, speed: 80 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/3.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/3.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
-    4: { id: 4, number: 4, name: 'charmander', types: ['fire'], stats: { hp: 39, attack: 52, defense: 43, specialAttack: 60, specialDefense: 50, speed: 65 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/4.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/4.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, type: 'fire', damageClass: 'special', pp: 25 }] },
-    6: { id: 6, number: 6, name: 'charizard', types: ['fire', 'flying'], stats: { hp: 78, attack: 84, defense: 78, specialAttack: 109, specialDefense: 85, speed: 100 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/6.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, type: 'fire', damageClass: 'special', pp: 25 }] },
-    7: { id: 7, number: 7, name: 'squirtle', types: ['water'], stats: { hp: 44, attack: 48, defense: 65, specialAttack: 50, specialDefense: 64, speed: 43 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/7.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/7.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, type: 'water', damageClass: 'special', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
-    9: { id: 9, number: 9, name: 'blastoise', types: ['water'], stats: { hp: 79, attack: 83, defense: 100, specialAttack: 85, specialDefense: 105, speed: 78 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/9.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/9.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, type: 'water', damageClass: 'special', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
-    25: { id: 25, number: 25, name: 'pikachu', types: ['electric'], stats: { hp: 35, attack: 55, defense: 40, specialAttack: 50, specialDefense: 50, speed: 90 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg', moves: [{ id: 85, name: 'thunderbolt', power: 90, type: 'electric', damageClass: 'special', pp: 15 }, { id: 98, name: 'quick-attack', power: 40, type: 'normal', damageClass: 'physical', pp: 30 }] },
-    38: { id: 38, number: 38, name: 'ninetales', types: ['fire'], stats: { hp: 73, attack: 76, defense: 75, specialAttack: 81, specialDefense: 100, speed: 100 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/38.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/38.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/38.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, type: 'fire', damageClass: 'special', pp: 25 }] },
-    59: { id: 59, number: 59, name: 'arcanine', types: ['fire'], stats: { hp: 90, attack: 110, defense: 80, specialAttack: 100, specialDefense: 80, speed: 95 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/59.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/59.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, type: 'fire', damageClass: 'special', pp: 25 }] },
-    65: { id: 65, number: 65, name: 'alakazam', types: ['psychic'], stats: { hp: 55, attack: 50, defense: 45, specialAttack: 135, specialDefense: 95, speed: 120 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/65.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/65.ogg', moves: [{ id: 93, name: 'confusion', power: 50, type: 'psychic', damageClass: 'special', pp: 25 }] },
-    68: { id: 68, number: 68, name: 'machamp', types: ['fighting'], stats: { hp: 90, attack: 130, defense: 80, specialAttack: 65, specialDefense: 85, speed: 55 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/68.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/68.ogg', moves: [{ id: 67, name: 'low-kick', power: 50, type: 'fighting', damageClass: 'physical', pp: 20 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    1: { id: 1, number: 1, name: 'bulbasaur', types: ['grass', 'poison'], stats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/1.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/1.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, accuracy: 100, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    2: { id: 2, number: 2, name: 'ivysaur', types: ['grass', 'poison'], stats: { hp: 60, attack: 62, defense: 63, specialAttack: 80, specialDefense: 80, speed: 60 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/2.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/2.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, accuracy: 100, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    3: { id: 3, number: 3, name: 'venusaur', types: ['grass', 'poison'], stats: { hp: 80, attack: 82, defense: 83, specialAttack: 100, specialDefense: 100, speed: 80 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/3.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/3.ogg', moves: [{ id: 71, name: 'vine-whip', power: 45, accuracy: 100, type: 'grass', damageClass: 'physical', pp: 25 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    4: { id: 4, number: 4, name: 'charmander', types: ['fire'], stats: { hp: 39, attack: 52, defense: 43, specialAttack: 60, specialDefense: 50, speed: 65 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/4.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/4.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, accuracy: 100, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, accuracy: 100, type: 'fire', damageClass: 'special', pp: 25 }] },
+    6: { id: 6, number: 6, name: 'charizard', types: ['fire', 'flying'], stats: { hp: 78, attack: 84, defense: 78, specialAttack: 109, specialDefense: 85, speed: 100 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/6.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, accuracy: 100, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, accuracy: 100, type: 'fire', damageClass: 'special', pp: 25 }] },
+    7: { id: 7, number: 7, name: 'squirtle', types: ['water'], stats: { hp: 44, attack: 48, defense: 65, specialAttack: 50, specialDefense: 64, speed: 43 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/7.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/7.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, accuracy: 100, type: 'water', damageClass: 'special', pp: 25 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    9: { id: 9, number: 9, name: 'blastoise', types: ['water'], stats: { hp: 79, attack: 83, defense: 100, specialAttack: 85, specialDefense: 105, speed: 78 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/9.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/9.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, accuracy: 100, type: 'water', damageClass: 'special', pp: 25 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
+    25: { id: 25, number: 25, name: 'pikachu', types: ['electric'], stats: { hp: 35, attack: 55, defense: 40, specialAttack: 50, specialDefense: 50, speed: 90 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg', moves: [{ id: 85, name: 'thunderbolt', power: 90, accuracy: 100, type: 'electric', damageClass: 'special', pp: 15 }, { id: 98, name: 'quick-attack', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 30 }] },
+    38: { id: 38, number: 38, name: 'ninetales', types: ['fire'], stats: { hp: 73, attack: 76, defense: 75, specialAttack: 81, specialDefense: 100, speed: 100 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/38.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/38.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/38.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, accuracy: 100, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, accuracy: 100, type: 'fire', damageClass: 'special', pp: 25 }] },
+    59: { id: 59, number: 59, name: 'arcanine', types: ['fire'], stats: { hp: 90, attack: 110, defense: 80, specialAttack: 100, specialDefense: 80, speed: 95 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/59.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/59.ogg', moves: [{ id: 53, name: 'flamethrower', power: 90, accuracy: 100, type: 'fire', damageClass: 'special', pp: 15 }, { id: 52, name: 'ember', power: 40, accuracy: 100, type: 'fire', damageClass: 'special', pp: 25 }] },
+    65: { id: 65, number: 65, name: 'alakazam', types: ['psychic'], stats: { hp: 55, attack: 50, defense: 45, specialAttack: 135, specialDefense: 95, speed: 120 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/65.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/65.ogg', moves: [{ id: 93, name: 'confusion', power: 50, accuracy: 100, type: 'psychic', damageClass: 'special', pp: 25 }] },
+    68: { id: 68, number: 68, name: 'machamp', types: ['fighting'], stats: { hp: 90, attack: 130, defense: 80, specialAttack: 65, specialDefense: 85, speed: 55 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/68.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/68.ogg', moves: [{ id: 280, name: 'brick-break', power: 75, accuracy: 100, type: 'fighting', damageClass: 'physical', pp: 15 }, { id: 33, name: 'tackle', power: 40, accuracy: 100, type: 'normal', damageClass: 'physical', pp: 35 }] },
     94: { id: 94, number: 94, name: 'gengar', types: ['ghost', 'poison'], stats: { hp: 60, attack: 65, defense: 60, specialAttack: 130, specialDefense: 75, speed: 110 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/94.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/94.ogg', moves: [{ id: 122, name: 'lick', power: 30, type: 'ghost', damageClass: 'physical', pp: 30 }, { id: 40, name: 'poison-sting', power: 35, type: 'poison', damageClass: 'physical', pp: 35 }] },
     130: { id: 130, number: 130, name: 'gyarados', types: ['water', 'flying'], stats: { hp: 95, attack: 125, defense: 79, specialAttack: 60, specialDefense: 100, speed: 81 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/130.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/130.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, type: 'water', damageClass: 'special', pp: 25 }, { id: 33, name: 'tackle', power: 40, type: 'normal', damageClass: 'physical', pp: 35 }] },
     131: { id: 131, number: 131, name: 'lapras', types: ['water', 'ice'], stats: { hp: 130, attack: 85, defense: 80, specialAttack: 85, specialDefense: 95, speed: 60 }, photo: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png', animatedPhoto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/131.gif', cry: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/131.ogg', moves: [{ id: 55, name: 'water-gun', power: 40, type: 'water', damageClass: 'special', pp: 25 }, { id: 181, name: 'powder-snow', power: 40, type: 'ice', damageClass: 'special', pp: 25 }] },
@@ -144,11 +154,17 @@
   });
   function getFallbackSpecies(idOrName) {
     const num = Number(idOrName);
-    const species = TRIAL_FALLBACK_SPECIES[num] || FALLBACK_SPECIES[num];
+    const fromCampaign = campaignBattleFallbackCatalog && campaignBattleFallbackCatalog.byId && campaignBattleFallbackCatalog.byId[num];
+    const species = TRIAL_FALLBACK_SPECIES[num] || fromCampaign || FALLBACK_SPECIES[num];
     if (species) {
       return JSON.parse(JSON.stringify(species));
     }
-    const foundByName = Object.values({ ...FALLBACK_SPECIES, ...TRIAL_FALLBACK_SPECIES }).find(s => s.name === String(idOrName).toLowerCase());
+    const allKnown = {
+      ...(campaignBattleFallbackCatalog?.byId || {}),
+      ...FALLBACK_SPECIES,
+      ...TRIAL_FALLBACK_SPECIES
+    };
+    const foundByName = Object.values(allKnown).find(s => s.name === String(idOrName).toLowerCase());
     if (foundByName) {
       return JSON.parse(JSON.stringify(foundByName));
     }
@@ -172,7 +188,7 @@
      * @param {number} [options.maxMoveRequests] - Teto de requisições por Pokémon.
      */
     constructor(options = {}) {
-      this.api = options.api || (typeof window !== 'undefined' ? window.pokeApi : null) || pokeApiService || (typeof pokeApi !== 'undefined' ? pokeApi : null);
+      this.api = options.api !== undefined ? options.api : ((typeof window !== 'undefined' ? window.pokeApi : null) || pokeApiService || (typeof pokeApi !== 'undefined' ? pokeApi : null));
       this.maxMoveRequests = options.maxMoveRequests || SESSION_CONFIG.MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON;
     }
 
@@ -544,7 +560,9 @@
         if (isStab) score += 50;
 
         // 2. Afinidade com atributo de ataque dominante
-        if (isPhysicalAttacker && move.damageClass === 'physical') {
+        if (battleConstants?.usesDefenseAsAttack?.(move)) {
+          if (Number(stats.defense || 50) >= Math.max(Number(stats.attack || 50), Number(stats.specialAttack || 50))) score += 20;
+        } else if (isPhysicalAttacker && move.damageClass === 'physical') {
           score += 20;
         } else if (!isPhysicalAttacker && move.damageClass === 'special') {
           score += 20;

@@ -3,22 +3,18 @@
     ? require('./campaign-pokemon-catalog.js')
     : window.PBACampaign.CampaignPokemonCatalog;
   if (!Static) throw new Error('CampaignPokemonCatalog must load before campaign-catalog.');
+  const DraftIdsModule = typeof module !== 'undefined' && module.exports
+    ? require('./campaign-draft-ids.js')
+    : window.PBACampaign;
+  const draftIdsByGeneration = (DraftIdsModule && DraftIdsModule.DRAFT_IDS_BY_GENERATION) || (Static && Static.draftIdsByGeneration);
+  if (!draftIdsByGeneration) {
+    throw new Error('campaign-draft-ids must load before campaign-catalog.');
+  }
   const record = id => {
     const entry = Static.byId[Number(id)];
     if (!entry) throw new Error(`Missing canonical campaign metadata for #${id}.`);
     return entry;
   };
-  const draftIdsByGeneration = Object.freeze({
-    1: Object.freeze([3,6,9,143,7,8,25,38,59,65,68,94,131,149,130,141]),
-    2: Object.freeze([154,157,160,181,169,182,199,212,214,229,242,248,215,225,230,233]),
-    3: Object.freeze([254,257,260,282,262,272,276,277,286,306,319,330,350,365,373,376]),
-    4: Object.freeze([389,392,395,461,398,405,407,445,462,468,477,478,472,473,475,437]),
-    5: Object.freeze([497,500,503,596,510,526,530,553,597,609,612,635,637,628,623,626]),
-    6: Object.freeze([652,655,658,706,663,681,691,700,701,707,709,713,697,699,692,715]),
-    7: Object.freeze([724,745,784,733,734,746,750,758,763,768,776,778,780,781,743,752]),
-    8: Object.freeze([812,815,818,823,826,849,851,858,869,862,867,873,879,884,886,887]),
-    9: Object.freeze([908,911,914,959,920,923,960,962,964,966,968,970,973,977,983,998])
-  });
   const DRAFT = Object.freeze(Object.values(draftIdsByGeneration).flat().map(record));
   const masterRows = [
     ['normal','Aster','Mestre do Equilíbrio','Insígnia do Horizonte',2,[242,264,335]],

@@ -84,6 +84,15 @@ const MOCK_MOVE_DB = {
   'bug-bite': { id: 450, name: 'bug-bite', type: 'bug', power: 60, accuracy: 100, pp: 20, damageClass: 'physical' },
   electroweb: { id: 527, name: 'electroweb', type: 'electric', power: 55, accuracy: 95, pp: 15, damageClass: 'special' },
   'poison-sting': { id: 40, name: 'poison-sting', type: 'poison', power: 15, accuracy: 100, pp: 35, damageClass: 'physical' },
+  slash: { id: 163, name: 'slash', type: 'normal', power: 70, accuracy: 100, pp: 20, damageClass: 'physical' },
+  'air-slash': { id: 403, name: 'air-slash', type: 'flying', power: 75, accuracy: 95, pp: 15, damageClass: 'special' },
+  'wing-attack': { id: 17, name: 'wing-attack', type: 'flying', power: 60, accuracy: 100, pp: 35, damageClass: 'physical' },
+  'energy-ball': { id: 412, name: 'energy-ball', type: 'grass', power: 90, accuracy: 100, pp: 10, damageClass: 'special' },
+  'sludge-bomb': { id: 188, name: 'sludge-bomb', type: 'poison', power: 90, accuracy: 100, pp: 10, damageClass: 'special' },
+  bite: { id: 44, name: 'bite', type: 'dark', power: 60, accuracy: 100, pp: 25, damageClass: 'physical' },
+  crunch: { id: 242, name: 'crunch', type: 'dark', power: 80, accuracy: 100, pp: 15, damageClass: 'physical' },
+  'dragon-claw': { id: 337, name: 'dragon-claw', type: 'dragon', power: 80, accuracy: 100, pp: 15, damageClass: 'physical' },
+  swift: { id: 129, name: 'swift', type: 'normal', power: 60, accuracy: null, pp: 20, damageClass: 'special' },
   bounce: { id: 340, name: 'bounce', type: 'flying', power: 85, accuracy: 85, pp: 5, damageClass: 'physical' }
 };
 
@@ -231,7 +240,7 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
         { name: 'tackle' },     // valid
         { name: 'headbutt' },   // valid
         { name: 'body-slam' },  // valid
-        { name: 'double-edge' } // valid
+        { name: 'slash' }       // valid
       ]
     };
 
@@ -255,11 +264,11 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
       { name: 'fire-punch', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
       { name: 'body-slam', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
       { name: 'headbutt', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
-      { name: 'take-down', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
-      { name: 'double-edge', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
-      { name: 'hyper-beam', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
+      { name: 'slash', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
+      { name: 'fire-blast', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
+      { name: 'scratch', versionGroupDetails: [{ moveLearnMethod: 'level-up' }] },
       { name: 'tackle' },
-      { name: 'scratch' }
+      { name: 'bite' }
     ];
 
     const testPokemon = {
@@ -404,7 +413,7 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
     const mockApi = createMockApi();
     const hydrator = new BattleTeamHydrator({ api: mockApi });
 
-    // Pool com Normal moves de maior power (Hyper Beam 150, Double-Edge 120),
+    // Pool com Normal moves de maior power (Body Slam 85, Headbutt 70, Slash 70, Tackle 40),
     // mas um Fire move modesto (Ember 40)
     const testPokemon = {
       id: 993,
@@ -412,10 +421,10 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
       types: ['fire'],
       stats: { hp: 80, attack: 80, defense: 80, specialAttack: 80, specialDefense: 80, speed: 80 },
       moves: [
-        { name: 'hyper-beam' },
-        { name: 'double-edge' },
-        { name: 'take-down' },
         { name: 'body-slam' },
+        { name: 'headbutt' },
+        { name: 'slash' },
+        { name: 'tackle' },
         { name: 'ember' } // STAB
       ]
     };
@@ -437,8 +446,8 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
       types: ['normal'],
       stats: { hp: 80, attack: 40, defense: 80, specialAttack: 130, specialDefense: 80, speed: 80 },
       moves: [
-        { name: 'double-edge' }, // 120 physical
-        { name: 'hyper-beam' },  // 150 special
+        { name: 'slash' },       // 70 physical
+        { name: 'psychic' },     // 90 special
         { name: 'flamethrower' },// 90 special
         { name: 'ice-beam' },    // 90 special
         { name: 'thunderbolt' }, // 90 special
@@ -466,7 +475,7 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
         { name: 'flamethrower' },// Fire
         { name: 'fire-punch' },  // Fire
         { name: 'ember' },       // Fire
-        { name: 'bounce' },      // Flying
+        { name: 'air-slash' },   // Flying
         { name: 'thunderbolt' }, // Electric coverage
         { name: 'body-slam' }    // Normal coverage
       ]
@@ -517,8 +526,8 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
         { name: 'fire-punch' },
         { name: 'headbutt' },
         { name: 'body-slam' },
-        { name: 'double-edge' },
-        { name: 'take-down' }
+        { name: 'slash' },
+        { name: 'scratch' }
       ]
     };
 
@@ -567,19 +576,19 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
 
     // Pool dos 13 de Kanto com learnsets representativos de teste
     const kantoPoolData = [
-      { id: 3, name: 'venusaur', types: ['grass', 'poison'], moves: [{ name: 'vine-whip' }, { name: 'solar-beam' }, { name: 'body-slam' }, { name: 'double-edge' }] },
-      { id: 6, name: 'charizard', types: ['fire', 'flying'], moves: [{ name: 'flamethrower' }, { name: 'fire-punch' }, { name: 'bounce' }, { name: 'double-edge' }] },
+      { id: 3, name: 'venusaur', types: ['grass', 'poison'], moves: [{ name: 'vine-whip' }, { name: 'energy-ball' }, { name: 'body-slam' }, { name: 'sludge-bomb' }] },
+      { id: 6, name: 'charizard', types: ['fire', 'flying'], moves: [{ name: 'flamethrower' }, { name: 'fire-punch' }, { name: 'air-slash' }, { name: 'slash' }] },
       { id: 9, name: 'blastoise', types: ['water'], moves: [{ name: 'hydro-pump' }, { name: 'surf' }, { name: 'ice-beam' }, { name: 'body-slam' }] },
       { id: 25, name: 'pikachu', types: ['electric'], moves: [{ name: 'thunderbolt' }, { name: 'thunder' }, { name: 'thunder-punch' }, { name: 'body-slam' }] },
       { id: 38, name: 'ninetales', types: ['fire'], moves: [{ name: 'fire-blast' }, { name: 'flamethrower' }, { name: 'body-slam' }, { name: 'headbutt' }] },
-      { id: 59, name: 'arcanine', types: ['fire'], moves: [{ name: 'flamethrower' }, { name: 'fire-punch' }, { name: 'double-edge' }, { name: 'take-down' }] },
+      { id: 59, name: 'arcanine', types: ['fire'], moves: [{ name: 'flamethrower' }, { name: 'fire-punch' }, { name: 'bite' }, { name: 'crunch' }] },
       { id: 65, name: 'alakazam', types: ['psychic'], moves: [{ name: 'psychic' }, { name: 'confusion' }, { name: 'fire-punch' }, { name: 'thunder-punch' }] },
       { id: 68, name: 'machamp', types: ['fighting'], moves: [{ name: 'cross-chop' }, { name: 'karate-chop' }, { name: 'fire-punch' }, { name: 'thunder-punch' }] },
       { id: 94, name: 'gengar', types: ['ghost', 'poison'], moves: [{ name: 'psychic' }, { name: 'thunderbolt' }, { name: 'fire-punch' }, { name: 'ice-beam' }] },
-      { id: 130, name: 'gyarados', types: ['water', 'flying'], moves: [{ name: 'hydro-pump' }, { name: 'surf' }, { name: 'bounce' }, { name: 'double-edge' }] },
+      { id: 130, name: 'gyarados', types: ['water', 'flying'], moves: [{ name: 'hydro-pump' }, { name: 'surf' }, { name: 'bite' }, { name: 'water-gun' }] },
       { id: 131, name: 'lapras', types: ['water', 'ice'], moves: [{ name: 'hydro-pump' }, { name: 'ice-beam' }, { name: 'blizzard' }, { name: 'body-slam' }] },
-      { id: 143, name: 'snorlax', types: ['normal'], moves: [{ name: 'hyper-beam' }, { name: 'double-edge' }, { name: 'body-slam' }, { name: 'headbutt' }] },
-      { id: 149, name: 'dragonite', types: ['dragon', 'flying'], moves: [{ name: 'flamethrower' }, { name: 'thunderbolt' }, { name: 'ice-beam' }, { name: 'double-edge' }] }
+      { id: 143, name: 'snorlax', types: ['normal'], moves: [{ name: 'slash' }, { name: 'bite' }, { name: 'body-slam' }, { name: 'headbutt' }] },
+      { id: 149, name: 'dragonite', types: ['dragon', 'flying'], moves: [{ name: 'flamethrower' }, { name: 'thunderbolt' }, { name: 'ice-beam' }, { name: 'dragon-claw' }] }
     ];
 
     for (const data of kantoPoolData) {
@@ -601,13 +610,13 @@ describe('PHASE PBA-014C — GATES MQ01–MQ40 (BATTLE MOVESET QUALITY)', () => 
 
     // Cohort de 10 espécies elegíveis variadas
     const cohort = [
-      { id: 1, name: 'bulbasaur', types: ['grass'], moves: [{ name: 'vine-whip' }, { name: 'tackle' }, { name: 'headbutt' }, { name: 'take-down' }] },
+      { id: 1, name: 'bulbasaur', types: ['grass'], moves: [{ name: 'vine-whip' }, { name: 'tackle' }, { name: 'headbutt' }, { name: 'sludge-bomb' }] },
       { id: 4, name: 'charmander', types: ['fire'], moves: [{ name: 'ember' }, { name: 'scratch' }, { name: 'flamethrower' }, { name: 'fire-punch' }] },
       { id: 7, name: 'squirtle', types: ['water'], moves: [{ name: 'water-gun' }, { name: 'tackle' }, { name: 'headbutt' }, { name: 'surf' }] },
       { id: 10, name: 'caterpie', types: ['bug'], moves: [{ name: 'tackle' }, { name: 'bug-bite' }, { name: 'electroweb' }, { name: 'body-slam' }] },
-      { id: 16, name: 'pidgey', types: ['normal', 'flying'], moves: [{ name: 'tackle' }, { name: 'bounce' }, { name: 'headbutt' }, { name: 'double-edge' }] },
-      { id: 19, name: 'rattata', types: ['normal'], moves: [{ name: 'tackle' }, { name: 'headbutt' }, { name: 'body-slam' }, { name: 'double-edge' }] },
-      { id: 21, name: 'spearow', types: ['normal', 'flying'], moves: [{ name: 'tackle' }, { name: 'bounce' }, { name: 'headbutt' }, { name: 'double-edge' }] },
+      { id: 16, name: 'pidgey', types: ['normal', 'flying'], moves: [{ name: 'tackle' }, { name: 'wing-attack' }, { name: 'headbutt' }, { name: 'air-slash' }] },
+      { id: 19, name: 'rattata', types: ['normal'], moves: [{ name: 'tackle' }, { name: 'headbutt' }, { name: 'body-slam' }, { name: 'bite' }] },
+      { id: 21, name: 'spearow', types: ['normal', 'flying'], moves: [{ name: 'tackle' }, { name: 'wing-attack' }, { name: 'headbutt' }, { name: 'air-slash' }] },
       { id: 23, name: 'ekans', types: ['poison'], moves: [{ name: 'poison-sting' }, { name: 'headbutt' }, { name: 'body-slam' }, { name: 'tackle' }] },
       { id: 27, name: 'sandshrew', types: ['ground'], moves: [{ name: 'scratch' }, { name: 'headbutt' }, { name: 'body-slam' }, { name: 'tackle' }] },
       { id: 37, name: 'vulpix', types: ['fire'], moves: [{ name: 'ember' }, { name: 'flamethrower' }, { name: 'headbutt' }, { name: 'body-slam' }] }

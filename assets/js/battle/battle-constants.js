@@ -54,6 +54,11 @@
     STATUS: 'status'
   });
 
+  // Body Press is physical, but uses the user's Defense in place of Attack.
+  function usesDefenseAsAttack(move) {
+    return String(move?.name || '').trim().toLowerCase() === 'body-press';
+  }
+
   const POKEMON_TYPES = Object.freeze({
     NORMAL: 'normal',
     FIRE: 'fire',
@@ -124,6 +129,7 @@
     BATTLE_ACTIONS,
     SWITCH_REASON,
     MOVE_DAMAGE_CLASSES,
+    usesDefenseAsAttack,
     POKEMON_TYPES,
     TYPE_EFFECTIVENESS_CLASSIFICATION,
     BATTLE_CONFIG,

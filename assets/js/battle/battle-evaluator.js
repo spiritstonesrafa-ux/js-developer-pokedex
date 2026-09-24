@@ -93,7 +93,7 @@
         attackStat = Number(attacker.specialAttack) || 1;
         defenseStat = Number(defender.specialDefense) || 1;
       } else {
-        attackStat = Number(attacker.attack) || 1;
+        attackStat = Number(constants?.usesDefenseAsAttack?.(move) ? attacker.defense : attacker.attack) || 1;
         defenseStat = Number(defender.defense) || 1;
       }
 

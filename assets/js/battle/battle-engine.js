@@ -675,7 +675,7 @@
       let attackStat;
       let defenseStat;
       if (selectedMove.damageClass === MOVE_DAMAGE_CLASSES.PHYSICAL) {
-        attackStat = attacker.attack;
+        attackStat = constants.usesDefenseAsAttack?.(selectedMove) ? attacker.defense : attacker.attack;
         defenseStat = defender.defense;
       } else {
         attackStat = attacker.specialAttack;

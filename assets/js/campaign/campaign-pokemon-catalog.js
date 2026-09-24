@@ -13,7 +13,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 6,
@@ -26,7 +27,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 7,
@@ -38,7 +40,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 8,
@@ -50,7 +53,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 9,
@@ -62,7 +66,22 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 18,
+    "name": "pidgeot",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "bst": 479,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/18.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 25,
@@ -74,7 +93,62 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 26,
+    "name": "raichu",
+    "types": [
+      "electric"
+    ],
+    "bst": 485,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/26.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 31,
+    "name": "nidoqueen",
+    "types": [
+      "poison",
+      "ground"
+    ],
+    "bst": 505,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/31.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 34,
+    "name": "nidoking",
+    "types": [
+      "poison",
+      "ground"
+    ],
+    "bst": 505,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/34.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 36,
+    "name": "clefable",
+    "types": [
+      "fairy"
+    ],
+    "bst": 483,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/36.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 38,
@@ -86,7 +160,35 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 45,
+    "name": "vileplume",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/45.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 55,
+    "name": "golduck",
+    "types": [
+      "water"
+    ],
+    "bst": 500,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/55.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 59,
@@ -98,7 +200,22 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/59.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 62,
+    "name": "poliwrath",
+    "types": [
+      "water",
+      "fighting"
+    ],
+    "bst": 510,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/62.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 65,
@@ -110,7 +227,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/65.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 68,
@@ -122,7 +240,118 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/68.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 71,
+    "name": "victreebel",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/71.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 73,
+    "name": "tentacruel",
+    "types": [
+      "water",
+      "poison"
+    ],
+    "bst": 515,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/73.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 76,
+    "name": "golem",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "bst": 495,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/76.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 78,
+    "name": "rapidash",
+    "types": [
+      "fire"
+    ],
+    "bst": 500,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/78.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 80,
+    "name": "slowbro",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/80.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 87,
+    "name": "dewgong",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "bst": 475,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/87.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 89,
+    "name": "muk",
+    "types": [
+      "poison"
+    ],
+    "bst": 500,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/89.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 91,
+    "name": "cloyster",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "bst": 525,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/91.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 94,
@@ -135,7 +364,181 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 97,
+    "name": "hypno",
+    "types": [
+      "psychic"
+    ],
+    "bst": 483,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/97.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 99,
+    "name": "kingler",
+    "types": [
+      "water"
+    ],
+    "bst": 475,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/99.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 101,
+    "name": "electrode",
+    "types": [
+      "electric"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/101.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 103,
+    "name": "exeggutor",
+    "types": [
+      "grass",
+      "psychic"
+    ],
+    "bst": 530,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/103.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 110,
+    "name": "weezing",
+    "types": [
+      "poison"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/110.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 112,
+    "name": "rhydon",
+    "types": [
+      "ground",
+      "rock"
+    ],
+    "bst": 485,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/112.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 115,
+    "name": "kangaskhan",
+    "types": [
+      "normal"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/115.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 121,
+    "name": "starmie",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "bst": 520,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/121.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 123,
+    "name": "scyther",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 500,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/123.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 125,
+    "name": "electabuzz",
+    "types": [
+      "electric"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/125.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 126,
+    "name": "magmar",
+    "types": [
+      "fire"
+    ],
+    "bst": 495,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/126.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 127,
+    "name": "pinsir",
+    "types": [
+      "bug"
+    ],
+    "bst": 500,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/127.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 128,
+    "name": "tauros",
+    "types": [
+      "normal"
+    ],
+    "bst": 490,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/128.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 130,
@@ -148,7 +551,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 131,
@@ -161,7 +565,61 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/131.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 134,
+    "name": "vaporeon",
+    "types": [
+      "water"
+    ],
+    "bst": 525,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/134.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 135,
+    "name": "jolteon",
+    "types": [
+      "electric"
+    ],
+    "bst": 525,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/135.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 136,
+    "name": "flareon",
+    "types": [
+      "fire"
+    ],
+    "bst": 525,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/136.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 139,
+    "name": "omastar",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "bst": 495,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/139.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 141,
@@ -174,7 +632,22 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/141.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 142,
+    "name": "aerodactyl",
+    "types": [
+      "rock",
+      "flying"
+    ],
+    "bst": 515,
+    "generation": 1,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/142.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 143,
@@ -186,7 +659,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 149,
@@ -199,7 +673,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/149.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 150,
@@ -211,7 +686,8 @@
     "generation": 1,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 154,
@@ -223,7 +699,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/154.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 157,
@@ -235,7 +712,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/157.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 160,
@@ -247,7 +725,49 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/160.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 162,
+    "name": "furret",
+    "types": [
+      "normal"
+    ],
+    "bst": 415,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/162.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 164,
+    "name": "noctowl",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "bst": 452,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/164.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 168,
+    "name": "ariados",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "bst": 400,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/168.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 169,
@@ -260,7 +780,36 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/169.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 171,
+    "name": "lanturn",
+    "types": [
+      "water",
+      "electric"
+    ],
+    "bst": 460,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/171.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 178,
+    "name": "xatu",
+    "types": [
+      "psychic",
+      "flying"
+    ],
+    "bst": 470,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/178.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 181,
@@ -272,7 +821,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/181.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 182,
@@ -284,7 +834,115 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/182.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 184,
+    "name": "azumarill",
+    "types": [
+      "water",
+      "fairy"
+    ],
+    "bst": 420,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/184.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 185,
+    "name": "sudowoodo",
+    "types": [
+      "rock"
+    ],
+    "bst": 410,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/185.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 186,
+    "name": "politoed",
+    "types": [
+      "water"
+    ],
+    "bst": 500,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/186.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 189,
+    "name": "jumpluff",
+    "types": [
+      "grass",
+      "flying"
+    ],
+    "bst": 460,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/189.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 192,
+    "name": "sunflora",
+    "types": [
+      "grass"
+    ],
+    "bst": 425,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/192.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 195,
+    "name": "quagsire",
+    "types": [
+      "water",
+      "ground"
+    ],
+    "bst": 430,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/195.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 196,
+    "name": "espeon",
+    "types": [
+      "psychic"
+    ],
+    "bst": 525,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/196.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 197,
+    "name": "umbreon",
+    "types": [
+      "dark"
+    ],
+    "bst": 525,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/197.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 199,
@@ -297,7 +955,117 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/199.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 200,
+    "name": "misdreavus",
+    "types": [
+      "ghost"
+    ],
+    "bst": 435,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/200.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 203,
+    "name": "girafarig",
+    "types": [
+      "normal",
+      "psychic"
+    ],
+    "bst": 455,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/203.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 205,
+    "name": "forretress",
+    "types": [
+      "bug",
+      "steel"
+    ],
+    "bst": 465,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/205.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 206,
+    "name": "dunsparce",
+    "types": [
+      "normal"
+    ],
+    "bst": 415,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/206.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 207,
+    "name": "gligar",
+    "types": [
+      "ground",
+      "flying"
+    ],
+    "bst": 430,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/207.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 208,
+    "name": "steelix",
+    "types": [
+      "steel",
+      "ground"
+    ],
+    "bst": 510,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/208.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 210,
+    "name": "granbull",
+    "types": [
+      "fairy"
+    ],
+    "bst": 450,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/210.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 211,
+    "name": "qwilfish",
+    "types": [
+      "water",
+      "poison"
+    ],
+    "bst": 440,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/211.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 212,
@@ -310,7 +1078,22 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/212.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 213,
+    "name": "shuckle",
+    "types": [
+      "bug",
+      "rock"
+    ],
+    "bst": 505,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/213.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 214,
@@ -323,7 +1106,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/214.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 215,
@@ -336,7 +1120,76 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/215.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 217,
+    "name": "ursaring",
+    "types": [
+      "normal"
+    ],
+    "bst": 500,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/217.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 219,
+    "name": "magcargo",
+    "types": [
+      "fire",
+      "rock"
+    ],
+    "bst": 430,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/219.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 221,
+    "name": "piloswine",
+    "types": [
+      "ice",
+      "ground"
+    ],
+    "bst": 450,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/221.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 222,
+    "name": "corsola",
+    "types": [
+      "water",
+      "rock"
+    ],
+    "bst": 410,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/222.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 224,
+    "name": "octillery",
+    "types": [
+      "water"
+    ],
+    "bst": 480,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/224.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 225,
@@ -349,7 +1202,22 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/225.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 226,
+    "name": "mantine",
+    "types": [
+      "water",
+      "flying"
+    ],
+    "bst": 485,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/226.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 227,
@@ -362,7 +1230,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/227.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 229,
@@ -375,7 +1244,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/229.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 230,
@@ -388,7 +1258,21 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/230.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 232,
+    "name": "donphan",
+    "types": [
+      "ground"
+    ],
+    "bst": 500,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/232.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 233,
@@ -400,7 +1284,47 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/233.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 234,
+    "name": "stantler",
+    "types": [
+      "normal"
+    ],
+    "bst": 465,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/234.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 237,
+    "name": "hitmontop",
+    "types": [
+      "fighting"
+    ],
+    "bst": 455,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/237.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 241,
+    "name": "miltank",
+    "types": [
+      "normal"
+    ],
+    "bst": 490,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/241.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 242,
@@ -412,7 +1336,22 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/242.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 247,
+    "name": "pupitar",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "bst": 410,
+    "generation": 2,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/247.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 248,
@@ -425,7 +1364,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/248.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 249,
@@ -438,7 +1378,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/249.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 250,
@@ -451,7 +1392,8 @@
     "generation": 2,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/250.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 254,
@@ -463,7 +1405,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/254.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 257,
@@ -476,7 +1419,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/257.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 258,
@@ -488,7 +1432,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/258.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 259,
@@ -501,7 +1446,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/259.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 260,
@@ -514,7 +1460,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/260.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 262,
@@ -526,7 +1473,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/262.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 264,
@@ -538,7 +1486,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/264.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 272,
@@ -551,7 +1500,22 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/272.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 275,
+    "name": "shiftry",
+    "types": [
+      "grass",
+      "dark"
+    ],
+    "bst": 480,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/275.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 276,
@@ -564,7 +1528,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/276.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 277,
@@ -577,7 +1542,22 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/277.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 279,
+    "name": "pelipper",
+    "types": [
+      "water",
+      "flying"
+    ],
+    "bst": 440,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/279.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 282,
@@ -590,7 +1570,22 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/282.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 284,
+    "name": "masquerain",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 454,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/284.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 286,
@@ -603,7 +1598,48 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/286.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 291,
+    "name": "ninjask",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 456,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/291.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 295,
+    "name": "exploud",
+    "types": [
+      "normal"
+    ],
+    "bst": 490,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/295.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 297,
+    "name": "hariyama",
+    "types": [
+      "fighting"
+    ],
+    "bst": 474,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/297.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 303,
@@ -616,7 +1652,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/303.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 306,
@@ -629,7 +1666,48 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/306.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 308,
+    "name": "medicham",
+    "types": [
+      "fighting",
+      "psychic"
+    ],
+    "bst": 410,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/308.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 310,
+    "name": "manectric",
+    "types": [
+      "electric"
+    ],
+    "bst": 475,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/310.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 317,
+    "name": "swalot",
+    "types": [
+      "poison"
+    ],
+    "bst": 467,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/317.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 319,
@@ -642,7 +1720,61 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/319.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 321,
+    "name": "wailord",
+    "types": [
+      "water"
+    ],
+    "bst": 500,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/321.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 323,
+    "name": "camerupt",
+    "types": [
+      "fire",
+      "ground"
+    ],
+    "bst": 460,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/323.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 324,
+    "name": "torkoal",
+    "types": [
+      "fire"
+    ],
+    "bst": 470,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/324.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 326,
+    "name": "grumpig",
+    "types": [
+      "psychic"
+    ],
+    "bst": 470,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/326.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 330,
@@ -655,7 +1787,36 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/330.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 332,
+    "name": "cacturne",
+    "types": [
+      "grass",
+      "dark"
+    ],
+    "bst": 475,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/332.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 334,
+    "name": "altaria",
+    "types": [
+      "dragon",
+      "flying"
+    ],
+    "bst": 490,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/334.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 335,
@@ -667,7 +1828,119 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/335.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 336,
+    "name": "seviper",
+    "types": [
+      "poison"
+    ],
+    "bst": 458,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/336.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 337,
+    "name": "lunatone",
+    "types": [
+      "rock",
+      "psychic"
+    ],
+    "bst": 460,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/337.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 338,
+    "name": "solrock",
+    "types": [
+      "rock",
+      "psychic"
+    ],
+    "bst": 460,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/338.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 340,
+    "name": "whiscash",
+    "types": [
+      "water",
+      "ground"
+    ],
+    "bst": 468,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/340.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 342,
+    "name": "crawdaunt",
+    "types": [
+      "water",
+      "dark"
+    ],
+    "bst": 468,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/342.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 344,
+    "name": "claydol",
+    "types": [
+      "ground",
+      "psychic"
+    ],
+    "bst": 500,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/344.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 346,
+    "name": "cradily",
+    "types": [
+      "rock",
+      "grass"
+    ],
+    "bst": 495,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/346.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 348,
+    "name": "armaldo",
+    "types": [
+      "rock",
+      "bug"
+    ],
+    "bst": 495,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/348.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 350,
@@ -679,7 +1952,100 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/350.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 352,
+    "name": "kecleon",
+    "types": [
+      "normal"
+    ],
+    "bst": 440,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/352.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 354,
+    "name": "banette",
+    "types": [
+      "ghost"
+    ],
+    "bst": 455,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/354.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 356,
+    "name": "dusclops",
+    "types": [
+      "ghost"
+    ],
+    "bst": 455,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/356.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 357,
+    "name": "tropius",
+    "types": [
+      "grass",
+      "flying"
+    ],
+    "bst": 460,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/357.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 358,
+    "name": "chimecho",
+    "types": [
+      "psychic"
+    ],
+    "bst": 455,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/358.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 359,
+    "name": "absol",
+    "types": [
+      "dark"
+    ],
+    "bst": 465,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/359.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 362,
+    "name": "glalie",
+    "types": [
+      "ice"
+    ],
+    "bst": 480,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/362.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 365,
@@ -692,7 +2058,48 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/365.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 367,
+    "name": "huntail",
+    "types": [
+      "water"
+    ],
+    "bst": 485,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/367.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 368,
+    "name": "gorebyss",
+    "types": [
+      "water"
+    ],
+    "bst": 485,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/368.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 369,
+    "name": "relicanth",
+    "types": [
+      "water",
+      "rock"
+    ],
+    "bst": 485,
+    "generation": 3,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/369.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 373,
@@ -705,7 +2112,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/373.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 376,
@@ -718,7 +2126,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/376.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 382,
@@ -730,7 +2139,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/382.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 383,
@@ -742,7 +2152,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/383.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 384,
@@ -755,7 +2166,8 @@
     "generation": 3,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/384.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 389,
@@ -768,7 +2180,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/389.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 392,
@@ -781,7 +2194,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/392.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 393,
@@ -793,7 +2207,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/393.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 394,
@@ -805,7 +2220,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/394.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 395,
@@ -818,7 +2234,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/395.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 398,
@@ -831,7 +2248,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/398.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 405,
@@ -843,7 +2261,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/405.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 407,
@@ -856,7 +2275,89 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/407.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 409,
+    "name": "rampardos",
+    "types": [
+      "rock"
+    ],
+    "bst": 495,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/409.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 411,
+    "name": "bastiodon",
+    "types": [
+      "rock",
+      "steel"
+    ],
+    "bst": 495,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/411.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 414,
+    "name": "mothim",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 424,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/414.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 416,
+    "name": "vespiquen",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 474,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/416.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 419,
+    "name": "floatzel",
+    "types": [
+      "water"
+    ],
+    "bst": 495,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/419.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 421,
+    "name": "cherrim",
+    "types": [
+      "grass"
+    ],
+    "bst": 450,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/421.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 423,
@@ -869,7 +2370,102 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/423.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 424,
+    "name": "ambipom",
+    "types": [
+      "normal"
+    ],
+    "bst": 482,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/424.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 426,
+    "name": "drifblim",
+    "types": [
+      "ghost",
+      "flying"
+    ],
+    "bst": 498,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/426.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 428,
+    "name": "lopunny",
+    "types": [
+      "normal"
+    ],
+    "bst": 480,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/428.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 429,
+    "name": "mismagius",
+    "types": [
+      "ghost"
+    ],
+    "bst": 495,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/429.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 430,
+    "name": "honchkrow",
+    "types": [
+      "dark",
+      "flying"
+    ],
+    "bst": 505,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/430.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 432,
+    "name": "purugly",
+    "types": [
+      "normal"
+    ],
+    "bst": 452,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/432.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 435,
+    "name": "skuntank",
+    "types": [
+      "poison",
+      "dark"
+    ],
+    "bst": 479,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/435.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 437,
@@ -882,7 +2478,36 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/437.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 441,
+    "name": "chatot",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "bst": 411,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/441.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 442,
+    "name": "spiritomb",
+    "types": [
+      "ghost",
+      "dark"
+    ],
+    "bst": 485,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/442.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 445,
@@ -895,7 +2520,49 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/445.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 448,
+    "name": "lucario",
+    "types": [
+      "fighting",
+      "steel"
+    ],
+    "bst": 525,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/448.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 450,
+    "name": "hippowdon",
+    "types": [
+      "ground"
+    ],
+    "bst": 525,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/450.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 452,
+    "name": "drapion",
+    "types": [
+      "poison",
+      "dark"
+    ],
+    "bst": 500,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/452.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 454,
@@ -908,7 +2575,48 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/454.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 455,
+    "name": "carnivine",
+    "types": [
+      "grass"
+    ],
+    "bst": 454,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/455.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 457,
+    "name": "lumineon",
+    "types": [
+      "water"
+    ],
+    "bst": 460,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/457.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 460,
+    "name": "abomasnow",
+    "types": [
+      "grass",
+      "ice"
+    ],
+    "bst": 494,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/460.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 461,
@@ -921,7 +2629,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/461.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 462,
@@ -934,7 +2643,48 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/462.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 463,
+    "name": "lickilicky",
+    "types": [
+      "normal"
+    ],
+    "bst": 515,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/463.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 464,
+    "name": "rhyperior",
+    "types": [
+      "ground",
+      "rock"
+    ],
+    "bst": 535,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/464.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 465,
+    "name": "tangrowth",
+    "types": [
+      "grass"
+    ],
+    "bst": 535,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/465.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 466,
@@ -946,7 +2696,21 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/466.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 467,
+    "name": "magmortar",
+    "types": [
+      "fire"
+    ],
+    "bst": 540,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/467.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 468,
@@ -959,7 +2723,35 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/468.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 469,
+    "name": "yanmega",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 515,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/469.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 470,
+    "name": "leafeon",
+    "types": [
+      "grass"
+    ],
+    "bst": 525,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/470.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 471,
@@ -971,7 +2763,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/471.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 472,
@@ -984,7 +2777,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/472.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 473,
@@ -997,7 +2791,21 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/473.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 474,
+    "name": "porygon-z",
+    "types": [
+      "normal"
+    ],
+    "bst": 535,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/474.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 475,
@@ -1010,7 +2818,22 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/475.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 476,
+    "name": "probopass",
+    "types": [
+      "rock",
+      "steel"
+    ],
+    "bst": 525,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/476.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 477,
@@ -1022,7 +2845,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/477.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 478,
@@ -1035,7 +2859,22 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/478.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 479,
+    "name": "rotom",
+    "types": [
+      "electric",
+      "ghost"
+    ],
+    "bst": 440,
+    "generation": 4,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/479.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 485,
@@ -1048,7 +2887,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/485.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 488,
@@ -1060,7 +2900,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/488.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 493,
@@ -1072,7 +2913,8 @@
     "generation": 4,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/493.png",
     "legendary": false,
-    "mythical": true
+    "mythical": true,
+    "recommendedForEndgame": false
   },
   {
     "id": 497,
@@ -1084,7 +2926,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/497.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 499,
@@ -1097,7 +2940,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/499.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 500,
@@ -1110,7 +2954,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/500.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 501,
@@ -1122,7 +2967,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/501.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 502,
@@ -1134,7 +2980,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/502.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 503,
@@ -1146,7 +2993,21 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/503.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 508,
+    "name": "stoutland",
+    "types": [
+      "normal"
+    ],
+    "bst": 500,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/508.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 510,
@@ -1158,7 +3019,87 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/510.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 512,
+    "name": "simisage",
+    "types": [
+      "grass"
+    ],
+    "bst": 498,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/512.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 514,
+    "name": "simisear",
+    "types": [
+      "fire"
+    ],
+    "bst": 498,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/514.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 516,
+    "name": "simipour",
+    "types": [
+      "water"
+    ],
+    "bst": 498,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/516.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 518,
+    "name": "musharna",
+    "types": [
+      "psychic"
+    ],
+    "bst": 487,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/518.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 521,
+    "name": "unfezant",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "bst": 488,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/521.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 523,
+    "name": "zebstrika",
+    "types": [
+      "electric"
+    ],
+    "bst": 497,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/523.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 526,
@@ -1170,7 +3111,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/526.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 530,
@@ -1183,7 +3125,63 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/530.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 534,
+    "name": "conkeldurr",
+    "types": [
+      "fighting"
+    ],
+    "bst": 505,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/534.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 537,
+    "name": "seismitoad",
+    "types": [
+      "water",
+      "ground"
+    ],
+    "bst": 509,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/537.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 542,
+    "name": "leavanny",
+    "types": [
+      "bug",
+      "grass"
+    ],
+    "bst": 500,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/542.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 545,
+    "name": "scolipede",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "bst": 485,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/545.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 549,
@@ -1195,7 +3193,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/549.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 553,
@@ -1208,7 +3207,143 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/553.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 558,
+    "name": "crustle",
+    "types": [
+      "bug",
+      "rock"
+    ],
+    "bst": 485,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/558.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 560,
+    "name": "scrafty",
+    "types": [
+      "dark",
+      "fighting"
+    ],
+    "bst": 488,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/560.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 561,
+    "name": "sigilyph",
+    "types": [
+      "psychic",
+      "flying"
+    ],
+    "bst": 490,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/561.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 563,
+    "name": "cofagrigus",
+    "types": [
+      "ghost"
+    ],
+    "bst": 483,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/563.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 565,
+    "name": "carracosta",
+    "types": [
+      "water",
+      "rock"
+    ],
+    "bst": 495,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/565.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 571,
+    "name": "zoroark",
+    "types": [
+      "dark"
+    ],
+    "bst": 510,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/571.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 576,
+    "name": "gothitelle",
+    "types": [
+      "psychic"
+    ],
+    "bst": 490,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/576.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 579,
+    "name": "reuniclus",
+    "types": [
+      "psychic"
+    ],
+    "bst": 490,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/579.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 584,
+    "name": "vanilluxe",
+    "types": [
+      "ice"
+    ],
+    "bst": 535,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/584.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 589,
+    "name": "escavalier",
+    "types": [
+      "bug",
+      "steel"
+    ],
+    "bst": 495,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/589.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 596,
@@ -1221,7 +3356,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/596.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 597,
@@ -1234,7 +3370,61 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/597.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 598,
+    "name": "ferrothorn",
+    "types": [
+      "grass",
+      "steel"
+    ],
+    "bst": 489,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/598.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 601,
+    "name": "klinklang",
+    "types": [
+      "steel"
+    ],
+    "bst": 520,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/601.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 604,
+    "name": "eelektross",
+    "types": [
+      "electric"
+    ],
+    "bst": 515,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/604.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 606,
+    "name": "beheeyem",
+    "types": [
+      "psychic"
+    ],
+    "bst": 485,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/606.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 609,
@@ -1247,7 +3437,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/609.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 612,
@@ -1259,7 +3450,73 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/612.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 614,
+    "name": "beartic",
+    "types": [
+      "ice"
+    ],
+    "bst": 505,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/614.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 615,
+    "name": "cryogonal",
+    "types": [
+      "ice"
+    ],
+    "bst": 515,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/615.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 617,
+    "name": "accelgor",
+    "types": [
+      "bug"
+    ],
+    "bst": 495,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/617.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 620,
+    "name": "mienshao",
+    "types": [
+      "fighting"
+    ],
+    "bst": 510,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/620.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 621,
+    "name": "druddigon",
+    "types": [
+      "dragon"
+    ],
+    "bst": 485,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/621.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 623,
@@ -1272,7 +3529,22 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/623.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 625,
+    "name": "bisharp",
+    "types": [
+      "dark",
+      "steel"
+    ],
+    "bst": 490,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/625.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 626,
@@ -1284,7 +3556,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/626.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 628,
@@ -1297,7 +3570,49 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/628.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 630,
+    "name": "mandibuzz",
+    "types": [
+      "dark",
+      "flying"
+    ],
+    "bst": 510,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/630.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 631,
+    "name": "heatmor",
+    "types": [
+      "fire"
+    ],
+    "bst": 484,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/631.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 632,
+    "name": "durant",
+    "types": [
+      "bug",
+      "steel"
+    ],
+    "bst": 484,
+    "generation": 5,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/632.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 635,
@@ -1310,7 +3625,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/635.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 637,
@@ -1323,7 +3639,8 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/637.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 641,
@@ -1335,7 +3652,21 @@
     "generation": 5,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/641.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 651,
+    "name": "quilladin",
+    "types": [
+      "grass"
+    ],
+    "bst": 405,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/651.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 652,
@@ -1348,7 +3679,21 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/652.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 654,
+    "name": "braixen",
+    "types": [
+      "fire"
+    ],
+    "bst": 409,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/654.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 655,
@@ -1361,7 +3706,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/655.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 656,
@@ -1373,7 +3719,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/656.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 657,
@@ -1385,7 +3732,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/657.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 658,
@@ -1398,7 +3746,36 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/658.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 660,
+    "name": "diggersby",
+    "types": [
+      "normal",
+      "ground"
+    ],
+    "bst": 423,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/660.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 662,
+    "name": "fletchinder",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "bst": 382,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/662.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 663,
@@ -1411,7 +3788,196 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/663.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 666,
+    "name": "vivillon",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "bst": 411,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/666.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 667,
+    "name": "litleo",
+    "types": [
+      "fire",
+      "normal"
+    ],
+    "bst": 369,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/667.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 668,
+    "name": "pyroar-male",
+    "types": [
+      "fire",
+      "normal"
+    ],
+    "bst": 507,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/668.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 670,
+    "name": "floette",
+    "types": [
+      "fairy"
+    ],
+    "bst": 371,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/670.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 671,
+    "name": "florges",
+    "types": [
+      "fairy"
+    ],
+    "bst": 552,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/671.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 672,
+    "name": "skiddo",
+    "types": [
+      "grass"
+    ],
+    "bst": 350,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/672.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 673,
+    "name": "gogoat",
+    "types": [
+      "grass"
+    ],
+    "bst": 531,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/673.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 674,
+    "name": "pancham",
+    "types": [
+      "fighting"
+    ],
+    "bst": 348,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/674.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 675,
+    "name": "pangoro",
+    "types": [
+      "fighting",
+      "dark"
+    ],
+    "bst": 495,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/675.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 676,
+    "name": "furfrou",
+    "types": [
+      "normal"
+    ],
+    "bst": 472,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/676.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 677,
+    "name": "espurr",
+    "types": [
+      "psychic"
+    ],
+    "bst": 355,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/677.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 678,
+    "name": "meowstic-male",
+    "types": [
+      "psychic"
+    ],
+    "bst": 466,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 679,
+    "name": "honedge",
+    "types": [
+      "steel",
+      "ghost"
+    ],
+    "bst": 325,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/679.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 680,
+    "name": "doublade",
+    "types": [
+      "steel",
+      "ghost"
+    ],
+    "bst": 448,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/680.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 681,
@@ -1424,7 +3990,102 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/681.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 682,
+    "name": "spritzee",
+    "types": [
+      "fairy"
+    ],
+    "bst": 341,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/682.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 683,
+    "name": "aromatisse",
+    "types": [
+      "fairy"
+    ],
+    "bst": 462,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/683.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 684,
+    "name": "swirlix",
+    "types": [
+      "fairy"
+    ],
+    "bst": 341,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/684.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 685,
+    "name": "slurpuff",
+    "types": [
+      "fairy"
+    ],
+    "bst": 480,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/685.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 687,
+    "name": "malamar",
+    "types": [
+      "dark",
+      "psychic"
+    ],
+    "bst": 482,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/687.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 689,
+    "name": "barbaracle",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "bst": 500,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/689.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 690,
+    "name": "skrelp",
+    "types": [
+      "poison",
+      "water"
+    ],
+    "bst": 320,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/690.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 691,
@@ -1437,7 +4098,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/691.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 692,
@@ -1449,7 +4111,36 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/692.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 695,
+    "name": "heliolisk",
+    "types": [
+      "electric",
+      "normal"
+    ],
+    "bst": 481,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/695.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 696,
+    "name": "tyrunt",
+    "types": [
+      "rock",
+      "dragon"
+    ],
+    "bst": 362,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/696.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 697,
@@ -1462,7 +4153,22 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/697.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 698,
+    "name": "amaura",
+    "types": [
+      "rock",
+      "ice"
+    ],
+    "bst": 362,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/698.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 699,
@@ -1475,7 +4181,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/699.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 700,
@@ -1487,7 +4194,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/700.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 701,
@@ -1500,7 +4208,49 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/701.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 702,
+    "name": "dedenne",
+    "types": [
+      "electric",
+      "fairy"
+    ],
+    "bst": 431,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/702.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 703,
+    "name": "carbink",
+    "types": [
+      "rock",
+      "fairy"
+    ],
+    "bst": 500,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/703.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 705,
+    "name": "sliggoo",
+    "types": [
+      "dragon"
+    ],
+    "bst": 452,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/705.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 706,
@@ -1512,7 +4262,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/706.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 707,
@@ -1525,7 +4276,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/707.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 709,
@@ -1538,7 +4290,36 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/709.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 710,
+    "name": "pumpkaboo-average",
+    "types": [
+      "ghost",
+      "grass"
+    ],
+    "bst": 335,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/710.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 711,
+    "name": "gourgeist-average",
+    "types": [
+      "ghost",
+      "grass"
+    ],
+    "bst": 494,
+    "generation": 6,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/711.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 713,
@@ -1550,7 +4331,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/713.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 715,
@@ -1563,7 +4345,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/715.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 716,
@@ -1575,7 +4358,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/716.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 717,
@@ -1588,7 +4372,8 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/717.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 718,
@@ -1601,7 +4386,22 @@
     "generation": 6,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/718.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 723,
+    "name": "dartrix",
+    "types": [
+      "grass",
+      "flying"
+    ],
+    "bst": 420,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/723.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 724,
@@ -1614,7 +4414,35 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/724.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 726,
+    "name": "torracat",
+    "types": [
+      "fire"
+    ],
+    "bst": 420,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/726.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 727,
+    "name": "incineroar",
+    "types": [
+      "fire",
+      "dark"
+    ],
+    "bst": 530,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/727.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 728,
@@ -1626,7 +4454,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/728.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 729,
@@ -1638,7 +4467,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/729.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 730,
@@ -1651,7 +4481,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/730.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 733,
@@ -1664,7 +4495,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/733.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 734,
@@ -1676,7 +4508,90 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/734.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 735,
+    "name": "gumshoos",
+    "types": [
+      "normal"
+    ],
+    "bst": 418,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/735.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 737,
+    "name": "charjabug",
+    "types": [
+      "bug",
+      "electric"
+    ],
+    "bst": 400,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/737.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 738,
+    "name": "vikavolt",
+    "types": [
+      "bug",
+      "electric"
+    ],
+    "bst": 500,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/738.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 739,
+    "name": "crabrawler",
+    "types": [
+      "fighting"
+    ],
+    "bst": 338,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/739.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 740,
+    "name": "crabominable",
+    "types": [
+      "fighting",
+      "ice"
+    ],
+    "bst": 478,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/740.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 741,
+    "name": "oricorio-baile",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "bst": 476,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/741.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 743,
@@ -1689,7 +4604,21 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/743.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 744,
+    "name": "rockruff",
+    "types": [
+      "rock"
+    ],
+    "bst": 280,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/744.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 745,
@@ -1701,7 +4630,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/745.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 746,
@@ -1713,7 +4643,49 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/746.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 747,
+    "name": "mareanie",
+    "types": [
+      "poison",
+      "water"
+    ],
+    "bst": 305,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/747.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 748,
+    "name": "toxapex",
+    "types": [
+      "poison",
+      "water"
+    ],
+    "bst": 495,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/748.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 749,
+    "name": "mudbray",
+    "types": [
+      "ground"
+    ],
+    "bst": 385,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/749.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 750,
@@ -1725,7 +4697,22 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/750.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 751,
+    "name": "dewpider",
+    "types": [
+      "water",
+      "bug"
+    ],
+    "bst": 269,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/751.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 752,
@@ -1738,7 +4725,62 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/752.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 753,
+    "name": "fomantis",
+    "types": [
+      "grass"
+    ],
+    "bst": 250,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/753.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 754,
+    "name": "lurantis",
+    "types": [
+      "grass"
+    ],
+    "bst": 480,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/754.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 756,
+    "name": "shiinotic",
+    "types": [
+      "grass",
+      "fairy"
+    ],
+    "bst": 405,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/756.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 757,
+    "name": "salandit",
+    "types": [
+      "poison",
+      "fire"
+    ],
+    "bst": 320,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/757.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 758,
@@ -1751,7 +4793,49 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/758.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 759,
+    "name": "stufful",
+    "types": [
+      "normal",
+      "fighting"
+    ],
+    "bst": 340,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/759.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 760,
+    "name": "bewear",
+    "types": [
+      "normal",
+      "fighting"
+    ],
+    "bst": 500,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/760.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 762,
+    "name": "steenee",
+    "types": [
+      "grass"
+    ],
+    "bst": 290,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/762.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 763,
@@ -1763,7 +4847,48 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/763.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 764,
+    "name": "comfey",
+    "types": [
+      "fairy"
+    ],
+    "bst": 485,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/764.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 765,
+    "name": "oranguru",
+    "types": [
+      "normal",
+      "psychic"
+    ],
+    "bst": 490,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/765.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 766,
+    "name": "passimian",
+    "types": [
+      "fighting"
+    ],
+    "bst": 490,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/766.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 768,
@@ -1776,7 +4901,63 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/768.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 769,
+    "name": "sandygast",
+    "types": [
+      "ghost",
+      "ground"
+    ],
+    "bst": 320,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/769.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 770,
+    "name": "palossand",
+    "types": [
+      "ghost",
+      "ground"
+    ],
+    "bst": 480,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/770.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 774,
+    "name": "minior-red-meteor",
+    "types": [
+      "rock",
+      "flying"
+    ],
+    "bst": 440,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/774.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 775,
+    "name": "komala",
+    "types": [
+      "normal"
+    ],
+    "bst": 480,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/775.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 776,
@@ -1789,7 +4970,22 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/776.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 777,
+    "name": "togedemaru",
+    "types": [
+      "electric",
+      "steel"
+    ],
+    "bst": 435,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/777.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 778,
@@ -1802,7 +4998,22 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/778.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 779,
+    "name": "bruxish",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "bst": 475,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/779.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 780,
@@ -1815,7 +5026,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/780.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 781,
@@ -1828,7 +5040,35 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/781.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 782,
+    "name": "jangmo-o",
+    "types": [
+      "dragon"
+    ],
+    "bst": 300,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/782.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 783,
+    "name": "hakamo-o",
+    "types": [
+      "dragon",
+      "fighting"
+    ],
+    "bst": 420,
+    "generation": 7,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/783.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 784,
@@ -1841,7 +5081,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/784.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 785,
@@ -1854,7 +5095,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/785.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 786,
@@ -1867,7 +5109,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/786.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 787,
@@ -1880,7 +5123,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/787.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 788,
@@ -1893,7 +5137,8 @@
     "generation": 7,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/788.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 812,
@@ -1905,7 +5150,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/812.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 815,
@@ -1917,7 +5163,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/815.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 816,
@@ -1929,7 +5176,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/816.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 817,
@@ -1941,7 +5189,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/817.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 818,
@@ -1953,7 +5202,21 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/818.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 820,
+    "name": "greedent",
+    "types": [
+      "normal"
+    ],
+    "bst": 460,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/820.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 823,
@@ -1966,7 +5229,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/823.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 826,
@@ -1979,7 +5243,88 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/826.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 828,
+    "name": "thievul",
+    "types": [
+      "dark"
+    ],
+    "bst": 455,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/828.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 830,
+    "name": "eldegoss",
+    "types": [
+      "grass"
+    ],
+    "bst": 460,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/830.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 832,
+    "name": "dubwool",
+    "types": [
+      "normal"
+    ],
+    "bst": 490,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/832.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 834,
+    "name": "drednaw",
+    "types": [
+      "water",
+      "rock"
+    ],
+    "bst": 485,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/834.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 836,
+    "name": "boltund",
+    "types": [
+      "electric"
+    ],
+    "bst": 490,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/836.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 839,
+    "name": "coalossal",
+    "types": [
+      "rock",
+      "fire"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/839.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 841,
@@ -1992,7 +5337,62 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/841.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 842,
+    "name": "appletun",
+    "types": [
+      "grass",
+      "dragon"
+    ],
+    "bst": 485,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/842.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 844,
+    "name": "sandaconda",
+    "types": [
+      "ground"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/844.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 845,
+    "name": "cramorant",
+    "types": [
+      "flying",
+      "water"
+    ],
+    "bst": 475,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/845.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 847,
+    "name": "barraskewda",
+    "types": [
+      "water"
+    ],
+    "bst": 490,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/847.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 849,
@@ -2005,7 +5405,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/849.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 851,
@@ -2018,7 +5419,34 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/851.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 853,
+    "name": "grapploct",
+    "types": [
+      "fighting"
+    ],
+    "bst": 480,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/853.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 855,
+    "name": "polteageist",
+    "types": [
+      "ghost"
+    ],
+    "bst": 508,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/855.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 858,
@@ -2031,7 +5459,22 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/858.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 861,
+    "name": "grimmsnarl",
+    "types": [
+      "dark",
+      "fairy"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/861.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 862,
@@ -2044,7 +5487,61 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/862.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 863,
+    "name": "perrserker",
+    "types": [
+      "steel"
+    ],
+    "bst": 440,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/863.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 864,
+    "name": "cursola",
+    "types": [
+      "ghost"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/864.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 865,
+    "name": "sirfetchd",
+    "types": [
+      "fighting"
+    ],
+    "bst": 507,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/865.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 866,
+    "name": "mr-rime",
+    "types": [
+      "ice",
+      "psychic"
+    ],
+    "bst": 520,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/866.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 867,
@@ -2057,7 +5554,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/867.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 869,
@@ -2069,7 +5567,21 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/869.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 870,
+    "name": "falinks",
+    "types": [
+      "fighting"
+    ],
+    "bst": 470,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/870.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 873,
@@ -2082,7 +5594,62 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/873.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 874,
+    "name": "stonjourner",
+    "types": [
+      "rock"
+    ],
+    "bst": 470,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/874.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 875,
+    "name": "eiscue-ice",
+    "types": [
+      "ice"
+    ],
+    "bst": 470,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/875.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 876,
+    "name": "indeedee-male",
+    "types": [
+      "psychic",
+      "normal"
+    ],
+    "bst": 475,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/876.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 877,
+    "name": "morpeko-full-belly",
+    "types": [
+      "electric",
+      "dark"
+    ],
+    "bst": 436,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/877.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 879,
@@ -2094,7 +5661,64 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/879.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 880,
+    "name": "dracozolt",
+    "types": [
+      "electric",
+      "dragon"
+    ],
+    "bst": 505,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/880.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 881,
+    "name": "arctozolt",
+    "types": [
+      "electric",
+      "ice"
+    ],
+    "bst": 505,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/881.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 882,
+    "name": "dracovish",
+    "types": [
+      "water",
+      "dragon"
+    ],
+    "bst": 505,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/882.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 883,
+    "name": "arctovish",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "bst": 505,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/883.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 884,
@@ -2107,7 +5731,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/884.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 886,
@@ -2120,7 +5745,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/886.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 887,
@@ -2133,7 +5759,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/887.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 888,
@@ -2145,7 +5772,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/888.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 889,
@@ -2157,7 +5785,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/889.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 890,
@@ -2170,7 +5799,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/890.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 891,
@@ -2182,7 +5812,8 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/891.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 892,
@@ -2195,7 +5826,92 @@
     "generation": 8,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/892.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 899,
+    "name": "wyrdeer",
+    "types": [
+      "normal",
+      "psychic"
+    ],
+    "bst": 525,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/899.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 900,
+    "name": "kleavor",
+    "types": [
+      "bug",
+      "rock"
+    ],
+    "bst": 500,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/900.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 901,
+    "name": "ursaluna",
+    "types": [
+      "ground",
+      "normal"
+    ],
+    "bst": 550,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/901.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 902,
+    "name": "basculegion-male",
+    "types": [
+      "water",
+      "ghost"
+    ],
+    "bst": 530,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/902.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 903,
+    "name": "sneasler",
+    "types": [
+      "fighting",
+      "poison"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/903.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 904,
+    "name": "overqwil",
+    "types": [
+      "dark",
+      "poison"
+    ],
+    "bst": 510,
+    "generation": 8,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/904.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 908,
@@ -2208,7 +5924,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/908.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 911,
@@ -2221,7 +5938,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/911.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 912,
@@ -2233,7 +5951,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/912.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 913,
@@ -2245,7 +5964,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/913.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 914,
@@ -2258,7 +5978,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/914.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 915,
@@ -2270,7 +5991,21 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/915.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 916,
+    "name": "oinkologne-male",
+    "types": [
+      "normal"
+    ],
+    "bst": 489,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/916.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 920,
@@ -2283,7 +6018,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/920.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 923,
@@ -2296,7 +6032,212 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/923.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 925,
+    "name": "maushold-family-of-four",
+    "types": [
+      "normal"
+    ],
+    "bst": 470,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/925.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 930,
+    "name": "arboliva",
+    "types": [
+      "grass",
+      "normal"
+    ],
+    "bst": 510,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/930.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 934,
+    "name": "garganacl",
+    "types": [
+      "rock"
+    ],
+    "bst": 500,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/934.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 936,
+    "name": "armarouge",
+    "types": [
+      "fire",
+      "psychic"
+    ],
+    "bst": 525,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/936.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 937,
+    "name": "ceruledge",
+    "types": [
+      "fire",
+      "ghost"
+    ],
+    "bst": 525,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/937.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 939,
+    "name": "bellibolt",
+    "types": [
+      "electric"
+    ],
+    "bst": 495,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/939.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 941,
+    "name": "kilowattrel",
+    "types": [
+      "electric",
+      "flying"
+    ],
+    "bst": 490,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/941.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 943,
+    "name": "mabosstiff",
+    "types": [
+      "dark"
+    ],
+    "bst": 505,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/943.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 945,
+    "name": "grafaiai",
+    "types": [
+      "poison",
+      "normal"
+    ],
+    "bst": 485,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/945.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 947,
+    "name": "brambleghast",
+    "types": [
+      "grass",
+      "ghost"
+    ],
+    "bst": 480,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/947.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 949,
+    "name": "toedscruel",
+    "types": [
+      "ground",
+      "grass"
+    ],
+    "bst": 515,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/949.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 950,
+    "name": "klawf",
+    "types": [
+      "rock"
+    ],
+    "bst": 450,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/950.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 952,
+    "name": "scovillain",
+    "types": [
+      "grass",
+      "fire"
+    ],
+    "bst": 486,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/952.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 954,
+    "name": "rabsca",
+    "types": [
+      "bug",
+      "psychic"
+    ],
+    "bst": 470,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/954.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 956,
+    "name": "espathra",
+    "types": [
+      "psychic"
+    ],
+    "bst": 481,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/956.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 959,
@@ -2309,7 +6250,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/959.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 960,
@@ -2321,7 +6263,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/960.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 962,
@@ -2334,7 +6277,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/962.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 964,
@@ -2346,7 +6290,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/964.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 966,
@@ -2359,7 +6304,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/966.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 968,
@@ -2371,7 +6317,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/968.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 970,
@@ -2384,7 +6331,21 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/970.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 972,
+    "name": "houndstone",
+    "types": [
+      "ghost"
+    ],
+    "bst": 488,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/972.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 973,
@@ -2397,7 +6358,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/973.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 975,
@@ -2409,7 +6371,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/975.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 977,
@@ -2421,7 +6384,77 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/977.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 978,
+    "name": "tatsugiri-curly",
+    "types": [
+      "dragon",
+      "water"
+    ],
+    "bst": 475,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/978.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 979,
+    "name": "annihilape",
+    "types": [
+      "fighting",
+      "ghost"
+    ],
+    "bst": 535,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/979.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 980,
+    "name": "clodsire",
+    "types": [
+      "poison",
+      "ground"
+    ],
+    "bst": 430,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/980.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 981,
+    "name": "farigiraf",
+    "types": [
+      "normal",
+      "psychic"
+    ],
+    "bst": 520,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/981.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 982,
+    "name": "dudunsparce-two-segment",
+    "types": [
+      "normal"
+    ],
+    "bst": 520,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/982.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 983,
@@ -2434,7 +6467,78 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/983.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 984,
+    "name": "great-tusk",
+    "types": [
+      "ground",
+      "fighting"
+    ],
+    "bst": 570,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/984.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 987,
+    "name": "flutter-mane",
+    "types": [
+      "ghost",
+      "fairy"
+    ],
+    "bst": 570,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/987.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 991,
+    "name": "iron-bundle",
+    "types": [
+      "ice",
+      "water"
+    ],
+    "bst": 570,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/991.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 992,
+    "name": "iron-hands",
+    "types": [
+      "fighting",
+      "electric"
+    ],
+    "bst": 570,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/992.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 994,
+    "name": "iron-moth",
+    "types": [
+      "fire",
+      "poison"
+    ],
+    "bst": 570,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/994.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 998,
@@ -2447,7 +6551,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/998.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 1000,
@@ -2460,7 +6565,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1000.png",
     "legendary": false,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": true
   },
   {
     "id": 1001,
@@ -2473,7 +6579,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1001.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 1002,
@@ -2486,7 +6593,8 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1002.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
   },
   {
     "id": 1003,
@@ -2499,11 +6607,552 @@
     "generation": 9,
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1003.png",
     "legendary": true,
-    "mythical": false
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 1005,
+    "name": "roaring-moon",
+    "types": [
+      "dragon",
+      "dark"
+    ],
+    "bst": 590,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1005.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 1006,
+    "name": "iron-valiant",
+    "types": [
+      "fairy",
+      "fighting"
+    ],
+    "bst": 590,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1006.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": true
+  },
+  {
+    "id": 1013,
+    "name": "sinistcha",
+    "types": [
+      "grass",
+      "ghost"
+    ],
+    "bst": 508,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1013.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 1018,
+    "name": "archaludon",
+    "types": [
+      "steel",
+      "dragon"
+    ],
+    "bst": 600,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1018.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
+  },
+  {
+    "id": 1019,
+    "name": "hydrapple",
+    "types": [
+      "grass",
+      "dragon"
+    ],
+    "bst": 540,
+    "generation": 9,
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1019.png",
+    "legendary": false,
+    "mythical": false,
+    "recommendedForEndgame": false
   }
 ].map(freeze));
   const byId = Object.freeze(Object.fromEntries(entries.map(entry => [entry.id, entry])));
-  const api = Object.freeze({ entries, byId });
+  const draftIdsByGeneration = Object.freeze({
+  "1": [
+    3,
+    6,
+    9,
+    143,
+    7,
+    8,
+    25,
+    38,
+    59,
+    65,
+    68,
+    94,
+    131,
+    149,
+    130,
+    141,
+    103,
+    91,
+    134,
+    135,
+    136,
+    121,
+    73,
+    142,
+    62,
+    31,
+    34,
+    55,
+    78,
+    89,
+    123,
+    127,
+    76,
+    126,
+    139,
+    45,
+    71,
+    80,
+    101,
+    110,
+    115,
+    125,
+    128,
+    26,
+    112,
+    36,
+    97,
+    18,
+    87,
+    99
+  ],
+  "2": [
+    154,
+    157,
+    160,
+    181,
+    169,
+    182,
+    199,
+    212,
+    214,
+    229,
+    242,
+    248,
+    215,
+    225,
+    230,
+    233,
+    196,
+    197,
+    208,
+    213,
+    186,
+    217,
+    232,
+    241,
+    226,
+    224,
+    178,
+    205,
+    227,
+    234,
+    171,
+    189,
+    203,
+    237,
+    164,
+    210,
+    221,
+    211,
+    200,
+    195,
+    207,
+    219,
+    192,
+    184,
+    162,
+    206,
+    185,
+    222,
+    247,
+    168
+  ],
+  "3": [
+    254,
+    257,
+    260,
+    282,
+    262,
+    272,
+    276,
+    277,
+    286,
+    306,
+    319,
+    330,
+    350,
+    365,
+    373,
+    376,
+    321,
+    344,
+    346,
+    348,
+    295,
+    334,
+    367,
+    368,
+    369,
+    275,
+    362,
+    310,
+    332,
+    297,
+    324,
+    326,
+    340,
+    342,
+    317,
+    359,
+    323,
+    337,
+    338,
+    357,
+    335,
+    336,
+    291,
+    354,
+    356,
+    358,
+    284,
+    279,
+    352,
+    308
+  ],
+  "4": [
+    389,
+    392,
+    395,
+    461,
+    398,
+    405,
+    407,
+    445,
+    462,
+    468,
+    477,
+    478,
+    472,
+    473,
+    475,
+    437,
+    466,
+    467,
+    464,
+    465,
+    474,
+    448,
+    450,
+    470,
+    471,
+    476,
+    463,
+    469,
+    430,
+    452,
+    426,
+    409,
+    411,
+    419,
+    429,
+    460,
+    454,
+    442,
+    424,
+    428,
+    435,
+    423,
+    416,
+    457,
+    455,
+    432,
+    421,
+    479,
+    414,
+    441
+  ],
+  "5": [
+    497,
+    500,
+    503,
+    596,
+    510,
+    526,
+    530,
+    553,
+    597,
+    609,
+    612,
+    635,
+    637,
+    628,
+    623,
+    626,
+    584,
+    601,
+    604,
+    615,
+    571,
+    620,
+    630,
+    537,
+    534,
+    614,
+    508,
+    542,
+    512,
+    514,
+    516,
+    523,
+    565,
+    589,
+    617,
+    561,
+    576,
+    579,
+    625,
+    598,
+    521,
+    560,
+    518,
+    545,
+    558,
+    606,
+    621,
+    631,
+    632,
+    563
+  ],
+  "6": [
+    652,
+    655,
+    658,
+    706,
+    663,
+    681,
+    691,
+    700,
+    701,
+    707,
+    709,
+    713,
+    697,
+    699,
+    692,
+    715,
+    671,
+    673,
+    668,
+    689,
+    703,
+    675,
+    711,
+    687,
+    695,
+    685,
+    676,
+    678,
+    683,
+    705,
+    680,
+    702,
+    660,
+    666,
+    654,
+    651,
+    657,
+    662,
+    670,
+    667,
+    696,
+    698,
+    677,
+    672,
+    674,
+    682,
+    684,
+    710,
+    679,
+    690
+  ],
+  "7": [
+    724,
+    745,
+    784,
+    733,
+    734,
+    746,
+    750,
+    758,
+    763,
+    768,
+    776,
+    778,
+    780,
+    781,
+    743,
+    752,
+    727,
+    730,
+    738,
+    760,
+    748,
+    765,
+    766,
+    764,
+    754,
+    770,
+    775,
+    740,
+    741,
+    779,
+    774,
+    777,
+    723,
+    726,
+    729,
+    783,
+    735,
+    762,
+    756,
+    737,
+    749,
+    747,
+    759,
+    769,
+    757,
+    753,
+    739,
+    744,
+    751,
+    782
+  ],
+  "8": [
+    812,
+    815,
+    818,
+    823,
+    826,
+    849,
+    851,
+    858,
+    869,
+    862,
+    867,
+    873,
+    879,
+    884,
+    886,
+    887,
+    901,
+    902,
+    899,
+    866,
+    839,
+    844,
+    861,
+    864,
+    903,
+    904,
+    855,
+    865,
+    880,
+    881,
+    882,
+    883,
+    900,
+    832,
+    836,
+    847,
+    834,
+    841,
+    842,
+    853,
+    845,
+    876,
+    870,
+    874,
+    875,
+    820,
+    830,
+    828,
+    863,
+    877
+  ],
+  "9": [
+    908,
+    911,
+    914,
+    959,
+    920,
+    923,
+    960,
+    962,
+    964,
+    966,
+    968,
+    970,
+    973,
+    977,
+    983,
+    998,
+    1018,
+    1000,
+    1019,
+    979,
+    936,
+    937,
+    975,
+    981,
+    982,
+    949,
+    930,
+    1013,
+    943,
+    934,
+    939,
+    941,
+    945,
+    950,
+    952,
+    954,
+    956,
+    972,
+    947,
+    978,
+    916,
+    980,
+    925,
+    984,
+    987,
+    1006,
+    1005,
+    992,
+    991,
+    994
+  ]
+});
+  const api = Object.freeze({ entries, byId, draftIdsByGeneration });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { window.PBACampaign = window.PBACampaign || {}; window.PBACampaign.CampaignPokemonCatalog = api; }
 })();
