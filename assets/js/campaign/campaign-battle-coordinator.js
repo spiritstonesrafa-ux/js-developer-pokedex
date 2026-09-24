@@ -1,5 +1,5 @@
 (function(){
  let C;if(typeof module!=='undefined'&&module.exports)C=require('./campaign-constants.js');else C=window.PBACampaign;
- class CampaignBattleCoordinator{constructor(manager,session){this.manager=manager;this.session=session}async start(kind,id,teamIds){const config=this.manager.getBattleConfig(kind,id,teamIds);config.playerMovePreferences=this.manager.getMovePreferencesForTeam?.(config.playerTeamIds)||{};await this.session.prepareBattle(config);await this.session.startBattle();return config}}
+ class CampaignBattleCoordinator{constructor(manager,session){this.manager=manager;this.session=session}async start(kind,id,teamIds,options){const config=this.manager.getBattleConfig(kind,id,teamIds,options);config.playerMovePreferences=this.manager.getMovePreferencesForTeam?.(config.playerTeamIds)||{};await this.session.prepareBattle(config);await this.session.startBattle();return config}}
  const api={CampaignBattleCoordinator};if(typeof module!=='undefined'&&module.exports)module.exports=api;else{window.PBACampaign=window.PBACampaign||{};Object.assign(window.PBACampaign,api)}
 })();

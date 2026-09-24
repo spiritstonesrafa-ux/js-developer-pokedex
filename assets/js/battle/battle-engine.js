@@ -1034,13 +1034,41 @@
   }
 })();
 
-/* PBA-015I — Adapter over the same BattleEngine state model for Shadow Final Stand only. */
+/* PBA-015I / PBA-TRIALS — Adapter over the same BattleEngine state model for Shadow Final Stand and Trial 3x1 formats. */
 (function () {
   const Engine = typeof module !== 'undefined' && module.exports ? module.exports : (window.PBABattle && window.PBABattle.BattleEngine);
   if (!Engine) return;
   const regularCreateTeamBattle = Engine.createTeamBattle;
   Engine.createTeamBattle = function (playerTeamInput, enemyTeamInput, options = {}) {
-    if (options.battleFormat !== 'FINAL_STAND') return regularCreateTeamBattle(playerTeamInput, enemyTeamInput, options);
+    const format = options.battleFormat || options.metadata?.battleFormat;
+    if (format === 'TRIAL_3X1' || format === 'THREE_VS_ONE' || format === '3X1') {
+      if (!Array.isArray(playerTeamInput) || playerTeamInput.length !== 3) {
+        throw new Error('A Prova 3 contra 1 requer exatamente três Pokémon na equipe do jogador.');
+      }
+      if (!Array.isArray(enemyTeamInput) || enemyTeamInput.length !== 1) {
+        throw new Error('A Prova 3 contra 1 requer exatamente um Pokémon na equipe adversária.');
+      }
+      const normalize = (team, label) => {
+        const seen = new Set();
+        return team.map(raw => {
+          const mon = Engine.createCombatant(raw);
+          if (seen.has(mon.id)) throw new Error(`Espécie duplicada na equipe "${label}".`);
+          seen.add(mon.id);
+          return mon;
+        });
+      };
+      return {
+        version: 2,
+        status: 'IN_PROGRESS',
+        turn: 1,
+        player: { activeIndex: 0, team: normalize(playerTeamInput, 'player') },
+        enemy: { activeIndex: 0, team: normalize(enemyTeamInput, 'enemy') },
+        winner: null,
+        modifiers: options.modifiers || {},
+        metadata: options.metadata || null
+      };
+    }
+    if (format !== 'FINAL_STAND') return regularCreateTeamBattle(playerTeamInput, enemyTeamInput, options);
     if (!Array.isArray(playerTeamInput) || playerTeamInput.length < 1) throw new Error('Final Stand requer ao menos um Pokémon do jogador.');
     if (!Array.isArray(enemyTeamInput) || enemyTeamInput.length !== 3) throw new Error('A equipe Shadow deve manter exatamente três Pokémon.');
     const normalize = (team, label) => {

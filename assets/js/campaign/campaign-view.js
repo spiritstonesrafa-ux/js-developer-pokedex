@@ -1,5 +1,5 @@
 (function(){
- class CampaignView { constructor({manager,coordinator,container}){this.manager=manager;this.coordinator=coordinator;this.container=container||document.getElementById('campaignView');this.draft=[];this.pick=[];this.pending=null;this.draftDebounceTimer=null;manager.onChange(()=>this.render())} cap(s){return String(s).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())} clearDraftDebounce(){if(this.draftDebounceTimer){clearTimeout(this.draftDebounceTimer);this.draftDebounceTimer=null;}} render(){if(!this.container)return;const d=this.manager.getState();if(this.manager.isStarted()){this.clearDraftDebounce();}if(!this.manager.isStarted()){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderDraft();}if(d.pendingReward){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderReward(d.pendingReward);}if(d.status==='COMPLETED'){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderComplete();}if(this.pending){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderPicker();}this.renderHome()} card(p,selected=false){if(!p)return'';const rec=p.recommendedForEndgame?'<span class="recommended-badge" title="Recomendado para desafios finais"><i class="fa-solid fa-star"></i> Recomendado</span>':'';return `<button class="campaign-mon ${selected?'selected':''} ${p.recommendedForEndgame?'is-recommended':''}" data-id="${p.id}" aria-pressed="${selected}"><img src="${p.sprite}" alt="${p.name}" loading="lazy"><strong>${this.cap(p.name)}</strong><span>${p.types.map(t=>`<i class="type-chip type-${t}">${t}</i>`).join('')}</span><small>BST ${p.bst}</small>${rec}</button>`} renderDraft(){const C=window.PBACampaign;this.container.innerHTML=`<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">NOVA JORNADA</p><h2>Circuito dos Mestres</h2><p>Escolha 6 Pokémon para começar sua campanha. Essa escolha será permanente. Novos Pokémon só entram no elenco derrotando Mestres.</p><strong>Selecionados ${this.draft.length}/6</strong></div><div class="campaign-grid draft-grid">${C.DRAFT.map(p=>this.card(p,this.draft.includes(p.id))).join('')}</div><button id="campaignConfirmDraft" class="campaign-primary" ${this.draft.length===6?'':'disabled'}>Confirmar equipe</button></section>`;this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.id);this.draft=this.draft.includes(id)?this.draft.filter(x=>x!==id):(this.draft.length<6?[...this.draft,id]:this.draft);this.render()});this.container.querySelector('#campaignConfirmDraft').onclick=()=>{if(confirm('Esses serão seus 6 Pokémon iniciais. Depois de iniciar a campanha, eles não poderão ser trocados. Deseja continuar?'))this.manager.start(this.draft)}} renderHome(){if(!this.mapView||this.mapView.container!==this.container){const MapViewClass=(window.PBACampaign&&window.PBACampaign.CampaignMapView)||(typeof require!=='undefined'?require('./campaign-map-view.js').CampaignMapView:null);if(MapViewClass){this.mapView=new MapViewClass({manager:this.manager,container:this.container,onChallenge:({kind,id})=>{if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();this.pending={kind,id};this.pick=[];this.render()},onReset:()=>{if(confirm('Resetar somente o progresso da campanha? Seu Perfil, Meu Time e preferências serão preservados.'))this.manager.reset()}})}}if(this.mapView){this.mapView.container=this.container;this.mapView.render()}} renderPicker(){const roster=this.manager.getRoster();this.container.innerHTML=`<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><div class="campaign-hero"><p class="eyebrow">PREPARAR DESAFIO</p><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(p=>this.card(p,this.pick.includes(p.id))).join('')}</div><button id="startCampaignBattle" class="campaign-primary" ${this.pick.length===3?'':'disabled'}>Iniciar batalha</button></section>`;this.container.querySelector('#pickerBack').onclick=()=>{this.pending=null;this.render()};this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.id);this.pick=this.pick.includes(id)?this.pick.filter(x=>x!==id):(this.pick.length<3?[...this.pick,id]:this.pick);this.render()});this.container.querySelector('#startCampaignBattle').onclick=async()=>{try{await this.coordinator.start(this.pending.kind,this.pending.id,this.pick);this.pending=null;window.switchAppTab('battle')}catch(e){alert(e.message)}}} renderReward(reward){const C=window.PBACampaign;this.container.innerHTML=`<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">RECOMPENSA</p><h2>Escolha seu novo recruta</h2><p>Esta decisão é permanente.</p></div><div class="campaign-grid draft-grid">${reward.candidates.map(id=>this.card(C.byId(id))).join('')}</div></section>`;this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{if(confirm('Confirmar este recruta?'))this.manager.claimReward(Number(b.dataset.id))})} renderComplete(){this.container.innerHTML='<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">JORNADA CONCLUÍDA</p><h2>True Ending</h2><p>Você dominou o Circuito dos Mestres e deixou sua marca.</p></div><button id="campaignReset" class="campaign-reset">Resetar campanha</button></section>';this.container.querySelector('#campaignReset').onclick=()=>{if(confirm('Resetar somente a campanha?'))this.manager.reset()}} deactivate(){this.clearDraftDebounce();if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();}
+ class CampaignView { constructor({manager,coordinator,container}){this.manager=manager;this.coordinator=coordinator;this.container=container||document.getElementById('campaignView');this.draft=[];this.pick=[];this.pending=null;this.draftDebounceTimer=null;manager.onChange(()=>this.render())} cap(s){return String(s).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())} clearDraftDebounce(){if(this.draftDebounceTimer){clearTimeout(this.draftDebounceTimer);this.draftDebounceTimer=null;}} render(){if(!this.container)return;const d=this.manager.getState();if(this.manager.isStarted()){this.clearDraftDebounce();}if(!this.manager.isStarted()){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderDraft();}if(d.pendingReward){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderReward(d.pendingReward);}if(d.status==='COMPLETED'){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderComplete();}if(this.pending){if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();return this.renderPicker();}this.renderHome()} card(p,selected=false){if(!p)return'';const rec=p.recommendedForEndgame?'<span class="recommended-badge" title="Recomendado para desafios finais"><i class="fa-solid fa-star"></i> Recomendado</span>':'';return `<button class="campaign-mon ${selected?'selected':''} ${p.recommendedForEndgame?'is-recommended':''}" data-id="${p.id}" aria-pressed="${selected}"><img src="${p.sprite}" alt="${p.name}" loading="lazy"><strong>${this.cap(p.name)}</strong><span>${p.types.map(t=>`<i class="type-chip type-${t}">${t}</i>`).join('')}</span><small>BST ${p.bst}</small>${rec}</button>`} renderDraft(){const C=window.PBACampaign;this.container.innerHTML=`<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">NOVA JORNADA</p><h2>Circuito dos Mestres</h2><p>Escolha 6 Pokémon para começar sua campanha. Essa escolha será permanente. Novos Pokémon só entram no elenco derrotando Mestres.</p><strong>Selecionados ${this.draft.length}/6</strong></div><div class="campaign-grid draft-grid">${C.DRAFT.map(p=>this.card(p,this.draft.includes(p.id))).join('')}</div><button id="campaignConfirmDraft" class="campaign-primary" ${this.draft.length===6?'':'disabled'}>Confirmar equipe</button></section>`;this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.id);this.draft=this.draft.includes(id)?this.draft.filter(x=>x!==id):(this.draft.length<6?[...this.draft,id]:this.draft);this.render()});this.container.querySelector('#campaignConfirmDraft').onclick=()=>{if(confirm('Esses serão seus 6 Pokémon iniciais. Depois de iniciar a campanha, eles não poderão ser trocados. Deseja continuar?'))this.manager.start(this.draft)}} renderHome(){if(!this.mapView||this.mapView.container!==this.container){const MapViewClass=(window.PBACampaign&&window.PBACampaign.CampaignMapView)||(typeof require!=='undefined'?require('./campaign-map-view.js').CampaignMapView:null);if(MapViewClass){this.mapView=new MapViewClass({manager:this.manager,container:this.container,onChallenge:({kind,id})=>{if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();this.pending={kind,id,opponentId:null};this.pick=[];this.render()},onReset:()=>{if(confirm('Resetar somente o progresso da campanha? Seu Perfil, Meu Time e preferências serão preservados.'))this.manager.reset()}})}}if(this.mapView){this.mapView.container=this.container;this.mapView.render()}} renderPicker(){const roster=this.manager.getRoster();this.container.innerHTML=`<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><div class="campaign-hero"><p class="eyebrow">PREPARAR DESAFIO</p><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(p=>this.card(p,this.pick.includes(p.id))).join('')}</div><button id="startCampaignBattle" class="campaign-primary" ${this.pick.length===3?'':'disabled'}>Iniciar batalha</button></section>`;this.container.querySelector('#pickerBack').onclick=()=>{this.pending=null;this.render()};this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.id);this.pick=this.pick.includes(id)?this.pick.filter(x=>x!==id):(this.pick.length<3?[...this.pick,id]:this.pick);this.render()});this.container.querySelector('#startCampaignBattle').onclick=async()=>{try{await this.coordinator.start(this.pending.kind,this.pending.id,this.pick);this.pending=null;window.switchAppTab('battle')}catch(e){alert(e.message)}}} renderReward(reward){const C=window.PBACampaign;this.container.innerHTML=`<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">RECOMPENSA</p><h2>Escolha seu novo recruta</h2><p>Esta decisão é permanente.</p></div><div class="campaign-grid draft-grid">${reward.candidates.map(id=>this.card(C.byId(id))).join('')}</div></section>`;this.container.querySelectorAll('.campaign-mon').forEach(b=>b.onclick=()=>{if(confirm('Confirmar este recruta?'))this.manager.claimReward(Number(b.dataset.id))})} renderComplete(){this.container.innerHTML='<section class="campaign-shell"><div class="campaign-hero"><p class="eyebrow">JORNADA CONCLUÍDA</p><h2>True Ending</h2><p>Você dominou o Circuito dos Mestres e deixou sua marca.</p></div><button id="campaignReset" class="campaign-reset">Resetar campanha</button></section>';this.container.querySelector('#campaignReset').onclick=()=>{if(confirm('Resetar somente a campanha?'))this.manager.reset()}} deactivate(){this.clearDraftDebounce();if(this.mapView&&typeof this.mapView.destroy==='function')this.mapView.destroy();}
  }
  const api={CampaignView};if(typeof window!=='undefined'){window.PBACampaign=window.PBACampaign||{};Object.assign(window.PBACampaign,api)}if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();
@@ -243,25 +243,126 @@
   const preview = team => `<section class="opponent-team-preview" aria-label="Equipe adversária"><p class="eyebrow">EQUIPE ADVERSÁRIA</p><div class="opponent-team-preview__grid">${team.map(pokemon => `<article class="opponent-preview-card"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>BST ${pokemon.bst}</small></article>`).join('')}</div></section>`;
   const card = (kind, definition, state) => `<article class="endgame-trial endgame-trial--${definition.key}"><h3>${definition.title}</h3><p>Desafio opcional de elite para ampliar seu elenco estratégico.</p><small class="trial-difficulty">DIFICULDADE: ${definition.difficulty}</small><strong>${state.rewardClaimed ? 'CONCLUÍDA' : state.completed ? 'VITÓRIA — RECOMPENSA PENDENTE' : 'RECOMPENSA DISPONÍVEL'}</strong><button class="campaign-secondary" data-trial="${kind}">${state.rewardClaimed ? 'REENFRENTAR' : state.completed ? 'ESCOLHER RECOMPENSA' : 'ENFRENTAR'}</button></article>`;
 
-
   const renderPicker = View.prototype.renderPicker;
   View.prototype.renderPicker = function () {
     const definition = trial[this.pending && this.pending.kind];
     if (!definition) return renderPicker.call(this);
+
     const roster = this.manager.getRoster();
-    const isReady = this.pick.length === 3;
-    const countText = isReady ? 'Equipe completa (3/3) — Pronto para a batalha!' : `Selecione mais ${3 - this.pick.length} Pokémon (${this.pick.length}/3)`;
-    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><section class="campaign-preparation campaign-preparation--trial"><div class="campaign-preparation__copy"><p class="eyebrow">PROVA ESPECIAL</p><h2>${definition.title}</h2><p>Equipe adversária possui múltiplos tipos.</p><strong class="trial-difficulty">DIFICULDADE: ${definition.difficulty}</strong></div>${preview(definition.team)}</section><div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(pokemon => this.card(pokemon, this.pick.includes(pokemon.id))).join('')}</div><div class="picker-action-bar" id="pickerActionBar"><div class="picker-status-hint ${isReady ? 'complete' : 'incomplete'}"><i class="fa-solid ${isReady ? 'fa-circle-check' : 'fa-circle-info'}"></i><span>${countText}</span></div><button id="startCampaignBattle" class="campaign-primary ${isReady ? 'ready-to-battle' : ''}" ${this.pick.length === 3 ? '' : 'disabled'}>${isReady ? '<i class="fa-solid fa-play"></i> INICIAR BATALHA' : `<i class="fa-solid fa-lock"></i> Iniciar batalha (${this.pick.length}/3)`}</button></div></section>`;
-    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.render(); };
-    this.container.querySelectorAll('.campaign-mon').forEach(button => button.onclick = () => { const id = Number(button.dataset.id); this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick); this.render(); });
-    this.setupBattleStart(isReady, 3, async () => { try { await this.coordinator.start(this.pending.kind, this.pending.id, this.pick); this.pending = null; window.switchAppTab('battle'); } catch (error) { alert(error.message); } });
+    const ownedIds = new Set(this.manager.getRosterIds());
+    const trialState = this.manager.getState().endgameTrials?.[definition.key] || {};
+    const isRewardClaimed = Boolean(trialState.rewardClaimed);
+
+    const selectedOpponentId = (this.pending.opponentId !== undefined && this.pending.opponentId !== null)
+      ? Number(this.pending.opponentId) : null;
+    const selectedOpponent = selectedOpponentId ? definition.team.find(p => p.id === selectedOpponentId) : null;
+    const hasValidOpponent = Boolean(selectedOpponent && (isRewardClaimed || !ownedIds.has(selectedOpponent.id)));
+
+    const candidateCards = definition.team.map(pokemon => {
+      const isOwned = ownedIds.has(pokemon.id);
+      const isSelected = selectedOpponentId === pokemon.id;
+      const isUnavailable = !isRewardClaimed && isOwned;
+      const badge = isSelected
+        ? '<span class="trial-candidate-badge selected"><i class="fa-solid fa-circle-check"></i> ADVERSÁRIO ESCOLHIDO</span>'
+        : isUnavailable
+          ? '<span class="trial-candidate-badge owned"><i class="fa-solid fa-lock"></i> JÁ NO ELENCO</span>'
+          : '<span class="trial-candidate-badge available">Escolher como adversário</span>';
+
+      return `<button type="button" class="opponent-preview-card trial-candidate-card ${isSelected ? 'selected' : ''} ${isUnavailable ? 'unavailable' : ''}" data-opponent-id="${pokemon.id}" ${isUnavailable ? 'disabled' : ''} aria-pressed="${isSelected}"><img src="${pokemon.sprite}" alt="${cap(pokemon.name)}" loading="lazy"><strong>${cap(pokemon.name)}</strong><span>${pokemon.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span><small>BST ${pokemon.bst}</small><div class="trial-candidate-action">${badge}</div></button>`;
+    }).join('');
+
+    let rewardCallout = '';
+    if (isRewardClaimed) {
+      const claimedMon = C.byId(trialState.rewardPokemonId);
+      rewardCallout = `<div class="trial-reward-callout claimed"><i class="fa-solid fa-trophy"></i> Recompensa desta Prova já resgatada (${claimedMon ? cap(claimedMon.name) : 'Pokémon'}). Esta batalha é uma revanche 3 contra 1 sem nova recompensa.</div>`;
+    } else if (selectedOpponent) {
+      rewardCallout = `<div class="trial-reward-callout highlight"><i class="fa-solid fa-gift"></i> <strong>Recompensa ao vencer: ${cap(selectedOpponent.name)}</strong> (será recrutado imediatamente para o seu elenco permanente).</div>`;
+    } else {
+      rewardCallout = `<div class="trial-reward-callout pending"><i class="fa-solid fa-circle-question"></i> <strong>Recompensa ao vencer:</strong> Escolha um dos três guardiões acima para definir sua recompensa.</div>`;
+    }
+
+    const previewSection = `<section class="opponent-team-preview" aria-label="Equipe adversária"><div class="opponent-team-preview__head"><p class="eyebrow">ESCOLHA SEU ADVERSÁRIO (1 DE 3)</p><p class="trial-instruction-text">Selecione o guardião que deseja enfrentar no formato <strong>3 contra 1</strong>.</p></div><div class="opponent-team-preview__grid">${candidateCards}</div>${rewardCallout}</section>`;
+
+    const isReady = hasValidOpponent && this.pick.length === 3;
+    const countText = !hasValidOpponent
+      ? 'Selecione 1 adversário acima para enfrentar'
+      : this.pick.length < 3
+        ? `Selecione mais ${3 - this.pick.length} Pokémon (${this.pick.length}/3)`
+        : `Equipe completa (3/3) contra ${cap(selectedOpponent.name)} — Pronto para a batalha!`;
+
+    const btnText = isReady
+      ? '<i class="fa-solid fa-play"></i> INICIAR BATALHA (3 vs 1)'
+      : !hasValidOpponent
+        ? '<i class="fa-solid fa-lock"></i> Selecione o adversário'
+        : `<i class="fa-solid fa-lock"></i> Iniciar batalha (${this.pick.length}/3)`;
+
+    this.container.innerHTML = `<section class="campaign-shell"><button id="pickerBack" class="campaign-secondary">← Voltar</button><section class="campaign-preparation campaign-preparation--trial"><div class="campaign-preparation__copy"><p class="eyebrow">PROVA ESPECIAL</p><h2>${definition.title}</h2><span class="trial-format-badge"><i class="fa-solid fa-shield-halved"></i> FORMATO: 3 CONTRA 1</span><p>Batalha tática de três Pokémon do seu elenco contra apenas o guardião escolhido.</p><strong class="trial-difficulty">DIFICULDADE: ${definition.difficulty}</strong></div>${previewSection}</section><div class="campaign-hero picker-choice"><h2>Escolha exatamente 3 Pokémon</h2><p>O primeiro selecionado será o líder. ${this.pick.length}/3 selecionados.</p></div><div class="campaign-grid draft-grid">${roster.map(pokemon => this.card(pokemon, this.pick.includes(pokemon.id))).join('')}</div><div class="picker-action-bar" id="pickerActionBar"><div class="picker-status-hint ${isReady ? 'complete' : 'incomplete'}"><i class="fa-solid ${isReady ? 'fa-circle-check' : 'fa-circle-info'}"></i><span>${countText}</span></div><button id="startCampaignBattle" class="campaign-primary ${isReady ? 'ready-to-battle' : ''}" ${isReady ? '' : 'disabled'}>${btnText}</button></div></section>`;
+
+    this.container.querySelector('#pickerBack').onclick = () => { this.pending = null; this.pick = []; this.render(); };
+    this.container.querySelectorAll('.trial-candidate-card:not(:disabled)').forEach(button => {
+      button.onclick = () => {
+        const id = Number(button.dataset.opponentId);
+        this.pending.opponentId = (this.pending.opponentId === id) ? null : id;
+        this.render();
+      };
+    });
+    this.container.querySelectorAll('.draft-grid .campaign-mon').forEach(button => {
+      button.onclick = () => {
+        const id = Number(button.dataset.id);
+        this.pick = this.pick.includes(id) ? this.pick.filter(value => value !== id) : (this.pick.length < 3 ? [...this.pick, id] : this.pick);
+        this.render();
+      };
+    });
+    this.setupBattleStart(isReady, 3, async () => {
+      try {
+        if (!hasValidOpponent) throw new Error('Selecione um adversário válido.');
+        if (this.pick.length !== 3) throw new Error('Selecione exatamente 3 Pokémon.');
+        await this.coordinator.start(this.pending.kind, selectedOpponent.id, this.pick, { opponentId: selectedOpponent.id, opponentPokemonId: selectedOpponent.id });
+        this.pending = null;
+        window.switchAppTab('battle');
+      } catch (error) { alert(error.message); }
+    });
   };
 
   const renderReward = View.prototype.renderReward;
   View.prototype.renderReward = function (reward) {
-    renderReward.call(this, reward);
     const definition = trial[reward && reward.kind];
-    if (definition) this.container.querySelector('.campaign-hero h2').textContent = `Escolha seu Pokémon — ${definition.label}`;
+    if (!definition) return renderReward.call(this, reward);
+
+    const candidates = this.manager.getRewardCandidates();
+    if (candidates.length === 1) {
+      const candidate = candidates[0];
+      const p = C.byId(candidate.id);
+      this.container.innerHTML = `
+        <section class="campaign-shell">
+          <div class="campaign-hero">
+            <p class="eyebrow">RECOMPENSA DA PROVA CONQUISTADA</p>
+            <h2>${definition.label}: ${cap(p.name)}</h2>
+            <p>Você venceu o desafio 3 contra 1 e conquistou exatamente o Pokémon enfrentado. Não há escolha adicional.</p>
+          </div>
+          <div class="trial-reward-confirm-container">
+            <div class="campaign-mon trial-single-reward-card">
+              <img src="${p.sprite}" alt="${cap(p.name)}">
+              <strong>${cap(p.name)}</strong>
+              <span>${p.types.map(type => `<i class="type-chip type-${type}">${type}</i>`).join('')}</span>
+              <small>BST ${p.bst}</small>
+              <button id="btnClaimTrialReward" class="campaign-primary ready-to-battle" style="margin-top: 1rem; width: 100%;">
+                <i class="fa-solid fa-gift"></i> Confirmar e Resgatar ${cap(p.name)}
+              </button>
+            </div>
+          </div>
+        </section>
+      `;
+      this.container.querySelector('#btnClaimTrialReward').onclick = () => {
+        if (confirm(`Confirmar o resgate de ${cap(p.name)} para o seu elenco permanente?`)) {
+          this.manager.claimReward(p.id);
+        }
+      };
+      return;
+    }
+
+    renderReward.call(this, reward);
+    this.container.querySelector('.campaign-hero h2').textContent = `Escolha seu Pokémon — ${definition.label}`;
   };
 })();
 /* PBA-015H — Shadow presentation only; no campaign or battle rules are changed. */

@@ -589,7 +589,10 @@
         try {
           const campaign = typeof window !== 'undefined' ? window.campaignManager : null;
           const meta = this.sessionOptions?.metadata;
-          if (campaign && meta?.mode === 'CAMPAIGN') campaign.recordBattle({ battleId: this.currentBattleId, kind: meta.kind, id: meta.id, winner: isVictory ? 'player' : 'enemy' });
+          if (campaign && meta?.mode === 'CAMPAIGN') {
+            const opponentPokemonId = meta.opponentPokemonId || (meta.id && Number.isInteger(Number(meta.id)) ? Number(meta.id) : null) || (Array.isArray(this.sessionOptions?.enemyTeamIds) && this.sessionOptions.enemyTeamIds.length === 1 ? Number(this.sessionOptions.enemyTeamIds[0]) : null);
+            campaign.recordBattle({ battleId: this.currentBattleId, kind: meta.kind, id: meta.id, opponentPokemonId, winner: isVictory ? 'player' : 'enemy' });
+          }
         } catch (err) { console.warn('Não foi possível registrar a progressão da campanha:', err); }
 
         if (isVictory) {

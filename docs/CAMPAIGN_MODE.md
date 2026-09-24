@@ -137,6 +137,34 @@ A interface (`assets/js/campaign/campaign-view.js` e `assets/css/campaign.css`) 
 
 ---
 
+## Provas do Endgame (3 contra 1): Prova Lendária, Mítica, dos Titãs e Celestial
+
+As quatro Provas de Endgame servem como preparação avançada para o confronto final contra o Super Treinador. Originalmente executadas em formato de equipe 3 contra 3 com escolha de recompensa ao término, as Provas utilizam o formato **3 contra 1**:
+
+### 1. Seleção Prévia do Adversário
+- **Visualização Clara dos Três Candidatos:** Na tela de preparação da Prova, o jogador visualiza os três chefes disponíveis com seus tipos e atributos.
+- **Escolha de Um Adversário:** O jogador escolhe exatamente **um** adversário para enfrentar antes de iniciar a batalha.
+- **Identificação de Posse e Prevenção de Duplicatas:** Candidatos já presentes no elenco do jogador são destacados visualmente com a tag "Já no elenco" e desabilitados para seleção antes do primeiro resgate, impedindo que uma escolha gere Pokémon duplicado.
+- **Seleção da Equipe do Jogador:** O jogador deve obrigatoriamente selecionar três Pokémon do seu elenco, preservando a personalização de golpes já implementada.
+- **Prévia Tática Segmentada:** O guia de confronto (`campaign-matchup-guide.js`) avalia tipos, riscos e vantagens exclusivamente contra o adversário individual selecionado. Se nenhum adversário estiver selecionado, a prévia aguarda a seleção.
+- **Validação de Início:** O botão de iniciar a Prova exige que um adversário válido esteja selecionado e que os três Pokémon do jogador estejam escolhidos. Ao navegar para fora ou alternar de Prova, a seleção de adversário é redefinida com segurança para evitar reutilizações acidentais.
+
+### 2. Motor de Batalha e Formato 3 contra 1 (`TRIAL_3X1`)
+- **Equipe Real 3 contra 1:** A batalha é inicializada no motor com três Pokémon reais na equipe do jogador e estritamente um único integrante real na equipe adversária. Não são gerados adversários vazios ou falsos reservas.
+- **Resolução Imediata de Vitória:** O motor de combate (`BattleEngine`) reconhece a derrota do único adversário como vitória imediata (`PLAYER_WIN`), emitindo os eventos de conclusão sem transitar para espera de substituição da IA nem requisitar troca indevida.
+- **Substituições do Jogador:** As trocas do jogador entre os seus 3 integrantes continuam funcionando com total fidelidade tática.
+- **Tratamento de Derrota:** Caso os três Pokémon do jogador sejam derrotados, a Prova é computada como derrota sem concessão de recompensa, incrementando o contador de tentativas (`attempts`) e permitindo tentar novamente contra o mesmo ou outro adversário.
+
+### 3. Recompensa Direta e Persistência
+- **Recompensa Única e Imediata:** Ao vencer, o jogador ganha o direito de resgatar **exatamente o Pokémon enfrentado**. A tela de vitória exibe a confirmação direta desse Pokémon, sem oferecer uma nova escolha entre os três.
+- **Uma Recompensa por Prova:** Cada Prova concede no máximo uma recompensa de Pokémon (`rewardClaimed: true`). Após o resgate, a Prova pode ser repetida para treino/conquista, mas novas vitórias não concedem novos Pokémon.
+- **Compatibilidade Retroativa com Saves Legados:**
+  - Saves antigos que possuam uma vitória pendente obtida pelo fluxo anterior 3 contra 3 (contendo os 3 candidatos originais) têm suas opções integralmente preservadas na sanitização do store (`campaign-store.js`) e continuam permitindo o resgate conforme a regra antiga.
+  - Novas vitórias gravam estritamente o candidato único enfrentado (`candidates: [opponentPokemonId]`), que permanece inalterado e seguro mesmo se o jogador recarregar a página antes de confirmar o resgate.
+- **Preservação dos Outros Modos:** O formato 3 contra 1 é estritamente restrito a essas quatro Provas. Batalhas normais 3 contra 3 (Mestres), Super Treinador, Shadow Super Trainer, Final Stand e Batalha Rápida permanecem inalterados.
+
+---
+
 ## Scripts de Manutenção e Auditoria
 
 ### 1. `scripts/build-campaign-draft-catalog.js`

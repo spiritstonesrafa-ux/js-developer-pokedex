@@ -325,6 +325,8 @@ test('Map Model — Prova concluída permite revanche sem nova recompensa', () =
   mgr.recordBattle({
     battleId: 'test-legendary',
     kind: 'LEGENDARY_TRIAL',
+    id: 145,
+    opponentPokemonId: 145,
     winner: 'player'
   });
   const cand = mgr.getRewardCandidates().find(c => c.selectable);

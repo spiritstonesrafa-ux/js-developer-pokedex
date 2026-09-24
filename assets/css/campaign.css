@@ -502,3 +502,113 @@
 .campaign-move-editor__option small { opacity: .86; }
 .campaign-move-editor__error { color: #fecaca; min-height: 1.2em; }
 .campaign-move-editor :focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+
+/* ==========================================================================
+   ENDGAME TRIALS 3 CONTRA 1 STYLES
+   ========================================================================== */
+.trial-format-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(246, 211, 101, 0.15);
+  border: 1px solid #f6d365;
+  color: #fff0ae;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin: 0.35rem 0 0.5rem;
+}
+.trial-instruction-text {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0.85rem;
+  line-height: 1.4;
+}
+.trial-candidate-card {
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  border: 2px solid rgba(255, 209, 102, 0.35);
+  background: rgba(9, 12, 26, 0.65);
+  color: inherit;
+  font: inherit;
+  width: 100%;
+}
+.trial-candidate-card:hover:not(:disabled) {
+  border-color: #ffd166;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 209, 102, 0.25);
+}
+.trial-candidate-card.selected {
+  border-color: #ffd166;
+  background: radial-gradient(circle at 50% 20%, rgba(246, 211, 101, 0.2), transparent 75%), rgba(14, 19, 40, 0.9);
+  box-shadow: 0 0 20px rgba(255, 209, 102, 0.45);
+  outline: 2px solid #ffd166;
+  outline-offset: 1px;
+}
+.trial-candidate-card.unavailable {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.65);
+}
+.trial-candidate-badge {
+  display: inline-block;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-top: 0.4rem;
+  letter-spacing: 0.02em;
+}
+.trial-candidate-badge.selected {
+  background: #ffd166;
+  color: #171724;
+}
+.trial-candidate-badge.owned {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+.trial-candidate-badge.available {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+.trial-reward-callout {
+  margin: 1rem 0 0.5rem;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.trial-reward-callout.highlight {
+  background: rgba(246, 211, 101, 0.12);
+  border: 1px solid rgba(246, 211, 101, 0.5);
+  color: #fff0ae;
+}
+.trial-reward-callout.pending {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  color: #cbd5e1;
+}
+.trial-reward-callout.claimed {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #c7d2fe;
+}
+.trial-reward-confirm-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+.trial-single-reward-card {
+  max-width: 280px;
+  width: 100%;
+  border: 2px solid #ffd166;
+  box-shadow: 0 0 28px rgba(255, 209, 102, 0.35);
+  background: radial-gradient(circle at 50% 25%, rgba(246, 211, 101, 0.18), transparent 70%), #171724;
+}
