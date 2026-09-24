@@ -127,6 +127,46 @@ test('3x1 Trial Battle — Valid and invalid opponent selection in getBattleConf
   }), /Adversário inválido/);
 });
 
+test('3x1 Trial Battle — rejected results leave progress intact and the battle ID reusable', () => {
+  const manager = fresh();
+  unlock18(manager);
+
+  for (const [kind, key, candidate] of [
+    ['LEGENDARY_TRIAL', 'legendary', 145],
+    ['MYTHICAL_TRIAL', 'mythical', 151],
+    ['TITANS_TRIAL', 'titans', 1007],
+    ['CELESTIAL_TRIAL', 'celestial', 889]
+  ]) {
+    const battleId = `rejected-${kind}`;
+    const before = manager.getState();
+    const savedBefore = mem.get(C.STORAGE_KEY);
+    for (const winner of ['player', 'enemy']) {
+      assert.throws(() => manager.recordBattle({
+        battleId, kind, opponentPokemonId: 999, winner
+      }), /Adversário inválido/);
+      assert.deepEqual(manager.getState(), before, `${kind}: resultado inválido não pode alterar o estado em memória`);
+      assert.equal(mem.get(C.STORAGE_KEY), savedBefore, `${kind}: resultado inválido não pode alterar o save`);
+      const reloaded = fresh(false).getState();
+      assert.equal(reloaded.endgameTrials[key].attempts, before.endgameTrials[key].attempts);
+      assert.equal(reloaded.processedBattleIds.includes(battleId), false);
+    }
+
+    const retry = manager.recordBattle({ battleId, kind, opponentPokemonId: candidate, winner: 'enemy' });
+    assert.equal(retry.processed, true, `${kind}: o ID rejeitado deve continuar disponível`);
+    assert.equal(manager.getState().processedBattleIds.includes(battleId), true);
+    assert.equal(manager.getState().endgameTrials[key].attempts, 1);
+    assert.equal(manager.getState().pendingReward, null);
+  }
+});
+
+test('3x1 Trial Battle — preparation copy matches the post-victory reward confirmation', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const source = fs.readFileSync(path.join(__dirname, '../../assets/js/campaign/campaign-view.js'), 'utf8');
+  assert.match(source, /confirme o resgate após a vitória/);
+  assert.match(source, /Confirmar e Resgatar/);
+  assert.doesNotMatch(source, /será recrutado imediatamente/);
+});
+
 test('3x1 Trial Battle — Engine accepts 3x1 format, defeats single opponent immediately without replacement, and handles player loss', () => {
   const mon = (id, hp = 80, speed = 70) => ({
     id,

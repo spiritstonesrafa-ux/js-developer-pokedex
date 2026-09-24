@@ -30,13 +30,13 @@
     if(kind!=='LEGENDARY_TRIAL'&&kind!=='MYTHICAL_TRIAL'&&kind!=='TITANS_TRIAL'&&kind!=='CELESTIAL_TRIAL')return previousRecord.call(this,result);
     const d=trialDefinition[kind],t=trials(this)[d.key],battleId=result.battleId;
     if(typeof battleId!=='string'||this.data.processedBattleIds.includes(battleId))return {processed:false,duplicate:true};
+    const oppId=Number(result.opponentPokemonId??result.id);
+    if(!Number.isInteger(oppId)||!d.team.some(p=>p.id===oppId))throw new Error(`Adversário inválido para a ${d.name}.`);
+    if(result.winner==='player'&&!t.completed&&!t.rewardClaimed&&this.getRosterIds().includes(oppId))throw new Error('Adversário já pertence ao seu elenco.');
     this.data.processedBattleIds.push(battleId);
     this.data.processedBattleIds=this.data.processedBattleIds.slice(-C.MAX_PROCESSED);
     t.attempts++;
     if(result.winner==='player'&&!t.completed){
-      const oppId=Number(result.opponentPokemonId||result.id);
-      if(!Number.isInteger(oppId)||!d.team.some(p=>p.id===oppId))throw new Error(`Adversário inválido para a ${d.name}.`);
-      if(!t.rewardClaimed&&this.getRosterIds().includes(oppId))throw new Error('Adversário já pertence ao seu elenco.');
       t.completed=true;
       this.data.pendingReward={kind,challengeId:d.key,candidates:[oppId]};
     }

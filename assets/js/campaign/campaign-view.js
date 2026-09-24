@@ -276,7 +276,7 @@
       const claimedMon = C.byId(trialState.rewardPokemonId);
       rewardCallout = `<div class="trial-reward-callout claimed"><i class="fa-solid fa-trophy"></i> Recompensa desta Prova já resgatada (${claimedMon ? cap(claimedMon.name) : 'Pokémon'}). Esta batalha é uma revanche 3 contra 1 sem nova recompensa.</div>`;
     } else if (selectedOpponent) {
-      rewardCallout = `<div class="trial-reward-callout highlight"><i class="fa-solid fa-gift"></i> <strong>Recompensa ao vencer: ${cap(selectedOpponent.name)}</strong> (será recrutado imediatamente para o seu elenco permanente).</div>`;
+      rewardCallout = `<div class="trial-reward-callout highlight"><i class="fa-solid fa-gift"></i> <strong>Recompensa ao vencer: ${cap(selectedOpponent.name)}</strong> (confirme o resgate após a vitória para adicioná-lo ao seu elenco permanente).</div>`;
     } else {
       rewardCallout = `<div class="trial-reward-callout pending"><i class="fa-solid fa-circle-question"></i> <strong>Recompensa ao vencer:</strong> Escolha um dos três guardiões acima para definir sua recompensa.</div>`;
     }
