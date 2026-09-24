@@ -2,6 +2,25 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Estado atual — 24/09/2026
+
+**Referência:** branch `main` até o commit `5b06ed7`. As seções numeradas e os registros de release abaixo preservam o estado de seus respectivos marcos; números de testes e indicações como `PBA_020 = NOT_STARTED` nesses blocos são históricos.
+
+### Entregas desde o registro de 15/09/2026
+
+- **Mapa da campanha:** quatro regiões com navegação por nós e rotas, paridade com a lista de desafios, transições acessíveis, tratamento de movimento reduzido e validação de responsividade/performance. Documentação detalhada em `docs/CAMPAIGN_MAP_PHASE_1.md` a `docs/CAMPAIGN_MAP_PHASE_5.md`.
+- **Seleção inicial ampliada:** 450 Pokémon, exatamente 50 de cada uma das nove gerações, sem lendários ou míticos. O catálogo identifica 54 opções recomendadas para desafios finais (seis por geração). Campanhas antigas continuam usando o save `VERSION = 1`.
+- **Combate e orientação tática:** os 468 Pokémon atualmente obtíveis na campanha têm conjuntos locais de quatro golpes suportados; o comparador de confronto usa os mesmos dados da batalha. A Batalha Rápida conserva seu fluxo próprio.
+- **Evolução de gameplay — Fases 1 a 3:** piloto de veneno comum, depois queimadura e paralisia, seguido da escolha persistente de 1 a 4 golpes do jogador na preparação dos desafios. Os efeitos são limitados a golpes explicitamente suportados; adversários preservam seus conjuntos fixos. Regras e escopo em `docs/GAMEPLAY_EVOLUTION_ROADMAP.md` e `docs/CAMPAIGN_MODE.md`.
+- **Quatro Provas finais em 3 contra 1:** o jogador escolhe um dos três candidatos antes da luta, enfrenta-o com três Pokémon e, se vencer, pode confirmar o resgate exatamente desse adversário. Saves com recompensa pendente do formato antigo 3 contra 3 continuam resgatáveis; revanches não dão nova recompensa. Resultados inválidos são rejeitados antes de consumir o ID da batalha ou incrementar tentativas (`5b06ed7`).
+
+### Validação e próximos passos
+
+- Última verificação automatizada: `npm test` **789/789**, `npm run test:campaign` **151/151**, auditoria determinística do draft **aprovada (450/450)** e `git diff --check` sem erro.
+- A inspeção visual relatada cobriu a preparação e o início da Prova Lendária em 3 contra 1. A jogabilidade completa — vitória, derrota e resgate — ainda deve ser conferida manualmente nas quatro Provas; os testes automatizados não substituem esse aceite humano.
+- A **Fase 4 (Dificuldade Assistida)** do roadmap de gameplay foi adiada por decisão do proprietário; **não está implementada**. A Fase 5 (objetivos opcionais) também não começou. As Provas 3 contra 1 foram uma melhoria específica de balanceamento, não a implementação da Fase 4.
+- A versão publicada/tag mais recente continua **v1.1.0**. As mudanças de gameplay acima estão na `main` após essa release; esta atualização não declara uma nova versão nem valida uma nova publicação pública.
+
 ---
 
 ## 1. Projeto
@@ -17,7 +36,7 @@ Arquivo de governança técnica para alinhamento e continuidade entre diferentes
 Evoluir uma Pokédex moderna (desafio DIO) para uma plataforma de portfólio completa contendo:
 1. Pokédex interativa e rápida (HTML5, CSS3, JavaScript Vanilla, PokéAPI);
 2. Team Builder tático para seleção, ordenação e persistência de equipes (até 3 integrantes);
-3. Battle Simulator com simulação por turnos 1x1 e 3x3 contra IA, mecânica clássica de dano e efetividade, com alta qualidade estética, animações dinâmicas e efeitos visuais/sonoros desacoplados.
+3. Battle Simulator com simulação por turnos 1x1, 3x3 e Provas 3x1 contra IA, mecânica clássica de dano e efetividade, com alta qualidade estética, animações dinâmicas e efeitos visuais/sonoros desacoplados.
 
 ---
 
