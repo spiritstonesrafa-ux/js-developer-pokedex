@@ -29,6 +29,7 @@
   let presentationEngineModule;
   let compositeAdapterModule;
   let audioControllerModule;
+  let campaignFixedCatalog;
 
   if (typeof module !== 'undefined' && module.exports) {
     sessionConstants = require('./battle-session-constants.js');
@@ -45,6 +46,7 @@
     } catch {
       audioControllerModule = null;
     }
+    campaignFixedCatalog = require('../campaign/campaign-fixed-battle-catalog.js');
   } else if (typeof window !== 'undefined') {
     sessionConstants = window.PBABattleSession || {};
     randomSourceModule = window.PBABattleSession || {};
@@ -250,11 +252,23 @@
       this.sessionOptions = { ...options, playerTeamIds: teamIds };
 
       try {
+        const campaignMode = options.metadata?.mode === 'CAMPAIGN';
+        const fixedCatalog = campaignMode
+          ? (campaignFixedCatalog || (typeof window !== 'undefined' && window.PBACampaign?.CampaignFixedBattleCatalog))
+          : null;
+        if (campaignMode && !fixedCatalog) throw new Error('Catálogo de golpes da campanha indisponível.');
+        const campaignInput = ids => campaignMode
+          ? ids.map(id => fixedCatalog.byId[id]
+            ? { ...fixedCatalog.byId[id], campaignFixedMoves: true } : id)
+          : ids;
+
         // 1. Hidrata o time do jogador
-        this.playerTeam = await this.hydrator.hydrateTeam(teamIds);
+        this.playerTeam = await this.hydrator.hydrateTeam(campaignInput(teamIds));
 
         // 2. Constrói e hidrata o time adversário
-        this.enemyTeam = Array.isArray(options.enemyTeamIds) ? await this.hydrator.hydrateTeam(options.enemyTeamIds) : await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride, { playerTeamIds: teamIds });
+        this.enemyTeam = Array.isArray(options.enemyTeamIds)
+          ? await this.hydrator.hydrateTeam(campaignInput(options.enemyTeamIds))
+          : await this.opponentFactory.createOpponentTeam(options.opponentPoolOverride, { playerTeamIds: teamIds });
 
         // Preflight de Compatibilidade com o Engine (PBA-014C-HARDENING):
         // Se qualquer Pokémon tiver 0 golpes suportados (ex: Ditto com Transform, Wobbuffet com Counter/Mirror Coat),

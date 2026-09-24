@@ -68,6 +68,7 @@
       MAX_MOVE_DETAIL_REQUESTS_PER_POKEMON: 8
     },
     MOVESET_LOADOUT_SOURCE: {
+      CAMPAIGN_FIXED_MOVESET: 'CAMPAIGN_FIXED_MOVESET',
       API_MOVESET: 'API_MOVESET',
       LIMITED_API_MOVESET: 'LIMITED_API_MOVESET',
       UNSUPPORTED_ENGINE_MOVESET: 'UNSUPPORTED_ENGINE_MOVESET',
@@ -275,7 +276,9 @@
 
       // Resolve loadout de golpes determinístico com descoberta progressiva e qualidade
       const candidateMoves = Array.isArray(pokeData.moves) ? pokeData.moves : [];
-      const loadoutResult = await this.selectDeterministicLoadout(candidateMoves, types, stats);
+      const loadoutResult = pokeData.campaignFixedMoves
+        ? this.createCampaignFixedLoadout(candidateMoves)
+        : await this.selectDeterministicLoadout(candidateMoves, types, stats);
       const moves = loadoutResult.moves || [];
       const moveLoadoutSource = loadoutResult.source || MOVESET_LOADOUT_SOURCE.API_MOVESET;
       const moveLoadoutReason = loadoutResult.reason || MOVESET_LIMIT_REASON.NONE;
@@ -300,6 +303,29 @@
         photo: pokeData.photo || '',
         animatedPhoto: pokeData.animatedPhoto || pokeData.photo || '',
         cry: pokeData.cry || ''
+      };
+    }
+
+    /** Preserves the exact four curated campaign moves without a network request. */
+    createCampaignFixedLoadout(candidateMoves) {
+      const moves = Array.isArray(candidateMoves) ? candidateMoves : [];
+      if (moves.length !== 4 || new Set(moves.map(move => move.id)).size !== 4 ||
+          moves.some(move => !isMechanicallySupportedMove(move) ||
+            !Number.isInteger(Number(move.id)) || Number(move.id) <= 0 ||
+            !Number.isInteger(Number(move.pp)) || Number(move.pp) <= 0 ||
+            (move.accuracy !== null && (!Number.isInteger(Number(move.accuracy)) ||
+              Number(move.accuracy) < 1 || Number(move.accuracy) > 100)))) {
+        throw new Error('Conjunto fixo da campanha inválido.');
+      }
+      return {
+        source: MOVESET_LOADOUT_SOURCE.CAMPAIGN_FIXED_MOVESET,
+        reason: MOVESET_LIMIT_REASON.NONE,
+        moves: moves.map(move => ({
+          id: Number(move.id), name: String(move.name), type: String(move.type),
+          power: Number(move.power), accuracy: move.accuracy, pp: Number(move.pp),
+          maxPp: Number(move.pp), currentPp: Number(move.pp),
+          damageClass: String(move.damageClass)
+        }))
       };
     }
 
@@ -669,7 +695,8 @@
 
   const exportsObj = {
     BattleTeamHydrator,
-    FALLBACK_MOVES_BY_TYPE
+    FALLBACK_MOVES_BY_TYPE,
+    getFallbackSpecies
   };
 
   if (typeof module !== 'undefined' && module.exports) {

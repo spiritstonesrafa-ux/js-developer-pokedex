@@ -22,14 +22,18 @@
         const attacks = moves.map(move => ({ name: move.name, type: move.type,
           multiplier: multiplier(move.type, opponent.types) })).filter(x => x.multiplier !== null)
           .sort((a, b) => b.multiplier - a.multiplier || a.name.localeCompare(b.name));
-        const incoming = (Array.isArray(opponent.types) ? opponent.types : [])
-          .map(type => ({ type, multiplier: multiplier(type, pokemon.types) }))
+        const enemySource = fallbackById[opponent.id];
+        const enemyMoves = enemySource && Array.isArray(enemySource.moves) ? enemySource.moves : [];
+        const incomingCandidates = enemyMoves.length ? enemyMoves : (opponent.types || []).map(type => ({ type }));
+        const incoming = incomingCandidates
+          .map(move => ({ name: move.name || null, type: move.type,
+            multiplier: multiplier(move.type, pokemon.types) }))
           .filter(x => x.multiplier !== null).sort((a, b) => b.multiplier - a.multiplier);
         const risk = incoming[0];
         return { opponent, bestAttack: attacks[0] || null,
           incoming: risk ? { ...risk, multiplier: shadow ? Math.max(2, risk.multiplier) : risk.multiplier } : null };
       });
-      return { pokemon, hasMoves: moves.length > 0, matchups };
+      return { pokemon, moves, hasMoves: moves.length > 0, matchups };
     });
     const covered = opponents.filter((_, i) => entries.some(entry =>
       entry.matchups[i].bestAttack && entry.matchups[i].bestAttack.multiplier >= 2)).length;
@@ -38,12 +42,14 @@
       .sort((a, b) => b.first.bestAttack.multiplier - a.first.bestAttack.multiplier ||
         (a.first.incoming ? a.first.incoming.multiplier : Infinity) -
         (b.first.incoming ? b.first.incoming.multiplier : Infinity));
-    return { entries, opponents, covered, shadow,
+    const fullyFixed = entries.length > 0 && entries.every(entry => entry.moves.length === 4) &&
+      opponents.every(opponent => fallbackById[opponent.id]?.moves?.length === 4);
+    return { entries, opponents, covered, shadow, fullyFixed,
       suggestedLeader: selected.length > 1 && ranked.length ? ranked[0].entry.pokemon : null };
   }
   function renderReport(report) {
-    const { entries, opponents, covered, shadow, suggestedLeader } = report;
-    const cards = entries.map(({ pokemon, hasMoves, matchups }, index) => {
+    const { entries, opponents, covered, shadow, fullyFixed, suggestedLeader } = report;
+    const cards = entries.map(({ pokemon, moves, hasMoves, matchups }, index) => {
       const favorable = matchups.filter(x => x.bestAttack && x.bestAttack.multiplier >= 2)
         .sort((a, b) => b.bestAttack.multiplier - a.bestAttack.multiplier)[0];
       const risk = matchups.filter(x => x.incoming && x.incoming.multiplier >= 2)
@@ -53,19 +59,31 @@
         : hasMoves ? 'Nenhum golpe ofensivo conhecido tem vantagem de tipo contra esta equipe.'
           : 'Golpes ofensivos não disponíveis no catálogo offline.';
       const warning = risk
-        ? `Atenção: golpes do tipo ${cap(risk.incoming.type)} de ${cap(risk.opponent.name)} podem causar ${times(risk.incoming.multiplier)}.`
-        : 'Nenhuma fraqueza identificada contra os tipos principais dos adversários.';
+        ? risk.incoming.name
+          ? `Atenção: ${cap(risk.incoming.name)} de ${cap(risk.opponent.name)} tem efetividade ${times(risk.incoming.multiplier)}.`
+          : `Atenção: golpes do tipo ${cap(risk.incoming.type)} de ${cap(risk.opponent.name)} podem causar ${times(risk.incoming.multiplier)}.`
+        : 'Nenhum golpe adversário conhecido tem vantagem de tipo.';
       const first = matchups[0];
       const immunity = first && first.bestAttack && first.bestAttack.multiplier === 0
         ? `<p class="campaign-matchup__warning">Os golpes conhecidos não atingem ${escape(cap(first.opponent.name))}; escolha outro Pokémon.</p>` : '';
-      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4><p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${immunity}</article>`;
+      const moveList = moves.length
+        ? `<ul class="campaign-matchup__moves" aria-label="Golpes de ${escape(cap(pokemon.name))}">${moves.map(move =>
+          `<li><strong>${escape(cap(move.name))}</strong><span>${escape(cap(move.type))} · Poder ${Number(move.power)} · ${move.accuracy === null ? 'sempre acerta' : Number.isInteger(Number(move.accuracy)) ? `${Number(move.accuracy)}% precisão` : 'precisão não informada'}</span></li>`
+        ).join('')}</ul>`
+        : '';
+      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4>${moveList}<p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${immunity}</article>`;
     }).join('');
     const summary = entries.length
       ? `${covered} de ${opponents.length} adversários têm fraqueza a pelo menos um golpe ofensivo conhecido da seleção.`
       : `Escolha ${shadow ? 'um líder' : 'até três Pokémon'} para ver vantagens e riscos da equipe.`;
     const suggestion = suggestedLeader && suggestedLeader.id !== entries[0].pokemon.id
       ? `<p class="campaign-matchup__suggestion">Sugestão de líder contra ${escape(cap(opponents[0].name))}: <strong>${escape(cap(suggestedLeader.name))}</strong>. Para mudar, desmarque e selecione novamente na ordem desejada.</p>` : '';
-    return `<section class="campaign-matchup" aria-label="Comparador de equipe"><div class="campaign-matchup__head"><p class="eyebrow">LEITURA TÁTICA</p><h3>Vantagens da sua escolha</h3><p>${escape(summary)}</p></div>${entries.length ? `<div class="campaign-matchup__grid">${cards}</div>` : ''}${suggestion}<p class="campaign-matchup__note">Prévia por tipos e golpes do catálogo offline. Os golpes carregados na batalha podem variar; cobertura e risco não garantem vitória. ${shadow ? 'Na aura Shadow, ataques inimigos recebem no mínimo 2× de efetividade. ' : ''}Riscos consideram os tipos principais do rival, não todos os seus golpes.</p></section>`;
+    const note = !entries.length
+      ? 'Os golpes da campanha são estáveis e aparecerão aqui após sua escolha.'
+      : fullyFixed
+        ? 'Os quatro golpes exibidos são os usados nas batalhas da campanha. Vantagem de tipo não garante vitória.'
+        : 'Prévia limitada: Pokémon de campanhas antigas sem conjunto fixo podem carregar golpes diferentes na batalha.';
+    return `<section class="campaign-matchup" aria-label="Comparador de equipe"><div class="campaign-matchup__head"><p class="eyebrow">LEITURA TÁTICA</p><h3>Vantagens da sua escolha</h3><p>${escape(summary)}</p></div>${entries.length ? `<div class="campaign-matchup__grid">${cards}</div>` : ''}${suggestion}<p class="campaign-matchup__note">${note} ${shadow ? 'Na aura Shadow, ataques inimigos recebem no mínimo 2× de efetividade.' : ''}</p></section>`;
   }
   function install(View, catalog, fallbackById) {
     if (!View || !Types || !catalog || View.prototype.renderPicker.__matchupGuide) return;
@@ -96,6 +114,6 @@
     window.PBACampaign = window.PBACampaign || {};
     window.PBACampaign.MatchupGuide = api;
     install(window.PBACampaign.CampaignView, window.PBACampaign,
-      (window.PBACampaign.CampaignBattleFallbackCatalog || {}).byId || {});
+      (window.PBACampaign.CampaignFixedBattleCatalog || {}).byId || {});
   }
 })();

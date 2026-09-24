@@ -94,6 +94,13 @@ Todos os 1.800 golpes do catálogo offline (`assets/js/campaign/campaign-battle-
   - Fotos e sprites estáticos.
   - Zero combatentes genéricos com atributos 50 e apenas Tackle.
 
+### Golpes fixos e prévia fiel da campanha
+
+- `campaign-fixed-battle-catalog.js` combina os 450 conjuntos do draft com 18 conjuntos adicionais dos Mestres, Super Treinador e quatro Provas. Os 468 Pokémon atualmente obtíveis na campanha possuem quatro golpes ofensivos distintos e aceitos pelo motor.
+- Quando `metadata.mode === 'CAMPAIGN'`, `BattleSessionController` envia fichas locais ao hidratador para as duas equipes. Os quatro golpes são preservados em ordem, com poder, precisão e PP próprios, sem consulta à PokéAPI. A Batalha Rápida continua usando a seleção dinâmica existente.
+- `campaign-matchup-guide.js` usa o mesmo catálogo para listar os quatro golpes do jogador e avaliar cobertura e riscos pelos golpes reais dos adversários. A prévia continua sendo apenas orientação: efetividade elemental não representa dano garantido nem chance de vitória.
+- Pokémon fora desse catálogo que só apareçam em saves antigos mantêm a rota de hidratação anterior; o comparador avisa quando não pode prometer a mesma prévia. Nenhuma migração ou alteração do progresso salvo é necessária.
+
 ### Interface da Seleção Inicial e Ciclo de Vida do Debounce
 
 A interface (`assets/js/campaign/campaign-view.js` e `assets/css/campaign.css`) foi otimizada para navegação fluida entre os 450 Pokémon:

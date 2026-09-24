@@ -3,6 +3,8 @@
 ## 1. Visão Geral
 Durante as partidas no GitHub Pages, observou-se que determinados Pokémon entravam na batalha com apenas 1 ou 2 golpes, enquanto outros tinham 3 ou 4. A auditoria detalhada revelou que a causa não era escassez de golpes na PokéAPI, mas sim **truncamento prematuro da lista de candidatos** (`candidates.slice(0, 8)`), combinado com descarte de golpes de status e ausência de resgate exaustivo.
 
+**Escopo atual:** A descoberta progressiva descrita abaixo permanece ativa na Batalha Rápida e para espécies legadas sem conjunto fixo. Os 468 Pokémon atualmente obtíveis na campanha usam os quatro golpes locais de `campaign-fixed-battle-catalog.js`, iguais aos exibidos no comparador antes do desafio.
+
 Na Fase **PBA-014C**, foi implementada uma arquitetura de **Descoberta Progressiva com Parada Antecipada e Resgate Exaustivo**, com seletor determinístico de qualidade orientado a **STAB, afinidade de atributos (Físico/Especial), diversidade de cobertura e acurácia**.
 
 ---

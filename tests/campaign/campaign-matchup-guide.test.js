@@ -40,6 +40,15 @@ test('ignores status moves and does not fabricate coverage for reward Pokémon',
   assert.match(Guide.renderReport(report), /Golpes ofensivos não disponíveis/);
 });
 
+test('empty selection does not falsely warn about a legacy save', () => {
+  const report = Guide.buildReport({
+    selected: [], opponents: [pokemon(21, 'dark', ['dark'])]
+  });
+  const html = Guide.renderReport(report);
+  assert.match(html, /golpes da campanha são estáveis/);
+  assert.doesNotMatch(html, /Prévia limitada/);
+});
+
 test('shows shadow aura floor even against a normal type immunity', () => {
   const report = Guide.buildReport({
     selected: [pokemon(1, 'ghost', ['ghost'])],
