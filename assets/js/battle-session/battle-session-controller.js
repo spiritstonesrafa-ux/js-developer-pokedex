@@ -30,6 +30,7 @@
   let compositeAdapterModule;
   let audioControllerModule;
   let campaignFixedCatalog;
+  let campaignMoveOptions;
 
   if (typeof module !== 'undefined' && module.exports) {
     sessionConstants = require('./battle-session-constants.js');
@@ -47,6 +48,7 @@
       audioControllerModule = null;
     }
     campaignFixedCatalog = require('../campaign/campaign-fixed-battle-catalog.js');
+    campaignMoveOptions = require('../campaign/campaign-move-options.js');
   } else if (typeof window !== 'undefined') {
     sessionConstants = window.PBABattleSession || {};
     randomSourceModule = window.PBABattleSession || {};
@@ -257,13 +259,19 @@
           ? (campaignFixedCatalog || (typeof window !== 'undefined' && window.PBACampaign?.CampaignFixedBattleCatalog))
           : null;
         if (campaignMode && !fixedCatalog) throw new Error('Catálogo de golpes da campanha indisponível.');
-        const campaignInput = ids => campaignMode
+        const moveOptions = campaignMode
+          ? (campaignMoveOptions || (typeof window !== 'undefined' && window.PBACampaign?.CampaignMoveOptions))
+          : null;
+        const campaignInput = (ids, player = false) => campaignMode
           ? ids.map(id => fixedCatalog.byId[id]
-            ? { ...fixedCatalog.byId[id], campaignFixedMoves: true } : id)
+            ? { ...fixedCatalog.byId[id],
+              ...(player && moveOptions && options.playerMovePreferences?.[id]
+                ? { moves: moveOptions.resolveLoadout(id, options.playerMovePreferences[id]), campaignCustomMoves: true }
+                : {}), campaignFixedMoves: true } : id)
           : ids;
 
         // 1. Hidrata o time do jogador
-        this.playerTeam = await this.hydrator.hydrateTeam(campaignInput(teamIds));
+        this.playerTeam = await this.hydrator.hydrateTeam(campaignInput(teamIds, true));
 
         // 2. Constrói e hidrata o time adversário
         this.enemyTeam = Array.isArray(options.enemyTeamIds)

@@ -101,6 +101,13 @@ Todos os 1.800 golpes do catálogo offline (`assets/js/campaign/campaign-battle-
 - `campaign-matchup-guide.js` usa o mesmo catálogo para listar os quatro golpes do jogador e avaliar cobertura e riscos pelos golpes reais dos adversários. A prévia continua sendo apenas orientação: efetividade elemental não representa dano garantido nem chance de vitória.
 - Pokémon fora desse catálogo que só apareçam em saves antigos mantêm a rota de hidratação anterior; o comparador avisa quando não pode prometer a mesma prévia. Nenhuma migração ou alteração do progresso salvo é necessária.
 
+### Escolha de golpes do jogador (Fase 3)
+
+- Na preparação de cada desafio, selecione um Pokémon da equipe e abra **Golpes da equipe** para escolher de 1 a 4 golpes distintos. **Salvar golpes** aplica a preferência aos próximos desafios; **Restaurar padrão** devolve os quatro golpes originais. Quem não alterar nada continua com o quarteto anterior.
+- O catálogo é inteiramente local: os quatro golpes originais por espécie, mais até duas alternativas ofensivas simples extraídas dos learnsets canônicos já armazenados no cache do projeto. 454 espécies possuem alternativa adicional; 14 mantêm apenas os quatro elegíveis originais. A geração usa `scripts/build-campaign-move-options.js` sem rede e não libera golpes complexos ou status não implementados.
+- O save permanece na versão 1. Só IDs de golpes de espécies pertencentes ao elenco permanente são gravados; dados inválidos, duplicados, de outra espécie, de Pokémon não possuído ou fora do limite são descartados, retornando ao padrão. Saves antigos continuam sem migração nem perda de progresso.
+- A seleção do jogador passa pelo mesmo catálogo na prévia e na hidratação da batalha, preservando ordem, PP, precisão e efeitos. Adversários não usam preferências do jogador. O Final Stand aplica as preferências aos membros possuídos do exército; a Batalha Rápida continua independente.
+
 ### Status de gameplay: veneno, queimadura e paralisia
 
 - Os únicos golpes de status habilitados são `poison-powder` (#77; Venusaur #3 e Roserade #407; precisão 75, PP 35), `will-o-wisp` (#261; Ninetales #38 e Gengar #94; precisão 85, PP 15) e `thunder-wave` (#86; Pikachu #25 e Luxray #405; precisão 90, PP 20). Cada golpe substitui um dos quatro ofensivos anteriores; o catálogo gerado do draft mantém quatro ofensivos.

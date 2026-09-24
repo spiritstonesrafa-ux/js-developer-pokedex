@@ -277,7 +277,7 @@
       // Resolve loadout de golpes determinístico com descoberta progressiva e qualidade
       const candidateMoves = Array.isArray(pokeData.moves) ? pokeData.moves : [];
       const loadoutResult = pokeData.campaignFixedMoves
-        ? this.createCampaignFixedLoadout(candidateMoves)
+        ? this.createCampaignFixedLoadout(candidateMoves, Boolean(pokeData.campaignCustomMoves))
         : await this.selectDeterministicLoadout(candidateMoves, types, stats);
       const moves = loadoutResult.moves || [];
       const moveLoadoutSource = loadoutResult.source || MOVESET_LOADOUT_SOURCE.API_MOVESET;
@@ -306,10 +306,11 @@
       };
     }
 
-    /** Preserves the exact four curated campaign moves without a network request. */
-    createCampaignFixedLoadout(candidateMoves) {
+    /** Preserves curated campaign moves without a network request. */
+    createCampaignFixedLoadout(candidateMoves, customized = false) {
       const moves = Array.isArray(candidateMoves) ? candidateMoves : [];
-      if (moves.length !== 4 || new Set(moves.map(move => move.id)).size !== 4 ||
+      if ((customized ? moves.length < 1 || moves.length > 4 : moves.length !== 4) ||
+          new Set(moves.map(move => move.id)).size !== moves.length ||
           moves.some(move => !isMechanicallySupportedMove(move) ||
             !Number.isInteger(Number(move.id)) || Number(move.id) <= 0 ||
             !Number.isInteger(Number(move.pp)) || Number(move.pp) <= 0 ||

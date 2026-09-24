@@ -53,7 +53,7 @@
       .sort((a, b) => b.first.bestAttack.multiplier - a.first.bestAttack.multiplier ||
         (a.first.incoming ? a.first.incoming.multiplier : Infinity) -
         (b.first.incoming ? b.first.incoming.multiplier : Infinity));
-    const fullyFixed = entries.length > 0 && entries.every(entry => entry.moves.length === 4) &&
+    const fullyFixed = entries.length > 0 && entries.every(entry => entry.moves.length >= 1 && entry.moves.length <= 4) &&
       opponents.every(opponent => fallbackById[opponent.id]?.moves?.length === 4);
     return { entries, opponents, covered, shadow, fullyFixed,
       suggestedLeader: selected.length > 1 && ranked.length ? ranked[0].entry.pokemon : null };
@@ -97,7 +97,7 @@
     const note = !entries.length
       ? 'Os golpes da campanha são estáveis e aparecerão aqui após sua escolha.'
       : fullyFixed
-        ? 'Os quatro golpes exibidos são os usados nas batalhas da campanha. Vantagem de tipo não garante vitória.'
+        ? `Os ${entries.every(entry => entry.moves.length === 4) ? 'quatro ' : ''}golpes exibidos são os usados nas batalhas da campanha. Vantagem de tipo não garante vitória.`
         : 'Prévia limitada: Pokémon de campanhas antigas sem conjunto fixo podem carregar golpes diferentes na batalha.';
     return `<section class="campaign-matchup" aria-label="Comparador de equipe"><div class="campaign-matchup__head"><p class="eyebrow">LEITURA TÁTICA</p><h3>Vantagens da sua escolha</h3><p>${escape(summary)}</p></div>${entries.length ? `<div class="campaign-matchup__grid">${cards}</div>` : ''}${suggestion}<p class="campaign-matchup__note">${note} ${shadow ? 'Na aura Shadow, ataques inimigos recebem no mínimo 2× de efetividade.' : ''}</p></section>`;
   }
@@ -114,10 +114,18 @@
       const available = [...this.manager.getRoster(),
         ...(kind === 'SHADOW' && this.manager.getShadowGuests ? this.manager.getShadowGuests() : [])];
       const selected = (this.pick || []).map(id => available.find(pokemon => pokemon.id === id)).filter(Boolean);
+      const previewById = { ...fallbackById };
+      if (typeof this.manager.getEffectiveMoves === 'function') {
+        for (const pokemon of selected) {
+          if (previewById[pokemon.id]) previewById[pokemon.id] = {
+            ...previewById[pokemon.id], moves: this.manager.getEffectiveMoves(pokemon.id)
+          };
+        }
+      }
       const anchor = this.container.querySelector('#pickerActionBar') || this.container.querySelector('#startCampaignBattle');
       if (anchor && anchor.insertAdjacentHTML) {
         anchor.insertAdjacentHTML('beforebegin', renderReport(buildReport({
-          selected, opponents, fallbackById, shadow: kind === 'SHADOW' })));
+          selected, opponents, fallbackById: previewById, shadow: kind === 'SHADOW' })));
       }
       return result;
     }

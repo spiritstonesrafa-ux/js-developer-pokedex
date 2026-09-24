@@ -3,7 +3,7 @@
 ## 1. Visão Geral
 Durante as partidas no GitHub Pages, observou-se que determinados Pokémon entravam na batalha com apenas 1 ou 2 golpes, enquanto outros tinham 3 ou 4. A auditoria detalhada revelou que a causa não era escassez de golpes na PokéAPI, mas sim **truncamento prematuro da lista de candidatos** (`candidates.slice(0, 8)`), combinado com descarte de golpes de status e ausência de resgate exaustivo.
 
-**Escopo atual:** A descoberta progressiva descrita abaixo permanece ativa na Batalha Rápida e para espécies legadas sem conjunto fixo. Os 468 Pokémon atualmente obtíveis na campanha usam os quatro golpes locais de `campaign-fixed-battle-catalog.js`, iguais aos exibidos no comparador antes do desafio. Venusaur e Roserade têm Poison Powder; Ninetales e Gengar têm Will-O-Wisp; Pikachu e Luxray têm Thunder Wave. Cada um conserva três golpes ofensivos.
+**Escopo atual:** A descoberta progressiva descrita abaixo permanece ativa na Batalha Rápida e para espécies legadas sem conjunto fixo. Os 468 Pokémon atualmente obtíveis na campanha partem dos quatro golpes locais de `campaign-fixed-battle-catalog.js`; o jogador pode salvar um conjunto próprio de 1 a 4 golpes, exibido no comparador e usado na batalha. Até duas alternativas ofensivas simples por espécie vêm de `campaign-move-options-catalog.js` (454 espécies cobertas). Venusaur e Roserade têm Poison Powder; Ninetales e Gengar têm Will-O-Wisp; Pikachu e Luxray têm Thunder Wave. Cada um conserva três golpes ofensivos no padrão.
 
 Na Fase **PBA-014C**, foi implementada uma arquitetura de **Descoberta Progressiva com Parada Antecipada e Resgate Exaustivo**, com seletor determinístico de qualidade orientado a **STAB, afinidade de atributos (Físico/Especial), diversidade de cobertura e acurácia**.
 

@@ -82,3 +82,56 @@
   };
   if (typeof module !== 'undefined' && module.exports) module.exports.CampaignManager = CampaignManager;
 })();
+
+/* Phase 3 — player-owned campaign move preferences, without changing enemy loadouts. */
+(function () {
+  const Manager = typeof module !== 'undefined' && module.exports
+    ? module.exports.CampaignManager : window.PBACampaign?.CampaignManager;
+  const Options = typeof module !== 'undefined' && module.exports
+    ? require('./campaign-move-options.js') : window.PBACampaign?.CampaignMoveOptions;
+  if (!Manager || !Options) return;
+
+  Manager.prototype.getEffectiveMoveIds = function (pokemonId) {
+    const id = Number(pokemonId);
+    const saved = this.data.movePreferences?.[id];
+    return Options.resolveLoadout(id, saved).map(move => move.id);
+  };
+  Manager.prototype.getEffectiveMoves = function (pokemonId) {
+    const id = Number(pokemonId);
+    return Options.resolveLoadout(id, this.data.movePreferences?.[id]);
+  };
+  Manager.prototype.getMovePreferencesForTeam = function (teamIds) {
+    const owned = new Set(this.getRosterIds());
+    const result = {};
+    for (const value of teamIds || []) {
+      const id = Number(value);
+      if (owned.has(id) && this.data.movePreferences?.[id]) {
+        result[id] = [...this.data.movePreferences[id]];
+      }
+    }
+    return result;
+  };
+  Manager.prototype.setMovePreference = function (pokemonId, moveIds) {
+    const id = Number(pokemonId);
+    if (!this.getRosterIds().includes(id)) return { ok: false, reason: 'NOT_OWNED' };
+    const moves = Options.validateSelection(id, moveIds);
+    if (!moves) return { ok: false, reason: 'INVALID_MOVESET' };
+    this.data.movePreferences = this.data.movePreferences || {};
+    const ids = moves.map(move => move.id);
+    if (JSON.stringify(ids) === JSON.stringify(Options.getDefaultMoveIds(id))) {
+      delete this.data.movePreferences[id];
+    } else {
+      this.data.movePreferences[id] = ids;
+    }
+    this.save('MOVE_PREFERENCE_SAVED');
+    return { ok: true };
+  };
+  Manager.prototype.resetMovePreference = function (pokemonId) {
+    const id = Number(pokemonId);
+    if (!this.getRosterIds().includes(id)) return { ok: false, reason: 'NOT_OWNED' };
+    this.data.movePreferences = this.data.movePreferences || {};
+    delete this.data.movePreferences[id];
+    this.save('MOVE_PREFERENCE_RESET');
+    return { ok: true };
+  };
+})();

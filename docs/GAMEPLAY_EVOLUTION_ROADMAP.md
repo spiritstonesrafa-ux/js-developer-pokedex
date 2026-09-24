@@ -37,6 +37,8 @@ Adicionar uma condição por vez. Queimadura combina dano residual e redução d
 
 ## Fase 3 — Escolha de golpes
 
+**Implementada em 24/09/2026:** editor de 1 a 4 golpes no preparador dos desafios; escolhas persistidas e sanitizadas no save `VERSION = 1`, com restauração do quarteto padrão. O catálogo gerado offline oferece até duas alternativas ofensivas simples a 454 espécies; as demais mantêm seus quatro golpes elegíveis. Prévia e batalha usam a mesma escolha do jogador, adversários preservam os conjuntos fixos e a Batalha Rápida não recebe o catálogo.
+
 Criar um conjunto **offline e curado** de alternativas elegíveis por espécie, sem liberar automaticamente todo o learnset da PokéAPI. O jogador mantém o quarteto atual ou escolhe até quatro golpes distintos. Validar propriedade do Pokémon, limite, duplicatas e suporte do motor; persistir preferências com sanitização e fallback para o quarteto padrão. A prévia deve usar exatamente o conjunto enviado à batalha.
 
 **Aceite:** alterar, salvar, recarregar e restaurar o padrão; save antigo intacto; PP, precisão e efeitos iguais na prévia e no combate; adversários conservam conjuntos definidos; Batalha Rápida não muda por acidente.
