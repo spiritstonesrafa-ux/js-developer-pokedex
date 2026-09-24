@@ -485,7 +485,7 @@
             style="--move-accent-color: ${typeColor};"
             ${isDisabled ? 'disabled' : ''}
             onclick="if(window.battleSessionController) window.battleSessionController.submitPlayerMove(${m.id});"
-            aria-label="${m.name}, Tipo ${m.type}, Poder ${m.power}, PP ${m.currentPp} de ${m.maxPp}"
+            aria-label="${m.name}, Tipo ${m.type}, ${m.statusEffect === 'poison' ? 'causa veneno' : `Poder ${m.power}`}, PP ${m.currentPp} de ${m.maxPp}"
           >
             <div class="move-btn-top-row">
               <span class="move-btn-name">${m.name}</span>
@@ -494,7 +494,7 @@
             <div class="move-btn-bottom-row">
               <span class="move-btn-category">
                 <i class="${m.damageClass === 'special' ? 'fa-solid fa-burst' : 'fa-solid fa-fist-raised'}"></i>
-                ${m.damageClass} (Pwr ${m.power})
+                ${m.statusEffect === 'poison' ? 'STATUS · VENENO' : `${m.damageClass} (Pwr ${m.power})`}
               </span>
               <span id="ppLabel_${m.id}" class="move-btn-pp">PP ${m.currentPp}/${m.maxPp}</span>
             </div>
@@ -536,6 +536,7 @@
             <div class="combatant-hud enemy-hud">
               <div class="hud-info-row">
                 <span id="enemyPokemonName" class="hud-pokemon-name">${enemyActive.name}</span>
+                <span id="enemyStatusBadge" class="battle-status-badge" ${enemyActive.statusCondition === 'poison' ? '' : 'hidden'} aria-label="Envenenado">VENENO</span>
                 <div id="enemyPokemonTypes" class="hud-pokemon-types">
                   ${(enemyActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
@@ -603,6 +604,7 @@
             <div class="combatant-hud player-hud">
               <div class="hud-info-row">
                 <span id="playerPokemonName" class="hud-pokemon-name">${playerActive.name}</span>
+                <span id="playerStatusBadge" class="battle-status-badge" ${playerActive.statusCondition === 'poison' ? '' : 'hidden'} aria-label="Envenenado">VENENO</span>
                 <div id="playerPokemonTypes" class="hud-pokemon-types">
                   ${(playerActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
@@ -936,6 +938,12 @@
       if (typeof document === 'undefined') return;
       const el = document.getElementById('battleNarrativeBox');
       if (el) el.textContent = msg;
+    }
+
+    updateStatusBadge(target, statusCondition) {
+      if (typeof document === 'undefined') return;
+      const badge = document.getElementById(`${target}StatusBadge`);
+      if (badge) badge.hidden = statusCondition !== 'poison';
     }
 
     updateMovePp(moveId, currentPp, maxPp) {

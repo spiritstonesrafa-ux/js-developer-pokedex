@@ -102,6 +102,21 @@
           break;
         }
 
+        case PRESENTATION_COMMANDS.STATUS_FEEDBACK: {
+          if (command.outcome === 'APPLIED' && typeof this.view.updateStatusBadge === 'function') {
+            this.view.updateStatusBadge(command.target, command.statusCondition);
+          }
+          if (typeof this.view.displayMessage === 'function') {
+            const name = command.pokemonName || 'O Pokémon';
+            const message = command.outcome === 'APPLIED' ? `${name} foi envenenado!` :
+              command.outcome === 'DAMAGE' ? `${name} perdeu ${command.damage} HP por veneno!` :
+                command.outcome === 'IMMUNE' ? `${name} é imune ao veneno!` :
+                  `${name} já possui uma condição de status.`;
+            this.view.displayMessage(message);
+          }
+          break;
+        }
+
         case PRESENTATION_COMMANDS.EFFECTIVENESS_FEEDBACK: {
           if (typeof this.view.displayMessage === 'function') {
             if (command.multiplier >= 2) {

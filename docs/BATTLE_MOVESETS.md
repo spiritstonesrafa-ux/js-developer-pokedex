@@ -3,7 +3,7 @@
 ## 1. Visão Geral
 Durante as partidas no GitHub Pages, observou-se que determinados Pokémon entravam na batalha com apenas 1 ou 2 golpes, enquanto outros tinham 3 ou 4. A auditoria detalhada revelou que a causa não era escassez de golpes na PokéAPI, mas sim **truncamento prematuro da lista de candidatos** (`candidates.slice(0, 8)`), combinado com descarte de golpes de status e ausência de resgate exaustivo.
 
-**Escopo atual:** A descoberta progressiva descrita abaixo permanece ativa na Batalha Rápida e para espécies legadas sem conjunto fixo. Os 468 Pokémon atualmente obtíveis na campanha usam os quatro golpes locais de `campaign-fixed-battle-catalog.js`, iguais aos exibidos no comparador antes do desafio.
+**Escopo atual:** A descoberta progressiva descrita abaixo permanece ativa na Batalha Rápida e para espécies legadas sem conjunto fixo. Os 468 Pokémon atualmente obtíveis na campanha usam os quatro golpes locais de `campaign-fixed-battle-catalog.js`, iguais aos exibidos no comparador antes do desafio. Venusaur e Roserade são a exceção curada: cada um possui três golpes ofensivos e Poison Powder.
 
 Na Fase **PBA-014C**, foi implementada uma arquitetura de **Descoberta Progressiva com Parada Antecipada e Resgate Exaustivo**, com seletor determinístico de qualidade orientado a **STAB, afinidade de atributos (Físico/Especial), diversidade de cobertura e acurácia**.
 
@@ -96,7 +96,7 @@ A regra de suporte a golpes estabelece que **`damageClass === 'physical'|'specia
 
 ### 7.1 Categorias Conceituais
 - `SUPPORTED_SIMPLE_DAMAGE`: Golpes com dano estático, tipo elemental fixo e acurácia padrão (ex: *Tackle*, *Flamethrower*, *Surf*, *Thunderbolt*, *Psychic*, *Ice Beam*, *Shadow Ball*, *Body Slam*).
-- `UNSUPPORTED_STATUS`: Golpes sem dano direto (`status`).
+- `UNSUPPORTED_STATUS`: Golpes sem dano direto (`status`), exceto o único piloto explicitamente suportado, Poison Powder (#77), nos conjuntos fixos de Venusaur e Roserade.
 - `UNSUPPORTED_DYNAMIC_TYPE`: Golpes cujo tipo depende de fatores em tempo de execução ou atributos individuais fora do modelo atual.
   - **`hidden-power`**: Tipo dinâmico derivado dos IVs do Pokémon (`DYNAMIC_TYPE_FROM_IVS`). Status: **DEFERRED**. Não é aceito como ataque normal estático.
 - `UNSUPPORTED_VARIABLE_DAMAGE`: Golpes cujo poder base é variável e dependente de mecânicas complexas não modeladas (quando `power === null` na PokéAPI: *Low Kick*, *Grass Knot*, *Flail*, *Reversal*, *Counter*, *Mirror Coat*, ou quando o poder na PokéAPI é positivo mas depende de runtime dinâmico não modelado):

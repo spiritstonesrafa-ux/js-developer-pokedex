@@ -26,6 +26,9 @@
     MOVE_USED: 'MOVE_USED',
     PP_CHANGED: 'PP_CHANGED',
     MOVE_MISSED: 'MOVE_MISSED',
+    STATUS_APPLIED: 'STATUS_APPLIED',
+    STATUS_BLOCKED: 'STATUS_BLOCKED',
+    STATUS_DAMAGE: 'STATUS_DAMAGE',
     STAB_RESOLVED: 'STAB_RESOLVED',
     TYPE_EFFECTIVENESS_RESOLVED: 'TYPE_EFFECTIVENESS_RESOLVED',
     DAMAGE_APPLIED: 'DAMAGE_APPLIED',
@@ -53,6 +56,28 @@
     SPECIAL: 'special',
     STATUS: 'status'
   });
+
+  // Piloto curado: não libera outros golpes de status por associação de tipo.
+  const SUPPORTED_STATUS_MOVES = Object.freeze({
+    'poison-powder': Object.freeze({ id: 77, name: 'poison-powder', type: 'poison',
+      power: 0, accuracy: 75, pp: 35, damageClass: 'status', statusEffect: 'poison' })
+  });
+
+  function getSupportedStatusMove(move) {
+    if (!move || typeof move !== 'object') return null;
+    const canonical = SUPPORTED_STATUS_MOVES[String(move.name || '').trim().toLowerCase()];
+    if (!canonical || Number(move.id) !== canonical.id ||
+        String(move.type?.name || move.type || '').toLowerCase() !== canonical.type ||
+        String(move.damageClass || move.damage_class?.name || '').toLowerCase() !== 'status' ||
+        !(move.power === null || Number(move.power) === 0) ||
+        Number(move.accuracy) !== canonical.accuracy || Number(move.pp) !== canonical.pp) return null;
+    return canonical;
+  }
+
+  function isPoisonPowderImmune(types) {
+    return Array.isArray(types) && types.some(type =>
+      type === 'poison' || type === 'steel' || type === 'grass');
+  }
 
   // Body Press is physical, but uses the user's Defense in place of Attack.
   function usesDefenseAsAttack(move) {
@@ -115,7 +140,8 @@
     NO_PP_SWITCH: 'NO_PP_SWITCH',
     FIRST_HEALTHY_RESERVE: 'FIRST_HEALTHY_RESERVE',
     BEST_MATCHUP_REPLACEMENT: 'BEST_MATCHUP_REPLACEMENT',
-    NO_USABLE_ACTION: 'NO_USABLE_ACTION'
+    NO_USABLE_ACTION: 'NO_USABLE_ACTION',
+    STATUS_PRESSURE: 'STATUS_PRESSURE'
   });
 
   const AI_CONFIG = Object.freeze({
@@ -129,6 +155,9 @@
     BATTLE_ACTIONS,
     SWITCH_REASON,
     MOVE_DAMAGE_CLASSES,
+    SUPPORTED_STATUS_MOVES,
+    getSupportedStatusMove,
+    isPoisonPowderImmune,
     usesDefenseAsAttack,
     POKEMON_TYPES,
     TYPE_EFFECTIVENESS_CLASSIFICATION,

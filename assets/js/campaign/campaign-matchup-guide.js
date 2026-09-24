@@ -2,6 +2,8 @@
 (function () {
   const Types = typeof module !== 'undefined' && module.exports
     ? require('../battle/type-effectiveness.js') : window.PBABattle.TypeEffectiveness;
+  const Battle = typeof module !== 'undefined' && module.exports
+    ? require('../battle/battle-constants.js') : window.PBABattle;
   const TEAMS = { SUPER: 'SUPER_TEAM', SHADOW: 'SUPER_TEAM',
     LEGENDARY_TRIAL: 'LEGENDARY_TRIAL_TEAM', MYTHICAL_TRIAL: 'MYTHICAL_TRIAL_TEAM',
     TITANS_TRIAL: 'TITANS_TRIAL_TEAM', CELESTIAL_TRIAL: 'CELESTIAL_TRIAL_TEAM' };
@@ -17,23 +19,29 @@
     const entries = selected.map(pokemon => {
       const source = fallbackById[pokemon.id];
       const moves = (source && Array.isArray(source.moves) ? source.moves : [])
-        .filter(move => move && move.damageClass !== 'status' && Number(move.power) > 0 && Types.isValidType(move.type));
+        .filter(move => move && Types.isValidType(move.type) &&
+          (move.statusEffect === 'poison' || (move.damageClass !== 'status' && Number(move.power) > 0)));
+      const offensiveMoves = moves.filter(move => move.damageClass !== 'status');
       const matchups = opponents.map(opponent => {
-        const attacks = moves.map(move => ({ name: move.name, type: move.type,
+        const attacks = offensiveMoves.map(move => ({ name: move.name, type: move.type,
           multiplier: multiplier(move.type, opponent.types) })).filter(x => x.multiplier !== null)
           .sort((a, b) => b.multiplier - a.multiplier || a.name.localeCompare(b.name));
         const enemySource = fallbackById[opponent.id];
         const enemyMoves = enemySource && Array.isArray(enemySource.moves) ? enemySource.moves : [];
-        const incomingCandidates = enemyMoves.length ? enemyMoves : (opponent.types || []).map(type => ({ type }));
+        const incomingCandidates = enemyMoves.length
+          ? enemyMoves.filter(move => move.damageClass !== 'status')
+          : (opponent.types || []).map(type => ({ type }));
         const incoming = incomingCandidates
           .map(move => ({ name: move.name || null, type: move.type,
             multiplier: multiplier(move.type, pokemon.types) }))
           .filter(x => x.multiplier !== null).sort((a, b) => b.multiplier - a.multiplier);
         const risk = incoming[0];
-        return { opponent, bestAttack: attacks[0] || null,
+        const poisonThreat = enemyMoves.some(move => move.statusEffect === 'poison') &&
+          !Battle.isPoisonPowderImmune(pokemon.types);
+        return { opponent, bestAttack: attacks[0] || null, poisonThreat,
           incoming: risk ? { ...risk, multiplier: shadow ? Math.max(2, risk.multiplier) : risk.multiplier } : null };
       });
-      return { pokemon, moves, hasMoves: moves.length > 0, matchups };
+      return { pokemon, moves, hasMoves: offensiveMoves.length > 0, matchups };
     });
     const covered = opponents.filter((_, i) => entries.some(entry =>
       entry.matchups[i].bestAttack && entry.matchups[i].bestAttack.multiplier >= 2)).length;
@@ -63,15 +71,17 @@
           ? `Atenção: ${cap(risk.incoming.name)} de ${cap(risk.opponent.name)} tem efetividade ${times(risk.incoming.multiplier)}.`
           : `Atenção: golpes do tipo ${cap(risk.incoming.type)} de ${cap(risk.opponent.name)} podem causar ${times(risk.incoming.multiplier)}.`
         : 'Nenhum golpe adversário conhecido tem vantagem de tipo.';
+      const poisonRisk = matchups.some(x => x.poisonThreat)
+        ? '<p class="campaign-matchup__risk">Atenção: um adversário pode causar veneno (perda de HP ao fim do turno).</p>' : '';
       const first = matchups[0];
       const immunity = first && first.bestAttack && first.bestAttack.multiplier === 0
         ? `<p class="campaign-matchup__warning">Os golpes conhecidos não atingem ${escape(cap(first.opponent.name))}; escolha outro Pokémon.</p>` : '';
       const moveList = moves.length
         ? `<ul class="campaign-matchup__moves" aria-label="Golpes de ${escape(cap(pokemon.name))}">${moves.map(move =>
-          `<li><strong>${escape(cap(move.name))}</strong><span>${escape(cap(move.type))} · Poder ${Number(move.power)} · ${move.accuracy === null ? 'sempre acerta' : Number.isInteger(Number(move.accuracy)) ? `${Number(move.accuracy)}% precisão` : 'precisão não informada'}</span></li>`
+          `<li><strong>${escape(cap(move.name))}</strong><span>${move.statusEffect === 'poison' ? 'Veneno · sem dano direto' : `${escape(cap(move.type))} · Poder ${Number(move.power)}`} · ${move.accuracy === null ? 'sempre acerta' : Number.isInteger(Number(move.accuracy)) ? `${Number(move.accuracy)}% precisão` : 'precisão não informada'}</span></li>`
         ).join('')}</ul>`
         : '';
-      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4>${moveList}<p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${immunity}</article>`;
+      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4>${moveList}<p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${poisonRisk}${immunity}</article>`;
     }).join('');
     const summary = entries.length
       ? `${covered} de ${opponents.length} adversários têm fraqueza a pelo menos um golpe ofensivo conhecido da seleção.`

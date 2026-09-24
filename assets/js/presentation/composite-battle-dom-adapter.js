@@ -176,7 +176,7 @@
         case PRESENTATION_COMMANDS.HP_TRANSITION: {
           const hpTasks = [];
           // Reação corporal, impacto sonoro e impacto de câmera quando houver perda real de HP (> 0)
-          if (command.damage !== undefined && Number(command.damage) > 0) {
+          if (command.cause !== 'poison' && command.damage !== undefined && Number(command.damage) > 0) {
             const side = command.side || command.target;
             if (side && this.pokemonController) {
               hpTasks.push(this.pokemonController.playDamageReaction(side));

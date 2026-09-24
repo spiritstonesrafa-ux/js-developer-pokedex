@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const Campaign = require('../../assets/js/campaign/campaign-catalog.js');
 const Fixed = require('../../assets/js/campaign/campaign-fixed-battle-catalog.js');
+const Draft = require('../../assets/js/campaign/campaign-battle-fallback-catalog.js');
 const Session = require('../../assets/js/battle-session/battle-session-controller.js').BattleSessionController;
 const Hydrator = require('../../assets/js/battle-session/battle-team-hydrator.js').BattleTeamHydrator;
 const Engine = require('../../assets/js/battle/battle-engine.js');
@@ -35,6 +36,34 @@ test('every currently obtainable campaign Pokémon has four distinct supported f
       assert.ok(Number.isInteger(move.pp) && move.pp > 0);
     }
   }
+});
+
+test('poison pilot uses one shared fixed move in campaign battle and tactical preview', async () => {
+  for (const id of [3, 407]) {
+    const moves = Fixed.byId[id].moves;
+    assert.equal(moves.length, 4);
+    assert.equal(moves.filter(move => move.name === 'poison-powder').length, 1);
+    assert.equal(moves.filter(move => move.damageClass !== 'status').length, 3);
+    assert.equal(moves.find(move => move.name === 'poison-powder').accuracy, 75);
+  }
+  assert.equal(Fixed.byId[45].moves.some(move => move.name === 'poison-powder'), false);
+  const session = new Session({ hydrator: new Hydrator({ api: { getPokemonDetail: async () => {
+    throw Error('offline');
+  } } }), engine: Engine, view: { renderState() {} } });
+  await session.prepareBattle({ playerTeamIds: [3, 264, 1007],
+    enemyTeamIds: Campaign.MASTERS.find(master => master.type === 'grass').team.map(pokemon => pokemon.id),
+    metadata: { mode: 'CAMPAIGN', kind: 'MASTER' } });
+  assert.deepEqual(session.playerTeam[0].moves.map(move => move.name), Fixed.byId[3].moves.map(move => move.name));
+  assert.deepEqual(session.enemyTeam[0].moves.map(move => move.name), Fixed.byId[407].moves.map(move => move.name));
+  assert.equal(session.battleState.player.team[0].moves.find(move => move.id === 77).statusEffect, 'poison');
+  assert.equal(session.battleState.enemy.team[0].moves.find(move => move.id === 77).statusEffect, 'poison');
+  const report = Guide.buildReport({ selected: [Campaign.byId(3)],
+    opponents: [Campaign.byId(407)], fallbackById: Fixed.byId });
+  assert.deepEqual(report.entries[0].moves.map(move => move.name), session.playerTeam[0].moves.map(move => move.name));
+  assert.match(Guide.renderReport(report), /Veneno · sem dano direto/);
+  const vulnerableReport = Guide.buildReport({ selected: [Campaign.byId(264)],
+    opponents: [Campaign.byId(407)], fallbackById: Fixed.byId });
+  assert.match(Guide.renderReport(vulnerableReport), /adversário pode causar veneno/);
 });
 
 test('all 18 Masters, Super, Shadow and four Trials have fixed opposing teams', () => {
@@ -82,7 +111,8 @@ test('Quick Battle still fetches species through its existing API path', async (
   let apiCalls = 0;
   const api = { getPokemonDetail: async id => {
     apiCalls++;
-    return Fixed.byId[id];
+    // A API dinâmica não usa os overrides exclusivos do catálogo fixo da campanha.
+    return Draft.byId[id];
   } };
   const session = new Session({ hydrator: new Hydrator({ api }), engine: Engine,
     view: { renderState() {} } });

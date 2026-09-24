@@ -92,6 +92,21 @@
           }
           break;
 
+        case BATTLE_EVENTS.STATUS_APPLIED:
+        case BATTLE_EVENTS.STATUS_BLOCKED:
+          if (!event.target || event.statusCondition !== 'poison' || !event.pokemonName) {
+            throw new Error('INVALID_EVENT_PAYLOAD: status requer alvo, nome e condição suportada.');
+          }
+          break;
+
+        case BATTLE_EVENTS.STATUS_DAMAGE:
+          if (!event.target || event.statusCondition !== 'poison' || !event.pokemonName ||
+              !Number.isFinite(Number(event.damage)) || !Number.isFinite(Number(event.previousHp)) ||
+              !Number.isFinite(Number(event.currentHp)) || !Number.isFinite(Number(event.maxHp))) {
+            throw new Error('INVALID_EVENT_PAYLOAD: dano de status requer HP e alvo válidos.');
+          }
+          break;
+
         case BATTLE_EVENTS.TYPE_EFFECTIVENESS_RESOLVED:
           if (event.multiplier === undefined || !event.classification) {
             throw new Error(`INVALID_EVENT_PAYLOAD: TYPE_EFFECTIVENESS_RESOLVED requer "multiplier" e "classification".`);
@@ -225,6 +240,22 @@
               accuracyRoll: event.accuracyRoll,
               accuracy: event.accuracy
             }
+          ];
+
+        case BATTLE_EVENTS.STATUS_APPLIED:
+        case BATTLE_EVENTS.STATUS_BLOCKED:
+          return [{ type: PRESENTATION_COMMANDS.STATUS_FEEDBACK, target: event.target,
+            pokemonName: event.pokemonName, statusCondition: event.statusCondition,
+            outcome: event.type === BATTLE_EVENTS.STATUS_APPLIED ? 'APPLIED' : event.reason }];
+
+        case BATTLE_EVENTS.STATUS_DAMAGE:
+          return [
+            { type: PRESENTATION_COMMANDS.STATUS_FEEDBACK, target: event.target,
+              pokemonName: event.pokemonName, statusCondition: event.statusCondition, outcome: 'DAMAGE',
+              damage: Number(event.damage) },
+            { type: PRESENTATION_COMMANDS.HP_TRANSITION, side: event.target, target: event.target,
+              damage: Number(event.damage), previousHp: Number(event.previousHp),
+              currentHp: Number(event.currentHp), maxHp: Number(event.maxHp), cause: 'poison' }
           ];
 
         case BATTLE_EVENTS.STAB_RESOLVED:

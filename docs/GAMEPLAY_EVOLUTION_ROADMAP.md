@@ -21,6 +21,8 @@ Cada fase é uma entrega independente: validar, fazer commit e push antes de ini
 
 ## Fase 1 — Piloto de veneno comum
 
+**Concluída em 24/09/2026:** piloto limitado a Venusaur e Roserade no catálogo fixo da campanha; os demais golpes de status seguem bloqueados. Ver `CAMPAIGN_MODE.md` para as regras efetivas. Portões: 766 testes gerais, 136 testes de campanha e auditoria do draft aprovados.
+
 Implementar uma condição de status de ponta a ponta com poucos golpes explicitamente habilitados. Veneno comum é diferente de Toxic: sem escalada de dano. Regra inicial: perda de `1/8` do HP máximo ao fim do turno, mínimo de 1 HP, respeitando imunidades aplicáveis. Um golpe de status consome turno e PP; erro de precisão não aplica o efeito. O veneno permanece no Pokémon durante trocas da batalha e termina com ela. Cura por item fica fora do escopo.
 
 **Aceite:** acerto, erro e imunidade corretos; dano residual, nocaute e substituição sem turno extra; IA considera o golpe quando útil e o evita contra alvo já envenenado ou imune; eventos, log e interface indicam a condição; qualquer aleatoriedade é controlável nos testes; catálogo e comparador só anunciam o efeito nos golpes habilitados; Batalha Rápida e saves antigos não regressam. É aceitável estrear com uma lista curada de Pokémon e desafios.

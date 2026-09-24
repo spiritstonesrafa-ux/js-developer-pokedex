@@ -212,7 +212,8 @@
           accuracy: normalizedMove.accuracy,
           maxPp: normalizedMove.pp,
           currentPp: m.currentPp !== undefined ? Number(m.currentPp) : normalizedMove.pp,
-          damageClass: normalizedMove.damageClass
+          damageClass: normalizedMove.damageClass,
+          ...(normalizedMove.statusEffect ? { statusEffect: normalizedMove.statusEffect } : {})
         });
       }
 
@@ -227,6 +228,7 @@
         specialAttack: Math.floor(specialAttack),
         specialDefense: Math.floor(specialDefense),
         speed: Math.floor(speed),
+        statusCondition: null,
         moves: normalizedMoves
       };
 
@@ -423,6 +425,62 @@
       });
     }
 
+    function resolveFaints(state, events, faintedRoles, cause = 'move') {
+      const roles = [...new Set(faintedRoles)];
+      for (const role of roles) {
+        const pokemon = getActiveCombatant(state, role);
+        events.push({ type: BATTLE_EVENTS.POKEMON_FAINTED, target: role, pokemonName: pokemon.name });
+      }
+      const defeated = roles.filter(role => state.version === 1 ||
+        state[role].team.every(pokemon => pokemon.currentHp === 0));
+      if (defeated.length) {
+        // Um nocaute direto pode ter solicitado troca antes do dano residual encerrar a luta.
+        for (let index = events.length - 1; index >= 0; index--) {
+          if (events[index].type === BATTLE_EVENTS.REPLACEMENT_REQUIRED) events.splice(index, 1);
+        }
+        // No empate simultâneo por veneno, a campanha considera derrota do jogador.
+        const winner = defeated.includes('player') ? 'enemy' : 'player';
+        if (state.version === 2) {
+          for (const role of defeated) {
+            events.push({ type: BATTLE_EVENTS.TEAM_DEFEATED, side: role, winner });
+          }
+        }
+        state.winner = winner;
+        state.status = winner === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
+        events.push({ type: BATTLE_EVENTS.BATTLE_ENDED, winner,
+          reason: defeated.length === 2 ? 'Ambas as equipes caíram por veneno; empate conta como derrota do jogador.' :
+            cause === 'poison' ? `A equipe ${defeated[0]} caiu por veneno.` :
+              state.version === 2 ? `Todos os Pokémon da equipe ${defeated[0]} foram derrotados.` :
+                `${getActiveCombatant(state, defeated[0]).name} foi derrotado.` });
+      } else {
+        state.status = BATTLE_STATUS.AWAITING_REPLACEMENT;
+        for (const role of roles) {
+          events.push({ type: BATTLE_EVENTS.REPLACEMENT_REQUIRED, side: role,
+            faintedPokemonId: getActiveCombatant(state, role).id,
+            availablePokemonIds: state[role].team.filter(pokemon => pokemon.currentHp > 0).map(pokemon => pokemon.id) });
+        }
+      }
+    }
+
+    function finishTurn(state, events) {
+      if (state.status !== BATTLE_STATUS.IN_PROGRESS &&
+          state.status !== BATTLE_STATUS.AWAITING_REPLACEMENT) return;
+      const fainted = [];
+      for (const role of ['player', 'enemy']) {
+        const pokemon = getActiveCombatant(state, role);
+        if (pokemon.currentHp <= 0 || pokemon.statusCondition !== 'poison') continue;
+        const previousHp = pokemon.currentHp;
+        const damage = Math.min(previousHp, Math.max(1, Math.floor(pokemon.maxHp / 8)));
+        pokemon.currentHp -= damage;
+        events.push({ type: BATTLE_EVENTS.STATUS_DAMAGE, target: role,
+          pokemonName: pokemon.name, statusCondition: 'poison', damage, previousHp,
+          currentHp: pokemon.currentHp, maxHp: pokemon.maxHp });
+        if (pokemon.currentHp === 0) fainted.push(role);
+      }
+      if (fainted.length) resolveFaints(state, events, fainted, 'poison');
+      if (state.status === BATTLE_STATUS.IN_PROGRESS) state.turn += 1;
+    }
+
     /**
      * Executa um único turno completo da batalha.
      * Suporta batalhas 1x1 (v1) e 3x3 (v2), com prioridade estrita de SWITCH sobre MOVE.
@@ -461,7 +519,7 @@
         executeSwitch('player', nextState, events, actions.player, 'VOLUNTARY');
         executeSwitch('enemy', nextState, events, actions.enemy, 'VOLUNTARY');
 
-        nextState.turn += 1;
+        finishTurn(nextState, events);
         return { state: nextState, events };
       }
 
@@ -471,9 +529,7 @@
         // O ataque do adversário atinge o NOVO Pokémon ativo que acabou de entrar!
         executeAction('enemy', 'player', nextState, events, actions.enemy);
 
-        if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
-          nextState.turn += 1;
-        }
+        finishTurn(nextState, events);
         return { state: nextState, events };
       }
 
@@ -483,9 +539,7 @@
         // O ataque do jogador atinge o NOVO Pokémon ativo adversário!
         executeAction('player', 'enemy', nextState, events, actions.player);
 
-        if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
-          nextState.turn += 1;
-        }
+        finishTurn(nextState, events);
         return { state: nextState, events };
       }
 
@@ -504,6 +558,7 @@
 
       // Se o defensor foi nocauteado (ou a batalha terminou), o segundo combatente NÃO contra-ataca
       if (nextState.status !== BATTLE_STATUS.IN_PROGRESS) {
+        finishTurn(nextState, events);
         return {
           state: nextState,
           events
@@ -514,9 +569,7 @@
       executeAction(secondRole, firstRole, nextState, events, secondAction);
 
       // Se a batalha continuar em progresso, avança o contador de turnos
-      if (nextState.status === BATTLE_STATUS.IN_PROGRESS) {
-        nextState.turn += 1;
-      }
+      finishTurn(nextState, events);
 
       return {
         state: nextState,
@@ -644,6 +697,20 @@
         return;
       }
 
+      if (selectedMove.statusEffect === 'poison' && selectedMove.damageClass === MOVE_DAMAGE_CLASSES.STATUS) {
+        const blocked = constants.isPoisonPowderImmune(defender.types)
+          ? 'IMMUNE' : defender.statusCondition ? 'ALREADY_STATUS' : null;
+        if (blocked) {
+          events.push({ type: BATTLE_EVENTS.STATUS_BLOCKED, target: defenderRole,
+            pokemonName: defender.name, statusCondition: 'poison', reason: blocked });
+        } else {
+          defender.statusCondition = 'poison';
+          events.push({ type: BATTLE_EVENTS.STATUS_APPLIED, source: attackerRole,
+            target: defenderRole, pokemonName: defender.name, statusCondition: 'poison' });
+        }
+        return;
+      }
+
       // 3. Resolução de STAB (Same-Type Attack Bonus)
       const hasStab = attacker.types.includes(selectedMove.type);
       const stabMultiplier = hasStab ? constants.BATTLE_CONFIG.STAB_MULTIPLIER : 1;
@@ -722,57 +789,7 @@
       });
 
       // 9. Nocaute (Faint Detection)
-      if (currentHp === 0) {
-        events.push({
-          type: BATTLE_EVENTS.POKEMON_FAINTED,
-          target: defenderRole,
-          pokemonName: defender.name
-        });
-
-        if (state.version === 2) {
-          const defenderTeam = state[defenderRole].team;
-          const isAllDefeated = defenderTeam.every(p => p.currentHp === 0);
-
-          if (isAllDefeated) {
-            // Derrota completa da equipe inteira
-            events.push({
-              type: BATTLE_EVENTS.TEAM_DEFEATED,
-              side: defenderRole,
-              winner: attackerRole
-            });
-
-            state.winner = attackerRole;
-            state.status = attackerRole === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
-
-            events.push({
-              type: BATTLE_EVENTS.BATTLE_ENDED,
-              winner: attackerRole,
-              reason: `Todos os Pokémon da equipe ${defenderRole} foram derrotados.`
-            });
-          } else {
-            // Ainda há reservas vivas no banco: substituição obrigatória
-            state.status = BATTLE_STATUS.AWAITING_REPLACEMENT;
-
-            const availablePokemonIds = defenderTeam.filter(p => p.currentHp > 0).map(p => p.id);
-            events.push({
-              type: BATTLE_EVENTS.REPLACEMENT_REQUIRED,
-              side: defenderRole,
-              faintedPokemonId: defender.id,
-              availablePokemonIds
-            });
-          }
-        } else {
-          // Batalha 1x1 (v1 legacy)
-          state.winner = attackerRole;
-          state.status = attackerRole === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
-
-          events.push({
-            type: BATTLE_EVENTS.BATTLE_ENDED,
-            winner: attackerRole,
-            reason: `${defender.name} foi derrotado.`
-          });
-        }
-      }
+      if (currentHp === 0) resolveFaints(state, events, [defenderRole]);
     }
 
     /**

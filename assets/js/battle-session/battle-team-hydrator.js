@@ -324,7 +324,8 @@
           id: Number(move.id), name: String(move.name), type: String(move.type),
           power: Number(move.power), accuracy: move.accuracy, pp: Number(move.pp),
           maxPp: Number(move.pp), currentPp: Number(move.pp),
-          damageClass: String(move.damageClass)
+          damageClass: String(move.damageClass),
+          ...(move.statusEffect ? { statusEffect: String(move.statusEffect) } : {})
         }))
       };
     }
@@ -434,6 +435,10 @@
 
         for (const moveDetail of details) {
           if (!moveDetail) continue;
+
+          // O piloto de status pertence somente aos conjuntos fixos da campanha.
+          const dynamicClass = String(moveDetail.damageClass || moveDetail.damage_class?.name || '').toLowerCase();
+          if (dynamicClass === 'status') continue;
 
           // Validações estritas de suporte (PBA-005 / MQ06 / MQ07 / PBA-014C-FINAL-HARDENING):
           // Descarta status moves, golpes sem power base positivo e golpes com mecânicas especiais não suportadas (ex: hidden-power)

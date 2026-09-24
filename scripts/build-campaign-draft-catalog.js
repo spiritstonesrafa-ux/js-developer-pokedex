@@ -86,6 +86,8 @@ const ENDGAME_BOSSES = [
 async function getMoveDetail(url) {
   try {
     const raw = await cachedFetchJson(url);
+    // O catálogo de draft permanece ofensivo; Poison Powder só entra no override curado da campanha.
+    if (raw.damage_class?.name === 'status') return null;
     if (!isMechanicallySupportedMove(raw)) return null;
     const name = String(raw.name || '').toLowerCase();
     const damageClass = raw.damage_class?.name;

@@ -43,7 +43,8 @@
       NO_PP_SWITCH: 'NO_PP_SWITCH',
       FIRST_HEALTHY_RESERVE: 'FIRST_HEALTHY_RESERVE',
       BEST_MATCHUP_REPLACEMENT: 'BEST_MATCHUP_REPLACEMENT',
-      NO_USABLE_ACTION: 'NO_USABLE_ACTION'
+      NO_USABLE_ACTION: 'NO_USABLE_ACTION',
+      STATUS_PRESSURE: 'STATUS_PRESSURE'
     };
 
     const CONFIG = (constants && constants.AI_CONFIG) || {
@@ -101,11 +102,12 @@
         throw new Error(`Pokémon ativo de "${side}" está nocauteado ou inexistente.`);
       }
 
-      // 1. Golpes utilizáveis do ativo (PP > 0 e dano físico/especial)
+      // 1. Golpes utilizáveis do ativo (inclui apenas o piloto de status explicitamente suportado)
       const activeMoves = Array.isArray(myActive.moves) ? myActive.moves : [];
       const usableMoves = activeMoves
         .map((m, idx) => ({ ...m, loadoutIndex: idx }))
-        .filter(m => (m.currentPp === undefined || m.currentPp > 0) && m.damageClass !== 'status');
+        .filter(m => (m.currentPp === undefined || m.currentPp > 0) &&
+          (m.damageClass !== 'status' || m.statusEffect === 'poison'));
 
       // 2. Candidatos do banco vivos
       const livingBench = myTeam
@@ -115,7 +117,8 @@
       // Candidatos do banco vivos que possuem pelo menos 1 golpe utilizável com PP
       const livingBenchWithMoves = livingBench.filter(item => {
         const mvs = Array.isArray(item.pokemon.moves) ? item.pokemon.moves : [];
-        return mvs.some(m => (m.currentPp === undefined || m.currentPp > 0) && m.damageClass !== 'status');
+        return mvs.some(m => (m.currentPp === undefined || m.currentPp > 0) &&
+          (m.damageClass !== 'status' || m.statusEffect === 'poison'));
       });
 
       // ================================================================
@@ -210,6 +213,15 @@
         const evalData = BattleEvaluator.evaluateMove(myActive, oppActive, m, { attackerSide: side, modifiers: state.modifiers || {} });
         let score = evalData.expectedDamage;
 
+        if (m.statusEffect === 'poison' && m.damageClass === 'status') {
+          const immune = constants.isPoisonPowderImmune(oppActive.types);
+          const canApply = !immune && !oppActive.statusCondition;
+          const tick = Math.max(1, Math.floor(oppActive.maxHp / 8));
+          // Valor prospectivo limitado: não supera um nocaute garantido.
+          score = canApply && oppActive.currentHp > tick * 2
+            ? tick * 4 * (m.accuracy === null ? 1 : m.accuracy / 100) : 0;
+        }
+
         // Bônus decisivo para KO garantido vs possível (PBA-014B)
         if (evalData.guaranteedKo) {
           score += CONFIG.KO_BONUS;
@@ -224,6 +236,7 @@
 
         return {
           ...evalData,
+          statusEffect: m.statusEffect || null,
           loadoutIndex: m.loadoutIndex,
           score
         };
@@ -265,7 +278,8 @@
 
         // Regra SW2: Matchup Muito Desfavorável
         // Ativo tem eficácia muito baixa (<= 0.5x) e NÃO garante KO
-        const bestActiveMultiplier = evaluatedMoves.reduce((max, m) => Math.max(max, m.typeMultiplier), 0);
+        const bestActiveMultiplier = evaluatedMoves.filter(m => !m.statusEffect)
+          .reduce((max, m) => Math.max(max, m.typeMultiplier), 0);
         const activeGuaranteesKo = evaluatedMoves.some(m => m.wouldKo);
 
         if (bestActiveMultiplier <= 0.5 && !activeGuaranteesKo) {
@@ -319,7 +333,8 @@
       // 5. Seleção de Golpe (Move Selection)
       // Se existem golpes que causam dano, filtra e descarta golpes com imunidade absoluta (0x)
       let candidates = evaluatedMoves;
-      const nonImmuneMoves = evaluatedMoves.filter(m => m.typeMultiplier > 0 && m.damageIfHit > 0);
+      const nonImmuneMoves = evaluatedMoves.filter(m => (m.statusEffect && m.score > 0) ||
+        (m.typeMultiplier > 0 && m.damageIfHit > 0));
       if (nonImmuneMoves.length > 0) {
         candidates = nonImmuneMoves;
       }
@@ -337,7 +352,8 @@
       });
 
       const selected = candidates[0];
-      const reasonCode = selected.wouldKo ? REASON.GUARANTEED_KO : REASON.BEST_EXPECTED_DAMAGE;
+      const reasonCode = selected.statusEffect === 'poison' ? REASON.STATUS_PRESSURE :
+        selected.wouldKo ? REASON.GUARANTEED_KO : REASON.BEST_EXPECTED_DAMAGE;
 
       const action = {
         type: constants.BATTLE_ACTIONS.MOVE,

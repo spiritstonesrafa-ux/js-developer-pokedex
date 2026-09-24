@@ -13,7 +13,7 @@
  * - pp: Quantidade máxima de Power Points (> 0);
  * - damageClass: Categoria de dano ('physical' ou 'special').
  * 
- * Golpes de categoria 'status' são reconhecidos porém rejeitados como UNSUPPORTED na PBA-005.
+ * Golpes de status continuam bloqueados, exceto o piloto curado Poison Powder.
  * Compatível com Node.js (CommonJS) e navegadores (window.PBABattle).
  */
 
@@ -45,7 +45,7 @@
    * 
    * @param {Object} raw - Dados brutos do golpe.
    * @returns {Object} Golpe normalizado e imutável.
-   * @throws {Error} Se qualquer atributo for inválido ou se for golpe de status.
+   * @throws {Error} Se qualquer atributo for inválido ou se for golpe de status não suportado.
    */
   function createMove(raw) {
     if (!raw || typeof raw !== 'object') {
@@ -65,7 +65,9 @@
     const rawClass = (raw.damageClass || raw.damage_class?.name || raw.damage_class || '').toString().trim().toLowerCase();
 
     if (rawClass === MOVE_DAMAGE_CLASSES.STATUS) {
-      throw new Error(`Golpe de status "${raw.name}" não é suportado no Battle Engine v2 (UNSUPPORTED_IN_PBA_005).`);
+      const supported = constants.getSupportedStatusMove?.(raw);
+      if (!supported) throw new Error(`Golpe de status "${raw.name}" não é suportado no Battle Engine v2 (UNSUPPORTED_IN_PBA_005).`);
+      return Object.freeze({ ...supported });
     }
 
     if (rawClass !== MOVE_DAMAGE_CLASSES.PHYSICAL && rawClass !== MOVE_DAMAGE_CLASSES.SPECIAL) {
@@ -150,14 +152,15 @@
   }
 
   /**
-   * Verifica se o golpe é suportado no Battle Engine v2 (physical ou special com dano).
+   * Verifica se o golpe é suportado no Battle Engine v2 (dano ou piloto de status).
    * @param {Object} raw - Dados brutos do golpe.
    * @returns {boolean}
    */
   function isSupportedMove(raw) {
     if (!raw || typeof raw !== 'object') return false;
     const rawClass = (raw.damageClass || raw.damage_class?.name || raw.damage_class || '').toString().trim().toLowerCase();
-    return rawClass === MOVE_DAMAGE_CLASSES.PHYSICAL || rawClass === MOVE_DAMAGE_CLASSES.SPECIAL;
+    return rawClass === MOVE_DAMAGE_CLASSES.PHYSICAL || rawClass === MOVE_DAMAGE_CLASSES.SPECIAL ||
+      Boolean(constants.getSupportedStatusMove?.(raw));
   }
 
   const MoveModel = Object.freeze({

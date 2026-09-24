@@ -6,6 +6,8 @@
     ? require('./campaign-battle-fallback-catalog.js') : Campaign.CampaignBattleFallbackCatalog;
   const Hydrator = typeof module !== 'undefined' && module.exports
     ? require('../battle-session/battle-team-hydrator.js') : window.PBABattleSession;
+  const Battle = typeof module !== 'undefined' && module.exports
+    ? require('../battle/battle-constants.js') : window.PBABattle;
 
   const movesByName = new Map();
   for (const species of Object.values(Draft.byId)) {
@@ -66,7 +68,16 @@
   const extraIds = new Set([...Object.keys(curated).map(Number), ...trialIds]);
   const extras = Object.fromEntries([...extraIds].filter(id => !Draft.byId[id])
     .map(id => [id, extraSpecies(id)]));
-  const byId = Object.freeze({ ...Draft.byId, ...extras });
+  const poisonPowder = Battle.SUPPORTED_STATUS_MOVES['poison-powder'];
+  const poisonPilot = Object.fromEntries([[3, 'knock-off'], [407, 'shadow-ball']].map(([id, replaced]) => {
+    const species = Draft.byId[id] || extras[id];
+    if (!species || !species.moves.some(move => move.name === replaced)) {
+      throw new Error(`Piloto de veneno inválido para Pokémon ${id}.`);
+    }
+    return [id, Object.freeze({ ...species, moves: Object.freeze(species.moves.map(move =>
+      move.name === replaced ? poisonPowder : move)) })];
+  }));
+  const byId = Object.freeze({ ...Draft.byId, ...extras, ...poisonPilot });
   const api = Object.freeze({ byId, extras: Object.freeze(extras) });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else {
