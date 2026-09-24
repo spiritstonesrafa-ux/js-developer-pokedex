@@ -334,6 +334,8 @@
 }
 
 .battle-status-badge[hidden] { display: none; }
+.battle-status-badge[data-status="burn"] { background: #a83316; }
+.battle-status-badge[data-status="paralysis"] { background: #705400; }
 
 .hud-pokemon-types {
   display: flex;

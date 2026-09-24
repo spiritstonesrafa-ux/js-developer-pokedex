@@ -25,6 +25,11 @@
   }
 
   const TurnManager = (() => {
+    function effectiveSpeed(combatant) {
+      const speed = Number(combatant.speed);
+      return combatant.statusCondition === 'paralysis' && speed > 0
+        ? Math.max(1, Math.floor(speed / 2)) : speed;
+    }
     /**
      * Determina a ordem de ação entre dois combatentes.
      * @param {{ speed: number }} playerCombatant - Combatente do jogador.
@@ -40,8 +45,8 @@
         throw new Error('Combatente adversário com velocidade (speed) inválida.');
       }
 
-      const playerSpeed = Number(playerCombatant.speed);
-      const enemySpeed = Number(enemyCombatant.speed);
+      const playerSpeed = effectiveSpeed(playerCombatant);
+      const enemySpeed = effectiveSpeed(enemyCombatant);
 
       if (playerSpeed > enemySpeed) {
         return ['player', 'enemy'];
@@ -57,6 +62,7 @@
     }
 
     return {
+      effectiveSpeed,
       determineOrder
     };
   })();

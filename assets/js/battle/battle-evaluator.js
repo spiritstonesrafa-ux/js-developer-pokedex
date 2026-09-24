@@ -112,9 +112,9 @@
       const range = DamageCalculator.calculateDamageRange(attackStat, defenseStat, power, simLevel, typeMultiplier, stabMultiplier);
 
       const baseDamage = range.baseDamage;
-      const minDamage = range.minDamage;
-      const maxDamage = range.maxDamage;
-      const averageDamage = range.averageDamage;
+      const minDamage = constants.applyBurnPenalty(range.minDamage, attacker, move);
+      const maxDamage = constants.applyBurnPenalty(range.maxDamage, attacker, move);
+      const averageDamage = constants.applyBurnPenalty(range.averageDamage, attacker, move);
       const damageIfHit = averageDamage;
 
       // 5. Ponderação por Precisão para obter Dano Esperado (Expected Value)
@@ -126,7 +126,8 @@
         }
       }
 
-      const expectedDamage = averageDamage > 0 ? Math.floor(averageDamage * accuracyFactor) : 0;
+      const actionFactor = attacker.statusCondition === 'paralysis' ? 0.75 : 1;
+      const expectedDamage = averageDamage > 0 ? Math.floor(averageDamage * accuracyFactor * actionFactor) : 0;
 
       // 6. Semântica refinada de nocaute (KO)
       const defenderHp = Number(defender.currentHp) || 0;

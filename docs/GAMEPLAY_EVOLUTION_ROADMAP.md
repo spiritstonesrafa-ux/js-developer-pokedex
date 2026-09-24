@@ -29,6 +29,8 @@ Implementar uma condição de status de ponta a ponta com poucos golpes explicit
 
 ## Fase 2 — Queimadura e paralisia
 
+**Implementada em 24/09/2026:** Will-O-Wisp em Ninetales e Gengar; Thunder Wave em Pikachu e Luxray. Os três status compartilham uma única condição principal por Pokémon. Os conjuntos ofensivos do Super Treinador e das quatro Provas Finais permanecem inalterados; os novos recursos de controle estão disponíveis para a equipe do jogador, sem tornar os chefes finais mais fortes. Ver `CAMPAIGN_MODE.md` para as regras exatas e os testes de aceitação.
+
 Adicionar uma condição por vez. Queimadura combina dano residual e redução de dano físico; paralisia altera iniciativa e pode impedir ação. Fixar em testes a ordem de resolução e o comportamento ao trocar, desmaiar ou enfrentar imunidade. Atualizar IA, prévia, log, indicadores acessíveis e apenas golpes cujo efeito completo seja suportado.
 
 **Aceite:** os três status funcionam isolados e em confronto; somente um status principal por Pokémon; precisão e chance são reproduzíveis nos testes; nenhum golpe anuncia efeito que o motor não executa; desafios finais rebalanceados. Revisar esta fase antes de permitir personalização.

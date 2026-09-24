@@ -13,7 +13,7 @@
  * - pp: Quantidade máxima de Power Points (> 0);
  * - damageClass: Categoria de dano ('physical' ou 'special').
  * 
- * Golpes de status continuam bloqueados, exceto o piloto curado Poison Powder.
+ * Golpes de status continuam bloqueados, exceto Poison Powder, Will-O-Wisp e Thunder Wave curados.
  * Compatível com Node.js (CommonJS) e navegadores (window.PBABattle).
  */
 

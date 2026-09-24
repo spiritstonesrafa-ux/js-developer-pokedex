@@ -18,7 +18,7 @@ function mon(id, types = ['grass'], moves = [tap], hp = 160, speed = 70) {
 }
 const action = (moveId, accuracyRoll = 1) => ({ type: 'MOVE', moveId, accuracyRoll });
 
-test('Poison Powder is the only accepted status move and has canonical metadata', () => {
+test('Poison Powder retains canonical metadata and rejects unsupported or altered status moves', () => {
   assert.deepEqual(MoveModel.createMove(powder), powder);
   assert.throws(() => MoveModel.createMove({ ...powder, name: 'toxic' }), /não é suportado/);
   assert.throws(() => MoveModel.createMove({ ...powder, accuracy: 100 }), /não é suportado/);

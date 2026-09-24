@@ -12,6 +12,7 @@ const Engine = require('../../assets/js/battle/battle-engine.js');
 const { isMechanicallySupportedMove, MOVESET_LOADOUT_SOURCE } =
   require('../../assets/js/battle-session/battle-session-constants.js');
 const Guide = require('../../assets/js/campaign/campaign-matchup-guide.js');
+const { DeterministicRandomSource } = require('../../assets/js/battle-session/battle-random-source.js');
 
 const trialTeams = [
   Campaign.LEGENDARY_TRIAL_TEAM, Campaign.MYTHICAL_TRIAL_TEAM,
@@ -64,6 +65,51 @@ test('poison pilot uses one shared fixed move in campaign battle and tactical pr
   const vulnerableReport = Guide.buildReport({ selected: [Campaign.byId(264)],
     opponents: [Campaign.byId(407)], fallbackById: Fixed.byId });
   assert.match(Guide.renderReport(vulnerableReport), /adversário pode causar veneno/);
+});
+
+test('burn and paralysis loadouts stay fixed and appear truthfully in the tactical preview', () => {
+  for (const [ids, moveName, effect] of [
+    [[38, 94], 'will-o-wisp', 'burn'],
+    [[25, 405], 'thunder-wave', 'paralysis']
+  ]) {
+    for (const id of ids) {
+      const moves = Fixed.byId[id].moves;
+      assert.equal(moves.filter(move => move.name === moveName).length, 1);
+      assert.equal(moves.filter(move => move.damageClass !== 'status').length, 3);
+      assert.equal(moves.find(move => move.name === moveName).statusEffect, effect);
+    }
+  }
+  const burnReport = Guide.buildReport({ selected: [Campaign.byId(38)],
+    opponents: [Campaign.byId(94)], fallbackById: Fixed.byId });
+  assert.match(Guide.renderReport(burnReport), /Queimadura · sem dano direto/);
+  const waveReport = Guide.buildReport({ selected: [Campaign.byId(25)],
+    opponents: [Campaign.byId(405)], fallbackById: Fixed.byId });
+  assert.match(Guide.renderReport(waveReport), /Paralisia · sem dano direto/);
+  for (const team of [Campaign.SUPER_TEAM, ...trialTeams]) {
+    for (const pokemon of team) {
+      assert.equal(Fixed.byId[pokemon.id].moves.some(move => move.damageClass === 'status'), false);
+    }
+  }
+});
+
+test('campaign session injects a reproducible paralysis roll for the AI action', async () => {
+  const shown = [];
+  let enemyMoveId;
+  const randomSource = new DeterministicRandomSource({ statusSequence: [1],
+    accuracySequence: [1, 1], damageSequence: [100, 100] });
+  const session = new Session({ engine: Engine, randomSource,
+    ai: { chooseAction: () => ({ action: { type: 'MOVE', moveId: enemyMoveId } }) },
+    presentationEngine: { play: async events => shown.push(...events) },
+    compositeAdapter: {}, view: { renderState() {} } });
+  await session.prepareBattle({ playerTeamIds: [25, 264, 3], enemyTeamIds: [94, 38, 405],
+    metadata: { mode: 'CAMPAIGN', kind: 'MASTER' } });
+  enemyMoveId = session.battleState.enemy.team[0].moves[0].id;
+  session.battleState.enemy.team[0].statusCondition = 'paralysis';
+  session.uiState = 'AWAITING_PLAYER_ACTION';
+  await session.submitPlayerMove(86);
+  assert.notEqual(session.uiState, 'ERROR');
+  assert.ok(shown.some(event => event.type === 'STATUS_IMMOBILIZED' && event.actor === 'enemy'));
+  assert.equal(shown.some(event => event.type === 'MOVE_USED' && event.actor === 'enemy'), false);
 });
 
 test('all 18 Masters, Super, Shadow and four Trials have fixed opposing teams', () => {

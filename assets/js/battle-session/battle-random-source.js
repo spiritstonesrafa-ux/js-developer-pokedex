@@ -39,6 +39,7 @@
       this.rng = typeof options.rng === 'function' ? options.rng : defaultCryptoRandom;
       this.accuracySequence = Array.isArray(options.accuracySequence) ? [...options.accuracySequence] : null;
       this.damageSequence = Array.isArray(options.damageSequence) ? [...options.damageSequence] : null;
+      this.statusSequence = Array.isArray(options.statusSequence) ? [...options.statusSequence] : null;
       this.opponentSequence = Array.isArray(options.opponentSequence) ? [...options.opponentSequence] : null;
     }
 
@@ -72,6 +73,14 @@
 
       const floatVal = this.rng();
       return Math.floor(floatVal * 16) + 85;
+    }
+
+    rollStatus() {
+      if (this.statusSequence && this.statusSequence.length > 0) {
+        const next = Math.floor(Number(this.statusSequence.shift()));
+        return Math.max(1, Math.min(100, next));
+      }
+      return Math.floor(this.rng() * 100) + 1;
     }
 
     /**
@@ -128,6 +137,10 @@
 
     setDamageSequence(seq) {
       this.damageSequence = Array.isArray(seq) ? [...seq] : null;
+    }
+
+    setStatusSequence(seq) {
+      this.statusSequence = Array.isArray(seq) ? [...seq] : null;
     }
 
     setOpponentSequence(seq) {

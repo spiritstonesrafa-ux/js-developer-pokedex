@@ -68,16 +68,19 @@
   const extraIds = new Set([...Object.keys(curated).map(Number), ...trialIds]);
   const extras = Object.fromEntries([...extraIds].filter(id => !Draft.byId[id])
     .map(id => [id, extraSpecies(id)]));
-  const poisonPowder = Battle.SUPPORTED_STATUS_MOVES['poison-powder'];
-  const poisonPilot = Object.fromEntries([[3, 'knock-off'], [407, 'shadow-ball']].map(([id, replaced]) => {
+  const statusOverrides = Object.fromEntries([
+    [3, 'knock-off', 'poison-powder'], [407, 'shadow-ball', 'poison-powder'],
+    [94, 'psychic', 'will-o-wisp'], [38, 'dark-pulse', 'will-o-wisp'],
+    [25, 'knock-off', 'thunder-wave'], [405, 'psychic-fangs', 'thunder-wave']
+  ].map(([id, replaced, statusName]) => {
     const species = Draft.byId[id] || extras[id];
     if (!species || !species.moves.some(move => move.name === replaced)) {
-      throw new Error(`Piloto de veneno inválido para Pokémon ${id}.`);
+      throw new Error(`Conjunto de status inválido para Pokémon ${id}.`);
     }
     return [id, Object.freeze({ ...species, moves: Object.freeze(species.moves.map(move =>
-      move.name === replaced ? poisonPowder : move)) })];
+      move.name === replaced ? Battle.SUPPORTED_STATUS_MOVES[statusName] : move)) })];
   }));
-  const byId = Object.freeze({ ...Draft.byId, ...extras, ...poisonPilot });
+  const byId = Object.freeze({ ...Draft.byId, ...extras, ...statusOverrides });
   const api = Object.freeze({ byId, extras: Object.freeze(extras) });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else {

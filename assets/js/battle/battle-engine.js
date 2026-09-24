@@ -438,7 +438,7 @@
         for (let index = events.length - 1; index >= 0; index--) {
           if (events[index].type === BATTLE_EVENTS.REPLACEMENT_REQUIRED) events.splice(index, 1);
         }
-        // No empate simultâneo por veneno, a campanha considera derrota do jogador.
+        // No empate simultâneo por dano residual, a campanha considera derrota do jogador.
         const winner = defeated.includes('player') ? 'enemy' : 'player';
         if (state.version === 2) {
           for (const role of defeated) {
@@ -448,8 +448,8 @@
         state.winner = winner;
         state.status = winner === 'player' ? BATTLE_STATUS.PLAYER_WIN : BATTLE_STATUS.ENEMY_WIN;
         events.push({ type: BATTLE_EVENTS.BATTLE_ENDED, winner,
-          reason: defeated.length === 2 ? 'Ambas as equipes caíram por veneno; empate conta como derrota do jogador.' :
-            cause === 'poison' ? `A equipe ${defeated[0]} caiu por veneno.` :
+          reason: defeated.length === 2 ? 'Ambas as equipes caíram por status; empate conta como derrota do jogador.' :
+            ['poison', 'burn'].includes(cause) ? `A equipe ${defeated[0]} caiu por ${cause === 'poison' ? 'veneno' : 'queimadura'}.` :
               state.version === 2 ? `Todos os Pokémon da equipe ${defeated[0]} foram derrotados.` :
                 `${getActiveCombatant(state, defeated[0]).name} foi derrotado.` });
       } else {
@@ -468,16 +468,18 @@
       const fainted = [];
       for (const role of ['player', 'enemy']) {
         const pokemon = getActiveCombatant(state, role);
-        if (pokemon.currentHp <= 0 || pokemon.statusCondition !== 'poison') continue;
+        if (pokemon.currentHp <= 0 || !['poison', 'burn'].includes(pokemon.statusCondition)) continue;
         const previousHp = pokemon.currentHp;
-        const damage = Math.min(previousHp, Math.max(1, Math.floor(pokemon.maxHp / 8)));
+        const damage = Math.min(previousHp, Math.max(1, Math.floor(pokemon.maxHp /
+          (pokemon.statusCondition === 'poison' ? 8 : 16))));
         pokemon.currentHp -= damage;
         events.push({ type: BATTLE_EVENTS.STATUS_DAMAGE, target: role,
-          pokemonName: pokemon.name, statusCondition: 'poison', damage, previousHp,
+          pokemonName: pokemon.name, statusCondition: pokemon.statusCondition, damage, previousHp,
           currentHp: pokemon.currentHp, maxHp: pokemon.maxHp });
         if (pokemon.currentHp === 0) fainted.push(role);
       }
-      if (fainted.length) resolveFaints(state, events, fainted, 'poison');
+      if (fainted.length) resolveFaints(state, events, fainted,
+        getActiveCombatant(state, fainted[0]).statusCondition);
       if (state.status === BATTLE_STATUS.IN_PROGRESS) state.turn += 1;
     }
 
@@ -631,6 +633,15 @@
         accuracyRoll = roll;
       }
 
+      let statusRoll = 100;
+      if (action && action.statusRoll !== undefined) {
+        const roll = Number(action.statusRoll);
+        if (!Number.isInteger(roll) || roll < 1 || roll > 100) {
+          throw new Error(`Roll de status inválido: ${action.statusRoll}. Deve ser um inteiro entre 1 e 100.`);
+        }
+        statusRoll = roll;
+      }
+
       // Evento de início de ação
       events.push({
         type: BATTLE_EVENTS.ACTION_STARTED,
@@ -649,18 +660,21 @@
         moveName: selectedMove.name
       });
 
-      // Evento de disparo do golpe
-      events.push({
-        type: BATTLE_EVENTS.MOVE_USED,
-        actor: attackerRole,
-        pokemonId: attacker.id,
-        pokemonName: attacker.name,
-        moveId: selectedMove.id,
-        moveName: selectedMove.name,
-        moveType: selectedMove.type,
-        damageClass: selectedMove.damageClass,
-        power: selectedMove.power
-      });
+      const immobilized = attacker.statusCondition === 'paralysis' && statusRoll <= 25;
+      if (!immobilized) {
+        // Mantém a ordem histórica MOVE_USED → PP_CHANGED nos golpes executados.
+        events.push({
+          type: BATTLE_EVENTS.MOVE_USED,
+          actor: attackerRole,
+          pokemonId: attacker.id,
+          pokemonName: attacker.name,
+          moveId: selectedMove.id,
+          moveName: selectedMove.name,
+          moveType: selectedMove.type,
+          damageClass: selectedMove.damageClass,
+          power: selectedMove.power
+        });
+      }
 
       // Consumo de PP (ocorre antes da resolução de dano, em hits e em misses)
       const previousPp = selectedMove.currentPp;
@@ -675,6 +689,12 @@
         currentPp: selectedMove.currentPp,
         maxPp: selectedMove.maxPp
       });
+
+      if (immobilized) {
+        events.push({ type: BATTLE_EVENTS.STATUS_IMMOBILIZED, actor: attackerRole,
+          pokemonName: attacker.name, statusCondition: 'paralysis', statusRoll });
+        return;
+      }
 
       // 2. Resolução de Acurácia (Hit vs Miss)
       let isHit = true;
@@ -697,16 +717,16 @@
         return;
       }
 
-      if (selectedMove.statusEffect === 'poison' && selectedMove.damageClass === MOVE_DAMAGE_CLASSES.STATUS) {
-        const blocked = constants.isPoisonPowderImmune(defender.types)
+      if (selectedMove.statusEffect && selectedMove.damageClass === MOVE_DAMAGE_CLASSES.STATUS) {
+        const blocked = constants.isStatusMoveImmune(selectedMove, defender.types)
           ? 'IMMUNE' : defender.statusCondition ? 'ALREADY_STATUS' : null;
         if (blocked) {
           events.push({ type: BATTLE_EVENTS.STATUS_BLOCKED, target: defenderRole,
-            pokemonName: defender.name, statusCondition: 'poison', reason: blocked });
+            pokemonName: defender.name, statusCondition: selectedMove.statusEffect, reason: blocked });
         } else {
-          defender.statusCondition = 'poison';
+          defender.statusCondition = selectedMove.statusEffect;
           events.push({ type: BATTLE_EVENTS.STATUS_APPLIED, source: attackerRole,
-            target: defenderRole, pokemonName: defender.name, statusCondition: 'poison' });
+            target: defenderRole, pokemonName: defender.name, statusCondition: selectedMove.statusEffect });
         }
         return;
       }
@@ -761,7 +781,9 @@
 
       // 6. Pipeline de cálculo de dano v2 (PBA-014B: com variância 85..100)
       const baseDamage = DamageCalculator.calculateBaseDamage(attackStat, defenseStat, selectedMove.power);
-      const finalDamage = DamageCalculator.applyModifier(baseDamage, effectiveMultiplier, stabMultiplier, damageRoll);
+      const finalDamage = constants.applyBurnPenalty(
+        DamageCalculator.applyModifier(baseDamage, effectiveMultiplier, stabMultiplier, damageRoll),
+        attacker, selectedMove);
 
       // 7. Aplicação do dano ao HP
       const previousHp = defender.currentHp;

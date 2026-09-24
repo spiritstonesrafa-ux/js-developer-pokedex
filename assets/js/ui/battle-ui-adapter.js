@@ -108,10 +108,14 @@
           }
           if (typeof this.view.displayMessage === 'function') {
             const name = command.pokemonName || 'O Pokémon';
-            const message = command.outcome === 'APPLIED' ? `${name} foi envenenado!` :
-              command.outcome === 'DAMAGE' ? `${name} perdeu ${command.damage} HP por veneno!` :
-                command.outcome === 'IMMUNE' ? `${name} é imune ao veneno!` :
-                  `${name} já possui uma condição de status.`;
+            const status = command.statusCondition;
+            const label = status === 'burn' ? 'queimadura' : status === 'paralysis' ? 'paralisia' : 'veneno';
+            const message = command.outcome === 'APPLIED'
+              ? status === 'poison' ? `${name} foi envenenado!` : `${name} sofreu ${label}!` :
+              command.outcome === 'DAMAGE' ? `${name} perdeu ${command.damage} HP por ${label}!` :
+              command.outcome === 'IMMUNE' ? `${name} é imune a ${label}!` :
+              command.outcome === 'IMMOBILIZED' ? `${name} não conseguiu agir por paralisia!` :
+                `${name} já possui uma condição de status.`;
             this.view.displayMessage(message);
           }
           break;

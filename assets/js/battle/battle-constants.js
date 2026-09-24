@@ -28,6 +28,7 @@
     MOVE_MISSED: 'MOVE_MISSED',
     STATUS_APPLIED: 'STATUS_APPLIED',
     STATUS_BLOCKED: 'STATUS_BLOCKED',
+    STATUS_IMMOBILIZED: 'STATUS_IMMOBILIZED',
     STATUS_DAMAGE: 'STATUS_DAMAGE',
     STAB_RESOLVED: 'STAB_RESOLVED',
     TYPE_EFFECTIVENESS_RESOLVED: 'TYPE_EFFECTIVENESS_RESOLVED',
@@ -57,10 +58,14 @@
     STATUS: 'status'
   });
 
-  // Piloto curado: não libera outros golpes de status por associação de tipo.
+  // Apenas golpes de status curados com efeito integral suportado.
   const SUPPORTED_STATUS_MOVES = Object.freeze({
     'poison-powder': Object.freeze({ id: 77, name: 'poison-powder', type: 'poison',
-      power: 0, accuracy: 75, pp: 35, damageClass: 'status', statusEffect: 'poison' })
+      power: 0, accuracy: 75, pp: 35, damageClass: 'status', statusEffect: 'poison' }),
+    'will-o-wisp': Object.freeze({ id: 261, name: 'will-o-wisp', type: 'fire',
+      power: 0, accuracy: 85, pp: 15, damageClass: 'status', statusEffect: 'burn' }),
+    'thunder-wave': Object.freeze({ id: 86, name: 'thunder-wave', type: 'electric',
+      power: 0, accuracy: 90, pp: 20, damageClass: 'status', statusEffect: 'paralysis' })
   });
 
   function getSupportedStatusMove(move) {
@@ -77,6 +82,21 @@
   function isPoisonPowderImmune(types) {
     return Array.isArray(types) && types.some(type =>
       type === 'poison' || type === 'steel' || type === 'grass');
+  }
+
+  function isStatusMoveImmune(move, types) {
+    if (!Array.isArray(types)) return false;
+    switch (move?.name) {
+      case 'poison-powder': return isPoisonPowderImmune(types);
+      case 'will-o-wisp': return types.includes('fire');
+      case 'thunder-wave': return types.includes('electric') || types.includes('ground');
+      default: return false;
+    }
+  }
+
+  function applyBurnPenalty(damage, attacker, move) {
+    return attacker?.statusCondition === 'burn' && move?.damageClass === 'physical' && damage > 0
+      ? Math.max(1, Math.floor(damage / 2)) : damage;
   }
 
   // Body Press is physical, but uses the user's Defense in place of Attack.
@@ -158,6 +178,8 @@
     SUPPORTED_STATUS_MOVES,
     getSupportedStatusMove,
     isPoisonPowderImmune,
+    isStatusMoveImmune,
+    applyBurnPenalty,
     usesDefenseAsAttack,
     POKEMON_TYPES,
     TYPE_EFFECTIVENESS_CLASSIFICATION,

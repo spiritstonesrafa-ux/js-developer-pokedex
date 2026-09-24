@@ -94,16 +94,23 @@
 
         case BATTLE_EVENTS.STATUS_APPLIED:
         case BATTLE_EVENTS.STATUS_BLOCKED:
-          if (!event.target || event.statusCondition !== 'poison' || !event.pokemonName) {
+          if (!event.target || !['poison', 'burn', 'paralysis'].includes(event.statusCondition) || !event.pokemonName) {
             throw new Error('INVALID_EVENT_PAYLOAD: status requer alvo, nome e condição suportada.');
           }
           break;
 
         case BATTLE_EVENTS.STATUS_DAMAGE:
-          if (!event.target || event.statusCondition !== 'poison' || !event.pokemonName ||
+          if (!event.target || !['poison', 'burn'].includes(event.statusCondition) || !event.pokemonName ||
               !Number.isFinite(Number(event.damage)) || !Number.isFinite(Number(event.previousHp)) ||
               !Number.isFinite(Number(event.currentHp)) || !Number.isFinite(Number(event.maxHp))) {
             throw new Error('INVALID_EVENT_PAYLOAD: dano de status requer HP e alvo válidos.');
+          }
+          break;
+
+        case BATTLE_EVENTS.STATUS_IMMOBILIZED:
+          if (!event.actor || !event.pokemonName || event.statusCondition !== 'paralysis' ||
+              !Number.isInteger(event.statusRoll) || event.statusRoll < 1 || event.statusRoll > 25) {
+            throw new Error('INVALID_EVENT_PAYLOAD: ação impedida por paralisia inválida.');
           }
           break;
 
@@ -248,6 +255,10 @@
             pokemonName: event.pokemonName, statusCondition: event.statusCondition,
             outcome: event.type === BATTLE_EVENTS.STATUS_APPLIED ? 'APPLIED' : event.reason }];
 
+        case BATTLE_EVENTS.STATUS_IMMOBILIZED:
+          return [{ type: PRESENTATION_COMMANDS.STATUS_FEEDBACK, target: event.actor,
+            pokemonName: event.pokemonName, statusCondition: 'paralysis', outcome: 'IMMOBILIZED' }];
+
         case BATTLE_EVENTS.STATUS_DAMAGE:
           return [
             { type: PRESENTATION_COMMANDS.STATUS_FEEDBACK, target: event.target,
@@ -255,7 +266,7 @@
               damage: Number(event.damage) },
             { type: PRESENTATION_COMMANDS.HP_TRANSITION, side: event.target, target: event.target,
               damage: Number(event.damage), previousHp: Number(event.previousHp),
-              currentHp: Number(event.currentHp), maxHp: Number(event.maxHp), cause: 'poison' }
+              currentHp: Number(event.currentHp), maxHp: Number(event.maxHp), cause: event.statusCondition }
           ];
 
         case BATTLE_EVENTS.STAB_RESOLVED:

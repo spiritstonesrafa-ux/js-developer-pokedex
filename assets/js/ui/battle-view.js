@@ -18,6 +18,12 @@
  */
 
 (function () {
+  const STATUS_LABELS = Object.freeze({
+    poison: { short: 'VENENO', aria: 'Envenenado', move: 'causa veneno' },
+    burn: { short: 'QUEIMADURA', aria: 'Queimado', move: 'causa queimadura' },
+    paralysis: { short: 'PARALISIA', aria: 'Paralisado', move: 'causa paralisia' }
+  });
+  const statusBadge = status => STATUS_LABELS[status] || null;
   let arenaRegistryModule;
   let arenaControllerModule;
   if (typeof module !== 'undefined' && module.exports) {
@@ -485,7 +491,7 @@
             style="--move-accent-color: ${typeColor};"
             ${isDisabled ? 'disabled' : ''}
             onclick="if(window.battleSessionController) window.battleSessionController.submitPlayerMove(${m.id});"
-            aria-label="${m.name}, Tipo ${m.type}, ${m.statusEffect === 'poison' ? 'causa veneno' : `Poder ${m.power}`}, PP ${m.currentPp} de ${m.maxPp}"
+            aria-label="${m.name}, Tipo ${m.type}, ${statusBadge(m.statusEffect)?.move || `Poder ${m.power}`}, PP ${m.currentPp} de ${m.maxPp}"
           >
             <div class="move-btn-top-row">
               <span class="move-btn-name">${m.name}</span>
@@ -494,7 +500,7 @@
             <div class="move-btn-bottom-row">
               <span class="move-btn-category">
                 <i class="${m.damageClass === 'special' ? 'fa-solid fa-burst' : 'fa-solid fa-fist-raised'}"></i>
-                ${m.statusEffect === 'poison' ? 'STATUS · VENENO' : `${m.damageClass} (Pwr ${m.power})`}
+                ${statusBadge(m.statusEffect) ? `STATUS · ${statusBadge(m.statusEffect).short}` : `${m.damageClass} (Pwr ${m.power})`}
               </span>
               <span id="ppLabel_${m.id}" class="move-btn-pp">PP ${m.currentPp}/${m.maxPp}</span>
             </div>
@@ -536,7 +542,7 @@
             <div class="combatant-hud enemy-hud">
               <div class="hud-info-row">
                 <span id="enemyPokemonName" class="hud-pokemon-name">${enemyActive.name}</span>
-                <span id="enemyStatusBadge" class="battle-status-badge" ${enemyActive.statusCondition === 'poison' ? '' : 'hidden'} aria-label="Envenenado">VENENO</span>
+                <span id="enemyStatusBadge" class="battle-status-badge" data-status="${enemyActive.statusCondition || ''}" ${statusBadge(enemyActive.statusCondition) ? '' : 'hidden'} aria-label="${statusBadge(enemyActive.statusCondition)?.aria || ''}">${statusBadge(enemyActive.statusCondition)?.short || ''}</span>
                 <div id="enemyPokemonTypes" class="hud-pokemon-types">
                   ${(enemyActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
@@ -604,7 +610,7 @@
             <div class="combatant-hud player-hud">
               <div class="hud-info-row">
                 <span id="playerPokemonName" class="hud-pokemon-name">${playerActive.name}</span>
-                <span id="playerStatusBadge" class="battle-status-badge" ${playerActive.statusCondition === 'poison' ? '' : 'hidden'} aria-label="Envenenado">VENENO</span>
+                <span id="playerStatusBadge" class="battle-status-badge" data-status="${playerActive.statusCondition || ''}" ${statusBadge(playerActive.statusCondition) ? '' : 'hidden'} aria-label="${statusBadge(playerActive.statusCondition)?.aria || ''}">${statusBadge(playerActive.statusCondition)?.short || ''}</span>
                 <div id="playerPokemonTypes" class="hud-pokemon-types">
                   ${(playerActive.types || []).map(t => `<span class="hud-type-badge" style="background: var(--type-${t}, #64748b);">${t}</span>`).join('')}
                 </div>
@@ -943,7 +949,13 @@
     updateStatusBadge(target, statusCondition) {
       if (typeof document === 'undefined') return;
       const badge = document.getElementById(`${target}StatusBadge`);
-      if (badge) badge.hidden = statusCondition !== 'poison';
+      if (badge) {
+        const label = statusBadge(statusCondition);
+        badge.hidden = !label;
+        badge.textContent = label?.short || '';
+        badge.setAttribute('aria-label', label?.aria || '');
+        badge.dataset.status = statusCondition || '';
+      }
     }
 
     updateMovePp(moveId, currentPp, maxPp) {

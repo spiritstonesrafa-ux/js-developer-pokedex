@@ -96,18 +96,20 @@ Todos os 1.800 golpes do catálogo offline (`assets/js/campaign/campaign-battle-
 
 ### Golpes fixos e prévia fiel da campanha
 
-- `campaign-fixed-battle-catalog.js` combina os 450 conjuntos do draft com 18 conjuntos adicionais dos Mestres, Super Treinador e quatro Provas. Os 468 Pokémon atualmente obtíveis na campanha possuem quatro golpes distintos e aceitos pelo motor. No piloto de veneno, Venusaur (#3) e Roserade (#407) usam três golpes ofensivos e Poison Powder.
+- `campaign-fixed-battle-catalog.js` combina os 450 conjuntos do draft com 18 conjuntos adicionais dos Mestres, Super Treinador e quatro Provas. Os 468 Pokémon atualmente obtíveis na campanha possuem quatro golpes distintos e aceitos pelo motor. Seis espécies têm três golpes ofensivos e um golpe de status curado: Venusaur, Roserade, Ninetales, Gengar, Pikachu e Luxray.
 - Quando `metadata.mode === 'CAMPAIGN'`, `BattleSessionController` envia fichas locais ao hidratador para as duas equipes. Os quatro golpes são preservados em ordem, com poder, precisão e PP próprios, sem consulta à PokéAPI. A Batalha Rápida continua usando a seleção dinâmica existente.
 - `campaign-matchup-guide.js` usa o mesmo catálogo para listar os quatro golpes do jogador e avaliar cobertura e riscos pelos golpes reais dos adversários. A prévia continua sendo apenas orientação: efetividade elemental não representa dano garantido nem chance de vitória.
 - Pokémon fora desse catálogo que só apareçam em saves antigos mantêm a rota de hidratação anterior; o comparador avisa quando não pode prometer a mesma prévia. Nenhuma migração ou alteração do progresso salvo é necessária.
 
-### Piloto de gameplay: veneno comum
+### Status de gameplay: veneno, queimadura e paralisia
 
-- `poison-powder` (#77) é o único golpe de status habilitado, apenas nos conjuntos fixos de Venusaur (#3) e Roserade (#407). Seus dados canônicos são tipo Poison, precisão 75 e PP 35; substitui um dos quatro golpes anteriores. O catálogo de draft usado pelo gerador mantém quatro golpes ofensivos para cada selecionável.
+- Os únicos golpes de status habilitados são `poison-powder` (#77; Venusaur #3 e Roserade #407; precisão 75, PP 35), `will-o-wisp` (#261; Ninetales #38 e Gengar #94; precisão 85, PP 15) e `thunder-wave` (#86; Pikachu #25 e Luxray #405; precisão 90, PP 20). Cada golpe substitui um dos quatro ofensivos anteriores; o catálogo gerado do draft mantém quatro ofensivos.
 - Ao acertar um alvo elegível, o golpe consome PP e um turno, sem causar dano imediato. O veneno retira `max(1, floor(maxHp / 8))` HP ao fim de cada turno enquanto o Pokémon está ativo. O status persiste quando ele vai para a reserva e não persiste entre batalhas.
-- Pokémon dos tipos Poison e Steel não podem ser envenenados; Grass é imune ao próprio golpe em pó. Golpes errados não aplicam status. Uma condição de status já presente impede nova aplicação.
-- Motor, IA, comparador, mensagens e badge da arena compartilham essa regra. Se ambos os últimos Pokémon caírem juntos por veneno, o empate conta como derrota do jogador; o resultado é determinístico e documentado.
-- Batalha Rápida mantém seu seletor ofensivo anterior. Outros golpes de status, Toxic, curas, habilidades e itens continuam fora do escopo.
+- Queimadura retira `max(1, floor(maxHp / 16))` HP ao fim do turno e reduz à metade o dano final de golpes físicos do afetado (mínimo 1 se haveria dano); não altera golpes especiais. Pokémon Fire são imunes ao Will-O-Wisp.
+- Paralisia reduz a velocidade efetiva à metade (arredondada para baixo, mínimo 1 quando positiva) e tem 25% de chance de impedir cada ação de golpe, consumindo PP; a rolagem externa 1–100 é reproduzível. A ordem é calculada no início do turno, e uma paralisia aplicada antes da segunda ação já pode impedi-la. Pokémon Electric são imunes à paralisia e Pokémon Ground são imunes a Thunder Wave.
+- Pokémon Poison e Steel não podem ser envenenados; Grass é imune ao golpe em pó. Golpes errados não aplicam status. Só uma condição principal pode afetar cada Pokémon. O status persiste na reserva durante a luta, mas só causa dano residual enquanto ativo, e termina com a batalha.
+- Motor, IA, comparador, mensagens e badges acessíveis compartilham essas regras. Dano residual de veneno ou queimadura é resolvido ao fim do turno; se ambos os últimos Pokémon caírem juntos, empate conta como derrota do jogador.
+- O balanceamento final foi conservador: os quatro conjuntos das Provas e o Super Treinador mantêm os golpes anteriores, enquanto o jogador pode levar esses controles táticos aos desafios. A Batalha Rápida conserva o seletor ofensivo. Toxic, curas, habilidades, itens e outros golpes de status continuam fora do escopo.
 
 ### Interface da Seleção Inicial e Ciclo de Vida do Debounce
 

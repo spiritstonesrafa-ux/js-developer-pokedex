@@ -410,13 +410,26 @@
           };
         }
 
+        // Inclui quem pode ser paralisado antes de agir no próprio turno.
+        const activePlayer = this.engine.getActiveCombatant(this.battleState, 'player');
+        const activeEnemy = this.engine.getActiveCombatant(this.battleState, 'enemy');
+        const playerMove = activePlayer.moves.find(move => move.id === Number(moveId));
+        const enemyMove = enemyAction?.type === 'MOVE'
+          ? activeEnemy.moves.find(move => move.id === Number(enemyAction.moveId)) : null;
+        const playerNeedsStatusRoll = activePlayer.statusCondition === 'paralysis' ||
+          enemyMove?.statusEffect === 'paralysis';
+        const enemyNeedsStatusRoll = enemyAction?.type === 'MOVE' &&
+          (activeEnemy.statusCondition === 'paralysis' || playerMove?.statusEffect === 'paralysis');
+        if (enemyNeedsStatusRoll) enemyAction.statusRoll = this.randomSource.rollStatus();
+
         // 3. Resolve o turno de forma pura no BattleEngine
         const turnActions = {
           player: {
             type: 'MOVE',
             moveId: Number(moveId),
             accuracyRoll: playerAccuracyRoll,
-            damageRoll: playerDamageRoll
+            damageRoll: playerDamageRoll,
+            ...(playerNeedsStatusRoll ? { statusRoll: this.randomSource.rollStatus() } : {})
           },
           enemy: enemyAction
         };
@@ -465,6 +478,10 @@
             accuracyRoll: enemyAccuracyRoll,
             damageRoll: enemyDamageRoll
           };
+          const activeEnemy = this.engine.getActiveCombatant(this.battleState, 'enemy');
+          if (activeEnemy.statusCondition === 'paralysis') {
+            enemyAction.statusRoll = this.randomSource.rollStatus();
+          }
         }
 
         const turnActions = {

@@ -102,12 +102,12 @@
         throw new Error(`Pokémon ativo de "${side}" está nocauteado ou inexistente.`);
       }
 
-      // 1. Golpes utilizáveis do ativo (inclui apenas o piloto de status explicitamente suportado)
+      // 1. Golpes utilizáveis do ativo (somente status curados)
       const activeMoves = Array.isArray(myActive.moves) ? myActive.moves : [];
       const usableMoves = activeMoves
         .map((m, idx) => ({ ...m, loadoutIndex: idx }))
         .filter(m => (m.currentPp === undefined || m.currentPp > 0) &&
-          (m.damageClass !== 'status' || m.statusEffect === 'poison'));
+          (m.damageClass !== 'status' || ['poison', 'burn', 'paralysis'].includes(m.statusEffect)));
 
       // 2. Candidatos do banco vivos
       const livingBench = myTeam
@@ -118,7 +118,7 @@
       const livingBenchWithMoves = livingBench.filter(item => {
         const mvs = Array.isArray(item.pokemon.moves) ? item.pokemon.moves : [];
         return mvs.some(m => (m.currentPp === undefined || m.currentPp > 0) &&
-          (m.damageClass !== 'status' || m.statusEffect === 'poison'));
+          (m.damageClass !== 'status' || ['poison', 'burn', 'paralysis'].includes(m.statusEffect)));
       });
 
       // ================================================================
@@ -213,13 +213,22 @@
         const evalData = BattleEvaluator.evaluateMove(myActive, oppActive, m, { attackerSide: side, modifiers: state.modifiers || {} });
         let score = evalData.expectedDamage;
 
-        if (m.statusEffect === 'poison' && m.damageClass === 'status') {
-          const immune = constants.isPoisonPowderImmune(oppActive.types);
+        if (m.statusEffect && m.damageClass === 'status') {
+          const immune = constants.isStatusMoveImmune(m, oppActive.types);
           const canApply = !immune && !oppActive.statusCondition;
-          const tick = Math.max(1, Math.floor(oppActive.maxHp / 8));
-          // Valor prospectivo limitado: não supera um nocaute garantido.
+          const tick = Math.max(1, Math.floor(oppActive.maxHp /
+            (m.statusEffect === 'poison' ? 8 : 16)));
+          const physicalThreat = Math.max(0, ...oppActive.moves.filter(move => move.damageClass === 'physical')
+            .map(move => BattleEvaluator.evaluateMove(oppActive, myActive, move,
+              { attackerSide: oppSideRole, modifiers: state.modifiers || {} }).expectedDamage));
+          const totalThreat = Math.max(physicalThreat, ...oppActive.moves.filter(move =>
+            move.damageClass !== 'status').map(move => BattleEvaluator.evaluateMove(oppActive, myActive,
+            move, { attackerSide: oppSideRole, modifiers: state.modifiers || {} }).expectedDamage));
+          const disruption = m.statusEffect === 'burn' ? Math.floor(physicalThreat / 2) * 2 :
+            m.statusEffect === 'paralysis' ? Math.floor(totalThreat / 4) * 2 + 12 : 0;
           score = canApply && oppActive.currentHp > tick * 2
-            ? tick * 4 * (m.accuracy === null ? 1 : m.accuracy / 100) : 0;
+            ? (m.statusEffect === 'paralysis' ? disruption : tick * 4 + disruption) *
+              (m.accuracy === null ? 1 : m.accuracy / 100) : 0;
         }
 
         // Bônus decisivo para KO garantido vs possível (PBA-014B)
@@ -352,7 +361,7 @@
       });
 
       const selected = candidates[0];
-      const reasonCode = selected.statusEffect === 'poison' ? REASON.STATUS_PRESSURE :
+      const reasonCode = selected.statusEffect ? REASON.STATUS_PRESSURE :
         selected.wouldKo ? REASON.GUARANTEED_KO : REASON.BEST_EXPECTED_DAMAGE;
 
       const action = {

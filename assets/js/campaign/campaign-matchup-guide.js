@@ -11,6 +11,9 @@
   const escape = value => String(value == null ? '' : value).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const times = value => `${Number(value).toLocaleString('pt-BR')}×`;
+  const statusText = Object.freeze({ poison: 'Veneno · perde 1/8 do HP por turno',
+    burn: 'Queimadura · perde 1/16 do HP e reduz dano físico',
+    paralysis: 'Paralisia · metade da velocidade e 25% de chance de não agir' });
   function multiplier(type, types) {
     try { return Types.calculate(type, types).multiplier; }
     catch (_) { return null; }
@@ -20,7 +23,7 @@
       const source = fallbackById[pokemon.id];
       const moves = (source && Array.isArray(source.moves) ? source.moves : [])
         .filter(move => move && Types.isValidType(move.type) &&
-          (move.statusEffect === 'poison' || (move.damageClass !== 'status' && Number(move.power) > 0)));
+          (statusText[move.statusEffect] || (move.damageClass !== 'status' && Number(move.power) > 0)));
       const offensiveMoves = moves.filter(move => move.damageClass !== 'status');
       const matchups = opponents.map(opponent => {
         const attacks = offensiveMoves.map(move => ({ name: move.name, type: move.type,
@@ -36,9 +39,9 @@
             multiplier: multiplier(move.type, pokemon.types) }))
           .filter(x => x.multiplier !== null).sort((a, b) => b.multiplier - a.multiplier);
         const risk = incoming[0];
-        const poisonThreat = enemyMoves.some(move => move.statusEffect === 'poison') &&
-          !Battle.isPoisonPowderImmune(pokemon.types);
-        return { opponent, bestAttack: attacks[0] || null, poisonThreat,
+        const statusThreats = enemyMoves.filter(move => statusText[move.statusEffect] &&
+          !Battle.isStatusMoveImmune(move, pokemon.types)).map(move => move.statusEffect);
+        return { opponent, bestAttack: attacks[0] || null, statusThreats,
           incoming: risk ? { ...risk, multiplier: shadow ? Math.max(2, risk.multiplier) : risk.multiplier } : null };
       });
       return { pokemon, moves, hasMoves: offensiveMoves.length > 0, matchups };
@@ -71,17 +74,20 @@
           ? `Atenção: ${cap(risk.incoming.name)} de ${cap(risk.opponent.name)} tem efetividade ${times(risk.incoming.multiplier)}.`
           : `Atenção: golpes do tipo ${cap(risk.incoming.type)} de ${cap(risk.opponent.name)} podem causar ${times(risk.incoming.multiplier)}.`
         : 'Nenhum golpe adversário conhecido tem vantagem de tipo.';
-      const poisonRisk = matchups.some(x => x.poisonThreat)
-        ? '<p class="campaign-matchup__risk">Atenção: um adversário pode causar veneno (perda de HP ao fim do turno).</p>' : '';
+      const statusRisks = [...new Set(matchups.flatMap(x => x.statusThreats))];
+      const statusRisk = statusRisks.length
+        ? `<p class="campaign-matchup__risk">${statusRisks.length === 1 && statusRisks[0] === 'poison'
+          ? 'Atenção: um adversário pode causar veneno (perda de HP ao fim do turno).'
+          : `Atenção: adversários podem causar ${escape(statusRisks.map(status => statusText[status]).join('; '))}.`}</p>` : '';
       const first = matchups[0];
       const immunity = first && first.bestAttack && first.bestAttack.multiplier === 0
         ? `<p class="campaign-matchup__warning">Os golpes conhecidos não atingem ${escape(cap(first.opponent.name))}; escolha outro Pokémon.</p>` : '';
       const moveList = moves.length
         ? `<ul class="campaign-matchup__moves" aria-label="Golpes de ${escape(cap(pokemon.name))}">${moves.map(move =>
-          `<li><strong>${escape(cap(move.name))}</strong><span>${move.statusEffect === 'poison' ? 'Veneno · sem dano direto' : `${escape(cap(move.type))} · Poder ${Number(move.power)}`} · ${move.accuracy === null ? 'sempre acerta' : Number.isInteger(Number(move.accuracy)) ? `${Number(move.accuracy)}% precisão` : 'precisão não informada'}</span></li>`
+          `<li><strong>${escape(cap(move.name))}</strong><span>${statusText[move.statusEffect] ? `${move.statusEffect === 'poison' ? 'Veneno' : move.statusEffect === 'burn' ? 'Queimadura' : 'Paralisia'} · sem dano direto · ${statusText[move.statusEffect]}` : `${escape(cap(move.type))} · Poder ${Number(move.power)}`} · ${move.accuracy === null ? 'sempre acerta' : Number.isInteger(Number(move.accuracy)) ? `${Number(move.accuracy)}% precisão` : 'precisão não informada'}</span></li>`
         ).join('')}</ul>`
         : '';
-      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4>${moveList}<p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${poisonRisk}${immunity}</article>`;
+      return `<article class="campaign-matchup__card"><h4>${index === 0 ? '<span class="campaign-matchup__leader">LÍDER ATUAL</span> ' : ''}${escape(cap(pokemon.name))}</h4>${moveList}<p>${escape(attack)}</p><p class="campaign-matchup__risk">${escape(warning)}</p>${statusRisk}${immunity}</article>`;
     }).join('');
     const summary = entries.length
       ? `${covered} de ${opponents.length} adversários têm fraqueza a pelo menos um golpe ofensivo conhecido da seleção.`
