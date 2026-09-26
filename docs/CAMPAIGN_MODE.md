@@ -12,6 +12,8 @@ A Região 1 agora tem um ponto opcional **Explorar mata**. O encontro sorteia um
 
 Na Fase 2, as Regiões 2 e 3 também recebem pontos de exploração. Cada região tem pool temático, frequência comum/incomum/rara de 70%/25%/5% e limite próprio de duas capturas. A Região Final não tem encontros selvagens. Saves antigos atribuem as capturas existentes à Região 1. Regras completas em `CAMPAIGN_WILD_PHASE_2.md`.
 
+A Fase 3 acrescenta cenas por região, efeitos procedurais de captura, botão de som e ajustes de celular/acessibilidade sem alterar as regras. Detalhes e checklist de conferência manual em `CAMPAIGN_WILD_PHASE_3.md`.
+
 ## Draft expansion: Seleção Inicial de 450 Pokémon
 
 A seleção inicial de novos treinadores na campanha foi expandida de 144 para **450 Pokémon canônicos**, distribuídos uniformemente em exatamente **50 Pokémon por geração oficial** (da Geração 1 à Geração 9).

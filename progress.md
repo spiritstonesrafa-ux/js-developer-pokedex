@@ -2,6 +2,14 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: encontros selvagens, Fase 3
+
+- Cenas regionais, transição de encontro e captura com efeitos sonoros procedurais no mixer já existente. Botão de som com preferência local; mudo e aba oculta respeitados.
+- Ajustes de celular, foco por tela, texto para leitor de tela e movimento reduzido. As regras da Fase 2 permanecem iguais.
+- Validação automatizada: campanha **181/181**, suíte completa **819/819**. Inspeção visual manual ainda pendente por falha da conexão com navegador. Checklist em `docs/CAMPAIGN_WILD_PHASE_3.md`.
+
+---
+
 ## Atualização — 26/09/2026: encontros selvagens, Fase 2
 
 - As Regiões 2 e 3 ganharam pontos opcionais de exploração com caminhada do avatar; a Região Final não tem encontros.

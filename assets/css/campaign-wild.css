@@ -3,6 +3,123 @@
   text-align: center;
 }
 
+.wild-encounter-screen,
+.wild-capture-screen {
+  --wild-accent: #b9f68a;
+  --wild-glow: rgba(122, 212, 116, .22);
+}
+
+.wild-encounter-screen[data-region="region-2"],
+.wild-capture-screen[data-region="region-2"] {
+  --wild-accent: #ffc27a;
+  --wild-glow: rgba(255, 158, 81, .24);
+}
+
+.wild-encounter-screen[data-region="region-3"],
+.wild-capture-screen[data-region="region-3"] {
+  --wild-accent: #d4b5ff;
+  --wild-glow: rgba(181, 126, 248, .24);
+}
+
+.wild-encounter-hero,
+.wild-capture-screen .campaign-hero {
+  border-color: var(--wild-accent);
+  background: radial-gradient(circle at 50% 12%, var(--wild-glow), transparent 50%),
+    linear-gradient(145deg, #202b37, #151b2a);
+}
+
+.wild-encounter-hero {
+  animation: wildEncounterReveal .45s ease-out both;
+}
+
+.wild-encounter-hero .eyebrow,
+.wild-capture-screen .eyebrow {
+  color: var(--wild-accent);
+}
+
+.wild-encounter-hero h2:focus,
+.wild-capture-screen h2:focus {
+  outline: 3px solid var(--wild-accent);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+.wild-encounter-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 380px);
+  height: 172px;
+  margin: 14px auto;
+  overflow: hidden;
+  border: 1px solid var(--wild-accent);
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 90%, #3c8053, transparent 58%),
+    linear-gradient(#426b79, #203b46 62%, #1b482e 63%);
+}
+
+.wild-encounter-screen[data-region="region-2"] .wild-encounter-preview {
+  background: radial-gradient(ellipse at 50% 90%, #b57649, transparent 58%),
+    linear-gradient(#704d4a, #3e3446 62%, #6c4734 63%);
+}
+
+.wild-encounter-screen[data-region="region-3"] .wild-encounter-preview {
+  background: radial-gradient(ellipse at 50% 90%, #714a9b, transparent 58%),
+    linear-gradient(#35294c, #252444 62%, #412e60 63%);
+}
+
+.wild-encounter-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 120px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .34);
+  transform: translateX(-50%);
+}
+
+.wild-encounter-preview img {
+  z-index: 1;
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  animation: wildPokemonArrive .55s .08s ease-out both;
+}
+
+.wild-sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0 .5rem .5rem;
+  padding: .5rem .8rem;
+  border: 1px solid var(--wild-accent);
+  border-radius: 9px;
+  background: #18242d;
+  color: #fff;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wild-sound-toggle:focus-visible,
+.wild-capture-screen .campaign-primary:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.wild-capture-screen .campaign-primary {
+  min-height: 48px;
+}
+
+.wild-encounter-screen .campaign-primary,
+.wild-encounter-screen .campaign-secondary {
+  min-height: 44px;
+}
+
 .wild-encounter-hero img,
 .wild-capture-screen img {
   display: block;
@@ -22,6 +139,18 @@
     radial-gradient(ellipse at 50% 77%, rgba(255, 255, 255, .17), transparent 37%),
     linear-gradient(#234c65 0%, #244e54 60%, #264b3c 61%, #163c32 100%);
   isolation: isolate;
+}
+
+.wild-capture-stage[data-region="region-2"] {
+  background:
+    radial-gradient(ellipse at 50% 77%, rgba(255, 216, 170, .19), transparent 37%),
+    linear-gradient(#75544e 0%, #584054 60%, #84513c 61%, #4c302c 100%);
+}
+
+.wild-capture-stage[data-region="region-3"] {
+  background:
+    radial-gradient(ellipse at 50% 77%, rgba(226, 185, 255, .24), transparent 37%),
+    linear-gradient(#342b5b 0%, #28274d 60%, #543b70 61%, #302344 100%);
 }
 
 .wild-capture-stage::after {
@@ -220,7 +349,48 @@
   70%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 
+@keyframes wildEncounterReveal {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes wildPokemonArrive {
+  from { opacity: 0; transform: translateY(28px) scale(.72); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .wild-encounter-screen,
+  .wild-capture-screen {
+    padding: .75rem;
+  }
+
+  .wild-encounter-hero,
+  .wild-capture-screen .campaign-hero {
+    padding: 1rem .75rem;
+  }
+
+  .wild-encounter-preview {
+    height: 145px;
+  }
+
+  .wild-capture-stage {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .wild-capture-screen .campaign-primary,
+  .wild-sound-toggle {
+    max-width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .wild-encounter-hero,
+  .wild-encounter-preview img {
+    animation: none !important;
+  }
+
   .wild-capture-stage.is-playing *,
   .wild-capture-stage.is-caught *,
   .wild-capture-stage.is-escaped * {

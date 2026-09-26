@@ -7,12 +7,39 @@
     ? require('./campaign-catalog.js') : window.PBACampaign;
   const Wild = typeof module !== 'undefined' && module.exports
     ? require('./campaign-wild-encounters.js') : window.PBACampaign?.CampaignWildEncounters;
+  const Audio = typeof module !== 'undefined' && module.exports
+    ? require('./campaign-wild-audio.js') : window.PBACampaign?.CampaignWildAudio;
   if (!View) return;
 
   const previousRender = View.prototype.render;
   const previousHome = View.prototype.renderHome;
   const previousPicker = View.prototype.renderPicker;
   const cap = name => String(name || '').replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  const getAudioController = view => view.coordinator?.session?.compositeAdapter?.audioController;
+  const soundButton = () => `<button id="wildSoundToggle" class="wild-sound-toggle" type="button"
+    aria-pressed="${Audio?.isEnabled?.() !== false}"
+    aria-label="${Audio?.isEnabled?.() === false ? 'Ativar efeitos dos encontros' : 'Silenciar efeitos dos encontros'}">
+    ${Audio?.isEnabled?.() === false ? '♪ Som desligado' : '♪ Som ligado'}
+  </button>`;
+  const bindSoundButton = view => {
+    const button = view.container.querySelector('#wildSoundToggle');
+    if (!button || !Audio) return;
+    button.onclick = () => {
+      const enabled = Audio.setEnabled(!Audio.isEnabled());
+      button.setAttribute?.('aria-pressed', String(enabled));
+      button.setAttribute?.('aria-label', enabled ? 'Silenciar efeitos dos encontros' : 'Ativar efeitos dos encontros');
+      button.textContent = enabled ? '♪ Som ligado' : '♪ Som desligado';
+      if (enabled) Audio.playCue(getAudioController(view), 'ENCOUNTER');
+    };
+  };
+  const focusHeading = (view, key) => {
+    if (view._wildFocusedKey === key || view.container?.offsetParent == null) return;
+    const heading = view.container.querySelector('#wildScreenHeading');
+    if (typeof heading?.focus === 'function') {
+      view._wildFocusedKey = key;
+      heading.focus({ preventScroll: true });
+    }
+  };
 
   View.prototype.render = function () {
     if (!this.container) return;
@@ -43,6 +70,8 @@
         const result = this.manager.beginWildEncounter(regionId);
         if (!result.ok) {
           this.mapView?.announce?.('Encontro indisponível no momento.');
+        } else if (!result.resumed) {
+          Audio?.playCue?.(getAudioController(this), 'ENCOUNTER');
         }
       };
     }
@@ -63,12 +92,15 @@
     const rarity = Wild.getRarity(wild.active.regionId, pokemon.id);
     const rarityLabel = { COMMON: 'comum', UNCOMMON: 'incomum', RARE: 'raro' }[rarity] || 'desconhecida';
     this.container.innerHTML = `
-      <section class="campaign-shell">
+      <section class="campaign-shell wild-encounter-screen" data-region="${wild.active.regionId}">
         <button id="pickerBack" class="campaign-secondary" type="button">← Voltar ao mapa</button>
-        <div class="campaign-hero wild-encounter-hero">
+        ${soundButton()}
+        <div class="campaign-hero wild-encounter-hero" data-region="${wild.active.regionId}">
           <p class="eyebrow">ENCONTRO SELVAGEM · ${region.name.toUpperCase()}</p>
-          <h2>Um ${cap(pokemon.name)} apareceu!</h2>
-          <img src="${pokemon.sprite}" alt="${cap(pokemon.name)}" width="96" height="96">
+          <h2 id="wildScreenHeading" tabindex="-1">Um ${cap(pokemon.name)} apareceu!</h2>
+          <div class="wild-encounter-preview" aria-hidden="true">
+            <img src="${pokemon.sprite}" alt="" width="112" height="112">
+          </div>
           <p>Encontrado no ${region.biome}. Raridade: ${rarityLabel}.</p>
           <p>Vença a batalha 3 contra 1 para tentar capturá-lo. Se voltar, este encontro será encerrado.</p>
         </div>
@@ -83,6 +115,8 @@
           Iniciar encontro selvagem
         </button>
       </section>`;
+    bindSoundButton(this);
+    focusHeading(this, 'encounter:' + wild.active.encounterId);
     this.container.querySelector('#pickerBack').onclick = () => {
       this.pending = null;
       this.pick = [];
@@ -112,13 +146,15 @@
   View.prototype.renderWildCapture = function (pending) {
     const pokemon = Catalog.byId(pending.pokemonId);
     if (!pokemon) return;
+    const regionId = pending.regionId || 'region-1';
     this.container.innerHTML = `
-      <section class="campaign-shell wild-capture-screen">
+      <section class="campaign-shell wild-capture-screen" data-region="${regionId}">
         <div class="campaign-hero">
           <p class="eyebrow">ENCONTRO SELVAGEM VENCIDO</p>
-          <h2>Hora de tentar capturar ${cap(pokemon.name)}!</h2>
+          <h2 id="wildScreenHeading" tabindex="-1">Hora de tentar capturar ${cap(pokemon.name)}!</h2>
           <p>Uma Poké Bola, uma tentativa: ${Math.round(Wild.CAPTURE_CHANCE * 100)}% de chance. Se não der certo, ele foge.</p>
-          <div class="wild-capture-stage" aria-hidden="true">
+          ${soundButton()}
+          <div class="wild-capture-stage" data-region="${regionId}" aria-hidden="true">
             <div class="wild-capture-target">
               <img src="${pokemon.sprite}" alt="" width="112" height="112">
             </div>
@@ -135,6 +171,8 @@
           <button id="throwWildBall" class="campaign-primary" type="button">Lançar Poké Bola</button>
         </div>
       </section>`;
+    bindSoundButton(this);
+    focusHeading(this, 'capture:' + pending.battleId);
     const button = this.container.querySelector('#throwWildBall');
     button.onclick = () => {
       if (button.disabled) return;
@@ -144,6 +182,7 @@
       const status = this.container.querySelector('#wildCaptureStatus');
       const reducedMotion = typeof window !== 'undefined'
         && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      Audio?.playCue?.(getAudioController(this), reducedMotion ? 'QUICK_THROW' : 'CAPTURE');
       if (status) status.textContent = 'Poké Bola lançada. Será que ele vai ficar?';
       this._wildCaptureAnimating = !reducedMotion;
       stage?.classList?.add('is-playing');
@@ -154,6 +193,7 @@
           return;
         }
         const result = this.manager.attemptWildCapture();
+        if (result.ok) Audio?.playCue?.(getAudioController(this), result.captured ? 'CAUGHT' : 'ESCAPED');
         if (!this._wildCaptureAnimating || !result.ok) {
           this._wildCaptureAnimating = false;
           if (!result.ok) this.render();
@@ -179,15 +219,21 @@
     const caught = result.status === 'CAUGHT';
     const lost = result.status === 'LOST';
     this.container.innerHTML = `
-      <section class="campaign-shell wild-capture-screen">
+      <section class="campaign-shell wild-capture-screen" data-region="${result.regionId || 'region-1'}">
         <div class="campaign-hero">
           <p class="eyebrow">ENCONTRO SELVAGEM</p>
-          <h2>${caught ? cap(pokemon.name) + ' foi capturado!' : lost ? 'Você perdeu o encontro' : cap(pokemon.name) + ' escapou!'}</h2>
+          <h2 id="wildScreenHeading" tabindex="-1">${caught ? cap(pokemon.name) + ' foi capturado!' : lost ? 'Você perdeu o encontro' : cap(pokemon.name) + ' escapou!'}</h2>
           <img src="${pokemon.sprite}" alt="${cap(pokemon.name)}" width="112" height="112">
-          <p>${caught ? 'Novo Pokémon no elenco da campanha.' : 'Você poderá explorar a mata novamente.'}</p>
+          <p>${caught ? 'Novo Pokémon no elenco da campanha.' : 'Você poderá explorar a região novamente.'}</p>
           <button id="wildResultContinue" class="campaign-primary" type="button">Voltar ao mapa</button>
         </div>
       </section>`;
-    this.container.querySelector('#wildResultContinue').onclick = () => this.manager.acknowledgeWildResult();
+    focusHeading(this, 'result:' + result.status + ':' + result.pokemonId);
+    this.container.querySelector('#wildResultContinue').onclick = () => {
+      this.manager.acknowledgeWildResult();
+      const target = this.container.querySelector('#wildEncounterZone:not(:disabled)')
+        || this.container.querySelector('#tab-' + (result.regionId || 'region-1'));
+      target?.focus?.({ preventScroll: true });
+    };
   };
 })();

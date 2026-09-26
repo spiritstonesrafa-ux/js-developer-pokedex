@@ -18,6 +18,7 @@ global.document = global.document || {
 const Catalog = require('../../assets/js/campaign/campaign-catalog.js');
 Object.assign(global.window.PBACampaign, Catalog);
 const Wild = require('../../assets/js/campaign/campaign-wild-encounters.js');
+const WildAudio = require('../../assets/js/campaign/campaign-wild-audio.js');
 const MoveOptions = require('../../assets/js/campaign/campaign-move-options.js');
 const Store = require('../../assets/js/campaign/campaign-store.js');
 const { CampaignManager } = require('../../assets/js/campaign/campaign-wild-manager.js');
@@ -497,4 +498,104 @@ test('Wild Phase 2 — pending capture and regional map limits remain correct af
     assert.equal(/id="wildEncounterZone"[^>]*disabled/.test(container.innerHTML), shouldDisable);
     map.destroy();
   }
+});
+
+test('Wild Phase 3 — capture cues reuse the UI mixer and obey mute, preference and hidden tab', () => {
+  memory.clear();
+  const starts = [];
+  const context = {
+    state: 'running', currentTime: 10,
+    createOscillator() {
+      return {
+        frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+        connect() {}, disconnect() {}, start: time => starts.push(time), stop() {}
+      };
+    },
+    createGain() {
+      return {
+        gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+        connect() {}, disconnect() {}
+      };
+    }
+  };
+  let muted = false;
+  const controller = {
+    isUnlocked: () => true,
+    contextManager: { getContext: () => context },
+    mixer: { isMuted: () => muted, getChannelNode: channel => {
+      assert.equal(channel, 'UI');
+      return {};
+    } }
+  };
+  assert.equal(WildAudio.playCue(controller, 'CAPTURE'), true);
+  assert.equal(starts.length, 7);
+  assert.ok(starts[0] >= 10 && starts.at(-1) > 13);
+  muted = true;
+  assert.equal(WildAudio.playCue(controller, 'CAUGHT'), false);
+  muted = false;
+  WildAudio.setEnabled(false);
+  assert.equal(WildAudio.isEnabled(), false);
+  assert.equal(WildAudio.playCue(controller, 'ESCAPED'), false);
+  WildAudio.setEnabled(true);
+  const previousHidden = global.document.hidden;
+  global.document.hidden = true;
+  assert.equal(WildAudio.playCue(controller, 'ENCOUNTER'), false);
+  global.document.hidden = previousHidden;
+  assert.equal(WildAudio.playCue(null, 'ENCOUNTER'), false);
+});
+
+test('Wild Phase 3 — sound toggle, screen-reader focus and regional scenes survive reduced motion', () => {
+  const manager = fresh();
+  const focused = [];
+  const elements = new Map();
+  const container = {
+    offsetParent: {},
+    innerHTML: '',
+    querySelector(selector) {
+      if (!elements.has(selector)) {
+        elements.set(selector, {
+          disabled: false, textContent: '', onclick: null,
+          classList: { add() {} },
+          setAttribute(name, value) { this[name] = value; },
+          focus() { focused.push(selector); }
+        });
+      }
+      return elements.get(selector);
+    },
+    querySelectorAll: () => []
+  };
+  const view = new CampaignView({ manager, coordinator: { start: async () => {} }, container });
+  const pokemonId = manager.beginWildEncounter('region-3', 0.98).pokemonId;
+  assert.match(container.innerHTML, /wild-encounter-preview/);
+  assert.match(container.innerHTML, /data-region="region-3"/);
+  assert.match(container.innerHTML, /id="wildScreenHeading" tabindex="-1"/);
+  assert.deepEqual(focused, ['#wildScreenHeading']);
+  elements.get('#wildSoundToggle').onclick();
+  assert.equal(WildAudio.isEnabled(), false);
+  assert.equal(elements.get('#wildSoundToggle')['aria-pressed'], 'false');
+  view.render();
+  assert.equal(focused.length, 1, 'Selecting team should not repeatedly steal screen-reader focus');
+  manager.recordBattle({ battleId: 'wild-polish', kind: 'WILD', id: pokemonId, winner: 'player' });
+  assert.match(container.innerHTML, /wild-capture-stage" data-region="region-3"/);
+  assert.equal(focused.length, 2);
+  elements.get('#throwWildBall').onclick();
+  assert.ok(manager.getState().wild.result);
+  assert.equal(focused.length, 3);
+  elements.get('#wildResultContinue').onclick();
+  assert.ok(focused.includes('#wildEncounterZone:not(:disabled)'));
+  WildAudio.setEnabled(true);
+  view.deactivate();
+});
+
+test('Wild Phase 3 — mobile and reduced-motion styles cover encounter and capture screens', () => {
+  const css = require('node:fs').readFileSync(
+    require('node:path').join(__dirname, '../../assets/css/campaign-wild.css'), 'utf8');
+  for (const marker of [
+    '[data-region="region-2"] .wild-encounter-preview',
+    '[data-region="region-3"] .wild-encounter-preview',
+    '.wild-capture-stage[data-region="region-2"]',
+    '.wild-capture-stage[data-region="region-3"]',
+    '@media (max-width: 560px)',
+    '@media (prefers-reduced-motion: reduce)'
+  ]) assert.ok(css.includes(marker), marker);
 });
