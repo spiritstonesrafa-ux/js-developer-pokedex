@@ -251,3 +251,63 @@ test('Wild Phase 1 — tela permite lançar Poké Bola e mostra resultado antes 
   assert.equal(manager.getState().wild.result, null);
   view.deactivate();
 });
+
+test('Wild capture — suspense precedes both the success and escape result', () => {
+  const originalTimeout = global.setTimeout;
+  const originalMatchMedia = global.window.matchMedia;
+  const timers = [];
+  global.setTimeout = (callback, delay) => {
+    timers.push({ callback, delay });
+    return timers.length;
+  };
+  global.window.matchMedia = () => ({ matches: false });
+  try {
+    for (const [roll, expected] of [[0, 'CAUGHT'], [0.99, 'FLED']]) {
+      timers.length = 0;
+      const manager = fresh();
+      const elements = new Map();
+      const container = {
+        innerHTML: '',
+        querySelector(selector) {
+          if (!elements.has(selector)) {
+            const classes = new Set();
+            elements.set(selector, {
+              disabled: false, textContent: '', classes,
+              classList: { add: name => classes.add(name) }
+            });
+          }
+          return elements.get(selector);
+        },
+        querySelectorAll: () => []
+      };
+      const view = new CampaignView({ manager, coordinator: { start: async () => {} }, container });
+      const pokemonId = manager.beginWildEncounter('region-1', 0).pokemonId;
+      manager.recordBattle({ battleId: 'wild-animation-' + expected, kind: 'WILD',
+        id: pokemonId, winner: 'player' });
+      const originalAttempt = manager.attemptWildCapture;
+      manager.attemptWildCapture = () => originalAttempt.call(manager, roll);
+
+      elements.get('#throwWildBall').onclick();
+      assert.equal(elements.get('#throwWildBall').disabled, true);
+      assert.ok(elements.get('.wild-capture-stage').classes.has('is-playing'));
+      assert.ok(manager.getState().wild.pendingCapture, 'Outcome stays pending during the suspense');
+      const suspense = timers.shift();
+      assert.equal(suspense.delay, 3800);
+      suspense.callback();
+      assert.equal(manager.getState().wild.result.status, expected);
+      assert.match(container.innerHTML, /wild-capture-stage/,
+        'The outcome animation plays before the result card replaces the stage');
+      assert.ok(elements.get('.wild-capture-stage').classes.has(
+        expected === 'CAUGHT' ? 'is-caught' : 'is-escaped'));
+      const reveal = timers.shift();
+      assert.equal(reveal.delay, 900);
+      reveal.callback();
+      assert.match(container.innerHTML, expected === 'CAUGHT' ? /foi capturado/ : /escapou/);
+      assert.equal(timers.length, 0);
+      view.deactivate();
+    }
+  } finally {
+    global.setTimeout = originalTimeout;
+    global.window.matchMedia = originalMatchMedia;
+  }
+});

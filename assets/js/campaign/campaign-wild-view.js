@@ -16,6 +16,7 @@
 
   View.prototype.render = function () {
     if (!this.container) return;
+    if (this._wildCaptureAnimating) return;
     const wild = this.manager.getState().wild;
     if (wild?.pendingCapture) {
       this.pending = null;
@@ -112,9 +113,21 @@
         <div class="campaign-hero">
           <p class="eyebrow">ENCONTRO SELVAGEM VENCIDO</p>
           <h2>Hora de tentar capturar ${cap(pokemon.name)}!</h2>
-          <img src="${pokemon.sprite}" alt="${cap(pokemon.name)}" width="112" height="112">
           <p>Uma Poké Bola, uma tentativa: ${Math.round(Wild.CAPTURE_CHANCE * 100)}% de chance. Se não der certo, ele foge.</p>
-          <div class="wild-pokeball" aria-hidden="true"></div>
+          <div class="wild-capture-stage" aria-hidden="true">
+            <div class="wild-capture-target">
+              <img src="${pokemon.sprite}" alt="" width="112" height="112">
+            </div>
+            <div class="wild-capture-beam"></div>
+            <div class="wild-pokeball">
+              <span class="wild-pokeball__top"></span>
+              <span class="wild-pokeball__button"></span>
+            </div>
+            <div class="wild-capture-sparkles"></div>
+          </div>
+          <p id="wildCaptureStatus" class="wild-capture-status" role="status" aria-live="polite">
+            ${cap(pokemon.name)} está esperando. Lance a Poké Bola!
+          </p>
           <button id="throwWildBall" class="campaign-primary" type="button">Lançar Poké Bola</button>
         </div>
       </section>`;
@@ -122,16 +135,37 @@
     button.onclick = () => {
       if (button.disabled) return;
       button.disabled = true;
-      button.textContent = 'Poké Bola lançada...';
-      const ball = this.container.querySelector('.wild-pokeball');
-      if (ball?.classList) ball.classList.add('is-throwing');
+      button.textContent = 'Captura em andamento...';
+      const stage = this.container.querySelector('.wild-capture-stage');
+      const status = this.container.querySelector('#wildCaptureStatus');
+      const reducedMotion = typeof window !== 'undefined'
+        && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (status) status.textContent = 'Poké Bola lançada. Será que ele vai ficar?';
+      this._wildCaptureAnimating = !reducedMotion;
+      stage?.classList?.add('is-playing');
       const resolve = () => {
-        if (this.manager.getState().wild?.pendingCapture?.battleId === pending.battleId) {
-          this.manager.attemptWildCapture();
+        if (this.manager.getState().wild?.pendingCapture?.battleId !== pending.battleId) {
+          this._wildCaptureAnimating = false;
+          this.render();
+          return;
         }
+        const result = this.manager.attemptWildCapture();
+        if (!this._wildCaptureAnimating || !result.ok) {
+          this._wildCaptureAnimating = false;
+          if (!result.ok) this.render();
+          return;
+        }
+        stage?.classList?.add(result.captured ? 'is-caught' : 'is-escaped');
+        if (status) status.textContent = result.captured
+          ? 'A Poké Bola ficou fechada!'
+          : `${cap(pokemon.name)} escapou da Poké Bola!`;
+        setTimeout(() => {
+          this._wildCaptureAnimating = false;
+          this.render();
+        }, 900);
       };
-      if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) resolve();
-      else setTimeout(resolve, 650);
+      if (reducedMotion) resolve();
+      else setTimeout(resolve, 3800);
     };
   };
 

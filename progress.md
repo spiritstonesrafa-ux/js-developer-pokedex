@@ -2,6 +2,13 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: suspense na captura selvagem
+
+- A Poké Bola agora atinge e absorve o Pokémon, fecha, cai e balança antes do resultado. Captura e fuga têm desfechos visuais distintos; movimento reduzido pula a espera.
+- A chance de 72% e a regra de uma tentativa permanecem inalteradas. A verificação visual em navegador segue pendente por falha na conexão local.
+
+---
+
 ## Atualização — 26/09/2026: encontros selvagens, Fase 1
 
 - Protótipo jogável na Região 1: ponto opcional de exploração, sorteio salvo de Pokémon não reservados, batalha 3 contra 1 e tentativa de captura com Poké Bola após vitória. Até duas capturas entram no elenco permanente sem alterar as recompensas dos Mestres.
