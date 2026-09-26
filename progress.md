@@ -2,6 +2,14 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: avatar no mapa, Fase 1
+
+- Implementado sprite original do jogador no mapa e deslocamento pelas rotas SVG existentes antes de abrir o seletor de time. Inclui caminho reversível, botão para pular, proteção contra clique repetido e tratamento de movimento reduzido. O modo Lista permanece direto.
+- A posição é visual e temporária por região; persistência entre sessões e travessia de regiões não fazem parte desta fase. Detalhes em `docs/CAMPAIGN_MAP_AVATAR_PHASE_1.md`.
+- Validação automatizada local: campanha **154/154** e suíte completa **792/792**. Inspeção visual manual em desktop/celular ainda pendente.
+
+---
+
 ## Estado atual — 24/09/2026
 
 **Referência:** branch `main` até o commit `5b06ed7`. As seções numeradas e os registros de release abaixo preservam o estado de seus respectivos marcos; números de testes e indicações como `PBA_020 = NOT_STARTED` nesses blocos são históricos.

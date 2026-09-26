@@ -3711,3 +3711,115 @@ test('Map Phase 5 — 9. Métricas reais dos WebP em disco: conformidade estrita
   assert.equal(accumulatedBytes, 535972, `Total acumulado dos WebP deve ser exatamente 535.972 bytes (obtido: ${accumulatedBytes})`);
   assert.ok(accumulatedBytes <= 560 * 1024, `Total acumulado excede o limite combinado de 560 KiB: ${accumulatedBytes} > ${560 * 1024}`);
 });
+
+// -----------------------------------------------------------------------------
+// AVATAR NO MAPA — FASE 1
+// -----------------------------------------------------------------------------
+
+test('Avatar Phase 1 — rotas são reversíveis, contínuas e não atravessam nós ocultos', () => {
+  const region = CAMPAIGN_MAP_CATALOG.regions[0];
+  const forward = Model.findTravelPath(region, 'node-normal', 'node-flying');
+  const backward = Model.findTravelPath(region, 'node-flying', 'node-normal');
+  assert.ok(forward.length > 1);
+  assert.deepEqual(backward.map(edge => edge.routeId), forward.map(edge => edge.routeId).reverse());
+  assert.equal(forward[0].from, 'node-normal');
+  assert.equal(forward[forward.length - 1].to, 'node-flying');
+  for (let index = 1; index < forward.length; index++) {
+    assert.equal(forward[index - 1].to, forward[index].from);
+  }
+  assert.deepEqual(Model.findTravelPath(region, 'node-normal', 'node-normal'), []);
+  assert.equal(Model.findTravelPath(region, 'missing', 'node-flying'), null);
+
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const vm = Model.buildMapViewModel({
+    catalog: CAMPAIGN_MAP_CATALOG, campaignState: mgr.getState(), masters: K.MASTERS, manager: mgr,
+    activeRegionId: 'region-endgame'
+  });
+  const endgame = vm.regions.find(item => item.id === 'region-endgame');
+  assert.equal(Model.findTravelPath(endgame, endgame.nodes[0].nodeId, 'node-shadow'), null);
+});
+
+test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita duplo clique e lembra posição', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const catalogRegion = CAMPAIGN_MAP_CATALOG.regions[0];
+  const nodes = new Map(catalogRegion.nodes.map(node => [node.nodeId, node]));
+  const paths = new Map(catalogRegion.routes.map(route => {
+    const from = nodes.get(route.from).position;
+    const to = nodes.get(route.to).position;
+    const start = { x: from.x * 10, y: from.y * 5.625 };
+    const end = { x: to.x * 10, y: to.y * 5.625 };
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    return [`#${route.routeId}`, {
+      getTotalLength: () => length,
+      getPointAtLength: distance => ({
+        x: start.x + (end.x - start.x) * distance / length,
+        y: start.y + (end.y - start.y) * distance / length
+      })
+    }];
+  }));
+  const avatar = { style: {}, classList: { toggle: () => {} } };
+  const skip = { focus: () => {}, onclick: null };
+  const container = {
+    innerHTML: '',
+    querySelector: selector => {
+      if (selector === '.campaign-map-stage') return {};
+      if (selector === '#campaignPlayerAvatar') return avatar;
+      if (selector === '#skipMapTravel') return skip;
+      return paths.get(selector) || null;
+    },
+    querySelectorAll: () => []
+  };
+  const actions = [];
+  const view = new CampaignMapView({ manager: mgr, container, initialViewMode: 'MAP', onChallenge: action => actions.push(action) });
+  view._isReducedMotion = () => false;
+  view.render();
+  assert.match(container.innerHTML, /player-traveler\.png/);
+  assert.doesNotMatch(container.innerHTML, /id="skipMapTravel"/);
+
+  const frames = [];
+  view._safeRaf = callback => { frames.push(callback); return frames.length; };
+  view._clearRaf = () => {};
+  const grass = view._activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+  assert.equal(view.triggerChallenge(grass), true);
+  assert.equal(view.triggerChallenge(grass), false);
+  assert.equal(actions.length, 0, 'Picker não deve abrir antes de chegar ao nó');
+  assert.match(container.innerHTML, /id="skipMapTravel"/);
+  frames.shift()(0);
+  frames.shift()(view._travel.duration / 2);
+  assert.ok(parseFloat(avatar.style.left) > 15 && parseFloat(avatar.style.left) < 28);
+  skip.onclick();
+  assert.deepEqual(actions, [{ kind: 'MASTER', id: 'master-grass' }]);
+  assert.equal(view.avatarNodeByRegion.get('region-1'), 'node-grass');
+  assert.equal(view._travel, null);
+
+  view.render();
+  const normal = view._activeRegion.nodes.find(node => node.nodeId === 'node-normal');
+  assert.equal(view.triggerChallenge(normal), true, 'Caminhada de volta usa a mesma trilha');
+  assert.equal(actions.length, 1);
+  frames.shift()(1000);
+  frames.shift()(1000 + view._travel.duration);
+  assert.deepEqual(actions[1], { kind: 'MASTER', id: 'master-normal' });
+  assert.equal(view.avatarNodeByRegion.get('region-1'), 'node-normal');
+});
+
+test('Avatar Phase 1 — movimento reduzido inicia direto e destroy cancela viagem', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const actions = [];
+  const container = { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] };
+  const view = new CampaignMapView({ manager: mgr, container, initialViewMode: 'MAP', onChallenge: action => actions.push(action) });
+  view.render();
+  view._isReducedMotion = () => true;
+  const grass = view._activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+  assert.equal(view.triggerChallenge(grass), true);
+  assert.deepEqual(actions, [{ kind: 'MASTER', id: 'master-grass' }]);
+  assert.equal(view._travel, null);
+
+  view.render();
+  view._travel = { payload: { kind: 'MASTER', id: 'master-normal' }, node: view._activeRegion.nodes[0], renderVersion: view._renderVersion };
+  view.destroy();
+  assert.equal(view._travel, null);
+  assert.equal(actions.length, 1, 'Destruir mapa não inicia batalha pendente');
+});

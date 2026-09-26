@@ -577,11 +577,60 @@
     });
   }
 
+  function findTravelPath(region, startNodeId, targetNodeId) {
+    const visible = node => node && !node.isHidden && node.state !== 'HIDDEN';
+    const nodes = new Map((region?.nodes || []).filter(visible).map(node => [node.nodeId, node]));
+    if (!nodes.has(startNodeId) || !nodes.has(targetNodeId)) return null;
+    if (startNodeId === targetNodeId) return [];
+
+    const edges = new Map([...nodes.keys()].map(id => [id, []]));
+    for (const route of region.routes || []) {
+      if (route.status === 'hidden' || !nodes.has(route.from) || !nodes.has(route.to)) continue;
+      const from = nodes.get(route.from).position;
+      const to = nodes.get(route.to).position;
+      const distance = Math.hypot((to.x - from.x) * 10, (to.y - from.y) * 5.625) || 1;
+      edges.get(route.from).push({ routeId: route.routeId, from: route.from, to: route.to, reversed: false, distance });
+      edges.get(route.to).push({ routeId: route.routeId, from: route.to, to: route.from, reversed: true, distance });
+    }
+
+    const remaining = new Set(nodes.keys());
+    const costs = new Map([[startNodeId, 0]]);
+    const previous = new Map();
+    while (remaining.size) {
+      let current = null;
+      for (const id of remaining) {
+        if (current === null || (costs.get(id) ?? Infinity) < (costs.get(current) ?? Infinity)) current = id;
+      }
+      if (current === null || !Number.isFinite(costs.get(current))) break;
+      if (current === targetNodeId) break;
+      remaining.delete(current);
+      for (const edge of edges.get(current)) {
+        if (!remaining.has(edge.to)) continue;
+        const nextCost = costs.get(current) + edge.distance;
+        if (nextCost < (costs.get(edge.to) ?? Infinity)) {
+          costs.set(edge.to, nextCost);
+          previous.set(edge.to, edge);
+        }
+      }
+    }
+
+    if (!previous.has(targetNodeId)) return null;
+    const path = [];
+    for (let id = targetNodeId; id !== startNodeId;) {
+      const edge = previous.get(id);
+      if (!edge) return null;
+      path.unshift(edge);
+      id = edge.from;
+    }
+    return path;
+  }
+
   const api = Object.freeze({
     findRecommendedMaster,
     deriveNodeState,
     deriveRegionState,
     buildMapViewModel,
+    findTravelPath,
     isTrial,
     getTrialKind,
     TRIAL_DEFINITIONS,
@@ -590,6 +639,7 @@
       deriveNodeState,
       deriveRegionState,
       buildMapViewModel,
+      findTravelPath,
       isTrial,
       getTrialKind,
       TRIAL_DEFINITIONS
@@ -599,6 +649,7 @@
       deriveNodeState,
       deriveRegionState,
       buildMapViewModel,
+      findTravelPath,
       isTrial,
       getTrialKind,
       TRIAL_DEFINITIONS

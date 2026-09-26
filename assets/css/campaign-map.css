@@ -419,6 +419,63 @@
   z-index: 1;
 }
 
+.campaign-map-player-avatar {
+  position: absolute;
+  z-index: 4;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -92%);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.8));
+}
+
+.campaign-map-player-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.campaign-map-player-avatar.is-facing-left img {
+  transform: scaleX(-1);
+}
+
+.campaign-map-player-avatar.is-walking {
+  animation: mapAvatarWalk 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes mapAvatarWalk {
+  from { transform: translate(-50%, -92%); }
+  to { transform: translate(-50%, -98%); }
+}
+
+.campaign-map-travel-skip {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 8;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  background: #172039;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+}
+
+.campaign-map-travel-skip:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+}
+
+.campaign-map-shell.is-traveling button:not(#skipMapTravel) {
+  pointer-events: none;
+}
+
 /* Route Revelation during Stage Entrance */
 .campaign-map-stage.is-entering .campaign-map-routes {
   animation: mapRoutesFadeIn 0.35s ease forwards;
@@ -1207,6 +1264,10 @@
   .campaign-map-tab {
     animation: none !important;
     transition: none !important;
+  }
+
+  .campaign-map-player-avatar {
+    animation: none !important;
   }
 
   .campaign-map-bg-image {

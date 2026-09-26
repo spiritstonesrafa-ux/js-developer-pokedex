@@ -99,6 +99,11 @@
       this._drawerCloseHandler = null;
       this._drawerClosingToken = 0;
 
+      // Phase 1: visual position is retained per region while this view lives.
+      this.avatarNodeByRegion = new Map();
+      this._travel = null;
+      this._travelRafId = null;
+
       this._handleKeyDown = this._handleKeyDown.bind(this);
     }
 
@@ -149,7 +154,7 @@
           this._pendingTimeoutIds.delete(timerId);
           this._fallbackRafTimeoutIds.delete(timerId);
           if (!this._isDestroyed) {
-            fn();
+            fn(Date.now());
           }
         }, 16);
         this._pendingTimeoutIds.add(timerId);
@@ -157,10 +162,10 @@
         return timerId;
       }
       let rafId;
-      rafId = window.requestAnimationFrame(() => {
+      rafId = window.requestAnimationFrame(timestamp => {
         this._pendingRafIds.delete(rafId);
         if (!this._isDestroyed) {
-          fn();
+          fn(timestamp);
         }
       });
       this._pendingRafIds.add(rafId);
@@ -247,6 +252,7 @@
     }
 
     destroy() {
+      this._cancelTravel();
       this._isDestroyed = true;
       this._clearAllPendingWork();
       this.pendingAriaAnnouncement = '';
@@ -323,6 +329,7 @@
 
     render() {
       if (!this.container) return;
+      if (this._travel?.renderVersion) this._cancelTravel();
       this._isDestroyed = false;
 
       const campaignState = this.manager ? this.manager.getState() : {};
@@ -348,6 +355,7 @@
       }
 
       const activeRegion = viewModel.activeRegion || viewModel.regions[0];
+      this._activeRegion = activeRegion;
       const selectedNode = viewModel.selectedNode;
 
       const isSwitchingView = this.transitionCause === 'VIEW_MODE_CHANGE' && !this._isReducedMotion();
@@ -368,7 +376,7 @@
       const backdropOpenClass = (this.isDrawerOpen && !shouldAnimateDrawerOpen) ? 'is-open' : '';
 
       this.container.innerHTML = `
-        <section class="campaign-map-shell">
+        <section class="campaign-map-shell ${this._travel ? 'is-traveling' : ''}">
           <div id="mapAriaLive" class="campaign-map-live-region" role="status" aria-live="polite" aria-atomic="true"></div>
           
           ${this._renderHeader(viewModel)}
@@ -487,6 +495,7 @@
 
     _renderMapView(region, viewModel) {
       const nodeMap = new Map(region.nodes.map(n => [n.nodeId, n]));
+      const avatarNode = this._getAvatarNode(region);
 
       const routesHtml = (region.routes || []).map(route => {
         const fromNode = nodeMap.get(route.from);
@@ -633,6 +642,13 @@
 
             ${selectedMarkerHtml}
             ${nodesHtml}
+            ${avatarNode ? `
+              <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''}"
+                   style="left: ${avatarNode.position.x}%; top: ${avatarNode.position.y}%;" aria-hidden="true">
+                <img src="${this.assetPrefix}assets/images/campaign/player-traveler.png" alt="" width="48" height="48" draggable="false">
+              </div>
+            ` : ''}
+            ${this._travel ? '<button id="skipMapTravel" class="campaign-map-travel-skip" type="button">Pular caminhada</button>' : ''}
           </div>
         </div>
         <span class="campaign-map-scroll-hint" aria-hidden="true">Arraste para explorar o mapa ↔</span>
@@ -939,6 +955,7 @@
       const listBtn = this.container.querySelector('#viewModeListBtn');
       if (mapBtn) {
         mapBtn.onclick = () => {
+          if (this._travel) return;
           if (this.viewMode !== 'MAP') {
             this._cancelDrawerOpening();
             this._cancelDrawerClosing();
@@ -954,6 +971,7 @@
       }
       if (listBtn) {
         listBtn.onclick = () => {
+          if (this._travel) return;
           if (this.viewMode !== 'LIST') {
             this._cancelDrawerOpening();
             this._cancelDrawerClosing();
@@ -972,6 +990,7 @@
       const resetBtn = this.container.querySelector('#campaignResetBtn');
       if (resetBtn) {
         resetBtn.onclick = () => {
+          if (this._travel) return;
           this.onReset();
         };
       }
@@ -979,6 +998,7 @@
       const tabs = Array.from(this.container.querySelectorAll('.campaign-map-tab'));
       tabs.forEach((tab, index) => {
         tab.onclick = () => {
+          if (this._travel) return;
           const regionId = tab.dataset.regionId;
           const isLocked = tab.dataset.isLocked === 'true';
 
@@ -1202,7 +1222,7 @@
     }
 
     openNode(nodeId, originElement, originAction = 'map-node') {
-      if (this._isDestroyed) return;
+      if (this._isDestroyed || this._travel) return;
       this._cancelDrawerOpening();
       this._cancelDrawerClosing();
 
@@ -1338,7 +1358,125 @@
       }
     }
 
+    _getAvatarNode(region) {
+      if (!region) return null;
+      const visible = node => !node.isHidden && node.state !== 'HIDDEN';
+      const remembered = this.avatarNodeByRegion.get(region.id);
+      const node = region.nodes.find(item => item.nodeId === remembered && visible(item))
+        || region.nodes.find(visible);
+      if (node) this.avatarNodeByRegion.set(region.id, node.nodeId);
+      return node || null;
+    }
+
+    _cancelTravel() {
+      if (this._travelRafId !== null) this._clearRaf(this._travelRafId);
+      this._travelRafId = null;
+      this._travel = null;
+    }
+
+    _paintTravelPoint(travel, point) {
+      const avatar = travel.avatar;
+      if (!avatar || !point) return;
+      avatar.style.left = `${point.x / 10}%`;
+      avatar.style.top = `${point.y / 5.625}%`;
+      if (travel.lastPoint && avatar.classList && typeof avatar.classList.toggle === 'function') {
+        const deltaX = point.x - travel.lastPoint.x;
+        if (Math.abs(deltaX) > 0.1) avatar.classList.toggle('is-facing-left', deltaX < 0);
+      }
+      travel.lastPoint = point;
+    }
+
+    _stepTravel(timestamp) {
+      const travel = this._travel;
+      if (!travel || this._isDestroyed || travel.renderVersion !== this._renderVersion) return;
+      if (travel.startedAt === null) travel.startedAt = timestamp;
+      const progress = Math.min(1, Math.max(0, (timestamp - travel.startedAt) / travel.duration));
+      let remaining = progress * travel.totalLength;
+      let point = null;
+      for (const segment of travel.segments) {
+        if (remaining <= segment.length) {
+          point = segment.path.getPointAtLength(segment.reversed ? segment.length - remaining : remaining);
+          break;
+        }
+        remaining -= segment.length;
+      }
+      if (!point) {
+        const last = travel.segments[travel.segments.length - 1];
+        point = last.path.getPointAtLength(last.reversed ? 0 : last.length);
+      }
+      this._paintTravelPoint(travel, point);
+      if (progress >= 1) {
+        this._finishTravel();
+      } else {
+        this._travelRafId = this._safeRaf(nextTimestamp => this._stepTravel(nextTimestamp));
+      }
+    }
+
+    _finishTravel() {
+      const travel = this._travel;
+      if (!travel) return;
+      this._cancelTravel();
+      this._completeChallenge(travel.payload, travel.node);
+    }
+
+    _startTravel(node, payload) {
+      if (this.viewMode !== 'MAP' || this._isReducedMotion() || !this.container || !this._activeRegion
+        || typeof Model.findTravelPath !== 'function'
+        || !this.container.querySelector('.campaign-map-stage')) return false;
+      const origin = this._getAvatarNode(this._activeRegion);
+      if (!origin || origin.nodeId === node.nodeId) return false;
+      const path = Model.findTravelPath(this._activeRegion, origin.nodeId, node.nodeId);
+      if (!path || !path.length) return false;
+
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+      this.isDrawerOpen = false;
+      this.selectedNodeId = null;
+      this.transitionCause = 'NONE';
+      this._travel = { payload, node, regionId: this._activeRegion.id, renderVersion: 0 };
+      this.render();
+
+      const avatar = this.container.querySelector('#campaignPlayerAvatar');
+      const skip = this.container.querySelector('#skipMapTravel');
+      const segments = path.map(edge => {
+        const svgPath = this.container.querySelector(`#${edge.routeId}`);
+        if (!svgPath || typeof svgPath.getTotalLength !== 'function' || typeof svgPath.getPointAtLength !== 'function') return null;
+        const length = svgPath.getTotalLength();
+        return Number.isFinite(length) && length > 0 ? { path: svgPath, length, reversed: edge.reversed } : null;
+      });
+      if (!avatar || !skip || segments.some(segment => !segment)) {
+        this._cancelTravel();
+        return false;
+      }
+
+      const totalLength = segments.reduce((sum, segment) => sum + segment.length, 0);
+      const travel = this._travel;
+      Object.assign(travel, {
+        avatar, segments, totalLength, startedAt: null,
+        duration: Math.max(650, Math.min(2600, totalLength / 330 * 1000)),
+        renderVersion: this._renderVersion,
+        lastPoint: null
+      });
+      this._paintTravelPoint(travel, segments[0].path.getPointAtLength(segments[0].reversed ? segments[0].length : 0));
+      skip.onclick = () => this._finishTravel();
+      if (typeof skip.focus === 'function') skip.focus();
+      this.announce('Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
+      this._travelRafId = this._safeRaf(timestamp => this._stepTravel(timestamp));
+      return true;
+    }
+
+    _completeChallenge(payload, node) {
+      if (this._activeRegion && node?.nodeId) {
+        this.avatarNodeByRegion.set(this._activeRegion.id, node.nodeId);
+      }
+      this.isDrawerOpen = false;
+      this.selectedNodeId = null;
+      this.destroy();
+      this.onChallenge(payload);
+    }
+
     triggerChallenge(node) {
+      if (this._travel) return false;
       if (!node || node.canChallenge === false) {
         if (node && node.cannotChallengeReason) {
           this.announce(node.cannotChallengeReason);
@@ -1371,12 +1509,10 @@
         return false;
       }
 
-      // Somente após obter payload válido: aplicar efeitos colaterais e disparar
-      this.isDrawerOpen = false;
-      this.selectedNodeId = null;
-      this.destroy();
-
-      this.onChallenge(payload);
+      // In map mode, walk along existing SVG routes before team selection.
+      // List mode, reduced motion and unavailable SVG geometry keep the direct flow.
+      if (this._startTravel(node, payload)) return true;
+      this._completeChallenge(payload, node);
       return true;
     }
   }
