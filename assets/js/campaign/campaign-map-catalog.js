@@ -340,6 +340,30 @@
 
   const CAMPAIGN_MAP_CATALOG = deepFreeze({
     regions,
+    // Existing route endpoints serve as exits and entrances. Transfers never
+    // trigger the challenge at either endpoint.
+    regionTravelLinks: {
+      'region-1': {
+        'region-2': { exitNodeId: 'node-flying', entryNodeId: 'node-fighting' },
+        'region-3': { exitNodeId: 'node-flying', entryNodeId: 'node-fairy' },
+        'region-endgame': { exitNodeId: 'node-flying', entryNodeId: 'node-legendary' }
+      },
+      'region-2': {
+        'region-1': { exitNodeId: 'node-fighting', entryNodeId: 'node-flying' },
+        'region-3': { exitNodeId: 'node-ice', entryNodeId: 'node-fairy' },
+        'region-endgame': { exitNodeId: 'node-ice', entryNodeId: 'node-legendary' }
+      },
+      'region-3': {
+        'region-1': { exitNodeId: 'node-fairy', entryNodeId: 'node-flying' },
+        'region-2': { exitNodeId: 'node-fairy', entryNodeId: 'node-ice' },
+        'region-endgame': { exitNodeId: 'node-dragon', entryNodeId: 'node-mythical' }
+      },
+      'region-endgame': {
+        'region-1': { exitNodeId: 'node-legendary', entryNodeId: 'node-flying' },
+        'region-2': { exitNodeId: 'node-legendary', entryNodeId: 'node-ice' },
+        'region-3': { exitNodeId: 'node-mythical', entryNodeId: 'node-dragon' }
+      }
+    },
     byId: Object.fromEntries(regions.map(r => [r.id, r])),
     allNodeIds: regions.flatMap(r => r.nodes.map(n => n.nodeId)),
     allNodes: regions.flatMap(r => r.nodes),
@@ -362,4 +386,3 @@
     window.PBACampaign.CampaignMapCatalog = CAMPAIGN_MAP_CATALOG;
   }
 })();
-

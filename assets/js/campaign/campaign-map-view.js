@@ -602,6 +602,12 @@
         `;
       }).join('');
 
+      const gatewayIds = new Set(Object.values(Catalog.regionTravelLinks?.[region.id] || {}).map(link => link.exitNodeId));
+      const gatewaysHtml = region.nodes
+        .filter(node => gatewayIds.has(node.nodeId) && !node.isHidden && node.state !== 'HIDDEN')
+        .map(node => `<span class="campaign-map-gateway" style="left: ${node.position.x}%; top: ${node.position.y}%;" aria-hidden="true">↗ Saída</span>`)
+        .join('');
+
       let selectedMarkerHtml = '';
       if (this.selectedNodeId) {
         const sel = region.nodes.find(n => n.nodeId === this.selectedNodeId);
@@ -649,6 +655,7 @@
 
             ${selectedMarkerHtml}
             ${nodesHtml}
+            ${gatewaysHtml}
             ${avatarNode ? `
               <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''} is-direction-down"
                    style="left: ${avatarNode.position.x}%; top: ${avatarNode.position.y}%;" aria-hidden="true">
@@ -1012,7 +1019,8 @@
         tab.onclick = () => {
           if (this._travel) return;
           const regionId = tab.dataset.regionId;
-          const isLocked = tab.dataset.isLocked === 'true';
+          const targetRegion = viewModel.regions.find(region => region.id === regionId);
+          const isLocked = !targetRegion || targetRegion.isLocked || tab.dataset.isLocked === 'true';
 
           if (isLocked) {
             this.announce(`Região Final bloqueada. Requer 18 insígnias conquistadas (você possui ${viewModel.badgeCount}/18).`);
@@ -1020,27 +1028,20 @@
           }
 
           if (this.activeRegionId !== regionId) {
-            this._cancelDrawerOpening();
-            this._cancelDrawerClosing();
-            this.activeRegionId = regionId;
-            this.selectedNodeId = null;
-            this.isDrawerOpen = false;
-            this.transitionCause = 'REGION_CHANGE';
-            const targetRegion = viewModel.regions.find(r => r.id === regionId);
-            this.announce(`Região selecionada: ${targetRegion?.name || regionId}`);
-            this.render();
-            this._persistAvatarProgress();
-            if (this._isReducedMotion()) {
-              const newTab = this.container.querySelector(`#tab-${regionId}`);
-              if (newTab && typeof newTab.focus === 'function') newTab.focus();
-            } else {
-              const currentVer = this._renderVersion;
-              this._safeTimeout(() => {
-                if (this._isDestroyed || this._renderVersion !== currentVer) return;
-                const newTab = this.container.querySelector(`#tab-${regionId}`);
-                if (newTab && typeof newTab.focus === 'function') newTab.focus();
-              }, 50);
+            const link = Catalog.regionTravelLinks?.[this.activeRegionId]?.[regionId];
+            const exit = link && activeRegion.nodes.find(node => node.nodeId === link.exitNodeId && !node.isHidden);
+            const entry = link && targetRegion.nodes.find(node => node.nodeId === link.entryNodeId && !node.isHidden);
+            if (this.viewMode === 'MAP' && !this._isReducedMotion() && exit && entry) {
+              const origin = this._getAvatarNode(activeRegion);
+              const transfer = { destinationRegionId: regionId, entryNodeId: entry.nodeId };
+              if (origin?.nodeId === exit.nodeId) {
+                this._completeRegionTravel({ ...transfer, node: exit });
+                return;
+              }
+              if (this._startTravel(exit, null, transfer)) return;
             }
+            // List, reduced motion, or missing SVG geometry retain direct navigation.
+            this._switchRegion(regionId);
           }
         };
 
@@ -1448,6 +1449,60 @@
       this._travel = null;
     }
 
+    _switchRegion(regionId, entryNodeId = null) {
+      const region = Catalog.getRegionById?.(regionId);
+      if (!region) return false;
+      const requiredBadges = region.unlockCondition?.count || region.unlockCondition?.badgesRequired || 18;
+      if (['BADGE_COUNT', 'BADGES_COUNT'].includes(region.unlockCondition?.kind)
+        && (this.manager?.getBadgeCount?.() || 0) < requiredBadges) return false;
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+      if (entryNodeId && region.nodes.some(node => node.nodeId === entryNodeId)) {
+        this.avatarNodeByRegion.set(regionId, entryNodeId);
+      }
+      this.activeRegionId = regionId;
+      this.selectedNodeId = null;
+      this.isDrawerOpen = false;
+      this.transitionCause = 'REGION_CHANGE';
+      this.announce(`Região selecionada: ${region.name}`);
+      this.render();
+      this._persistAvatarProgress();
+      const currentVer = this._renderVersion;
+      const focusTab = () => {
+        if (this._isDestroyed || this._renderVersion !== currentVer) return;
+        const tab = this.container?.querySelector(`#tab-${regionId}`);
+        if (tab && typeof tab.focus === 'function') tab.focus();
+      };
+      if (this._isReducedMotion()) focusTab();
+      else this._safeTimeout(focusTab, 50);
+      return true;
+    }
+
+    _completeRegionTravel(travel) {
+      if (this._isDestroyed || !travel || !this._activeRegion) return;
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+      this.isDrawerOpen = false;
+      this.selectedNodeId = null;
+      if (travel.node?.nodeId) {
+        this.avatarNodeByRegion.set(this._activeRegion.id, travel.node.nodeId);
+        this._persistAvatarProgress();
+      }
+      const stage = this.container?.querySelector('.campaign-map-stage');
+      if (this._isReducedMotion() || !stage?.classList?.add) {
+        this._switchRegion(travel.destinationRegionId, travel.entryNodeId);
+        return;
+      }
+      const fade = { kind: 'REGION_FADE', renderVersion: this._renderVersion };
+      this._travel = fade;
+      stage.classList.add('is-leaving');
+      this._safeTimeout(() => {
+        if (this._travel !== fade) return;
+        this._cancelTravel();
+        this._switchRegion(travel.destinationRegionId, travel.entryNodeId);
+      }, 220);
+    }
+
     _orientAvatar(travel, dx, dy) {
       const classes = travel.avatar?.classList;
       if (!classes || typeof classes.toggle !== 'function' || Math.hypot(dx, dy) < 0.1) return;
@@ -1500,12 +1555,13 @@
 
     _finishTravel() {
       const travel = this._travel;
-      if (!travel) return;
+      if (!travel || travel.kind === 'REGION_FADE') return;
       this._cancelTravel();
-      this._completeChallenge(travel.payload, travel.node);
+      if (travel.kind === 'REGION') this._completeRegionTravel(travel);
+      else this._completeChallenge(travel.payload, travel.node);
     }
 
-    _startTravel(node, payload) {
+    _startTravel(node, payload, regionTransfer = null) {
       if (this.viewMode !== 'MAP' || this._isReducedMotion() || !this.container || !this._activeRegion
         || typeof Model.findTravelPath !== 'function'
         || !this.container.querySelector('.campaign-map-stage')) return false;
@@ -1519,7 +1575,11 @@
       this.isDrawerOpen = false;
       this.selectedNodeId = null;
       this.transitionCause = 'NONE';
-      this._travel = { payload, node, regionId: this._activeRegion.id, renderVersion: 0 };
+      this._travel = {
+        kind: regionTransfer ? 'REGION' : 'CHALLENGE',
+        payload, node, regionId: this._activeRegion.id, renderVersion: 0,
+        ...regionTransfer
+      };
       this.render();
 
       const avatar = this.container.querySelector('#campaignPlayerAvatar');
@@ -1552,7 +1612,9 @@
       this._orientAvatar(travel, leadPoint.x - startPoint.x, leadPoint.y - startPoint.y);
       skip.onclick = () => this._finishTravel();
       if (typeof skip.focus === 'function') skip.focus();
-      this.announce('Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
+      this.announce(regionTransfer
+        ? 'Caminhando até a saída da região. Use Pular caminhada para avançar imediatamente.'
+        : 'Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
       this._travelRafId = this._safeRaf(timestamp => this._stepTravel(timestamp));
       return true;
     }

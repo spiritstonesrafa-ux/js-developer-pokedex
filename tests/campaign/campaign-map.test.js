@@ -4022,3 +4022,134 @@ test('Avatar Phase 2 — armazenamento indisponível não impede navegação ou 
     global.localStorage = originalStorage;
   }
 });
+
+test('Avatar Phase 4 — ligações entre regiões usam saídas e entradas válidas sem criar desafios', () => {
+  const links = CAMPAIGN_MAP_CATALOG.regionTravelLinks;
+  assert.ok(Object.isFrozen(links));
+  for (const source of CAMPAIGN_MAP_CATALOG.regions) {
+    assert.equal(Object.keys(links[source.id]).length, 3);
+    for (const target of CAMPAIGN_MAP_CATALOG.regions) {
+      if (source.id === target.id) continue;
+      const link = links[source.id][target.id];
+      assert.ok(source.nodes.some(node => node.nodeId === link.exitNodeId), `${source.id} precisa de uma saída válida`);
+      assert.ok(target.nodes.some(node => node.nodeId === link.entryNodeId), `${target.id} precisa de uma entrada válida`);
+    }
+  }
+});
+
+test('Avatar Phase 4 — aba inicia caminhada, pular conclui travessia e bloqueio final prevalece', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const paths = new Map();
+  for (const region of CAMPAIGN_MAP_CATALOG.regions) {
+    const nodes = new Map(region.nodes.map(node => [node.nodeId, node]));
+    for (const route of region.routes) {
+      const a = nodes.get(route.from).position;
+      const b = nodes.get(route.to).position;
+      const from = { x: a.x * 10, y: a.y * 5.625 };
+      const to = { x: b.x * 10, y: b.y * 5.625 };
+      const length = Math.hypot(to.x - from.x, to.y - from.y);
+      paths.set(`#${route.routeId}`, {
+        getTotalLength: () => length,
+        getPointAtLength: distance => ({
+          x: from.x + (to.x - from.x) * distance / length,
+          y: from.y + (to.y - from.y) * distance / length
+        })
+      });
+    }
+  }
+  const tabs = CAMPAIGN_MAP_CATALOG.regions.map(region => ({
+    dataset: { regionId: region.id, isLocked: 'false' },
+    onclick: null, focus() { this.focused = true; }
+  }));
+  const stageClasses = new Set();
+  const stage = { classList: {
+    add: name => stageClasses.add(name),
+    remove: name => stageClasses.delete(name)
+  } };
+  const avatar = { style: {}, classList: { toggle: () => {} } };
+  const skip = { onclick: null, focus() {} };
+  const container = {
+    innerHTML: '',
+    querySelector(selector) {
+      if (selector === '.campaign-map-stage') return stage;
+      if (selector === '#campaignPlayerAvatar') return avatar;
+      if (selector === '#skipMapTravel') return skip;
+      if (selector.startsWith('#tab-')) return tabs.find(tab => tab.dataset.regionId === selector.slice(5));
+      return paths.get(selector) || null;
+    },
+    querySelectorAll: selector => selector === '.campaign-map-tab' ? tabs : []
+  };
+  const actions = [];
+  const view = new CampaignMapView({ manager: mgr, container, initialViewMode: 'MAP', onChallenge: action => actions.push(action) });
+  view._isReducedMotion = () => false;
+  const timers = [];
+  view._safeTimeout = (fn, ms) => { timers.push({ fn, ms }); return timers.length; };
+  view._safeRaf = () => 1;
+  view._clearRaf = () => {};
+  view.render();
+  assert.match(container.innerHTML, /campaign-map-gateway/);
+  tabs[3].onclick();
+  assert.equal(view.activeRegionId, 'region-1', 'A região final não abre com menos de 18 insígnias');
+  assert.equal(view._travel, null);
+
+  tabs[1].onclick();
+  assert.equal(view.activeRegionId, 'region-1', 'O mapa não troca antes da caminhada');
+  assert.equal(view._travel.kind, 'REGION');
+  assert.match(container.innerHTML, /Pular caminhada/);
+  assert.equal(actions.length, 0, 'Transferir região não inicia batalha');
+  skip.onclick();
+  assert.equal(view._travel.kind, 'REGION_FADE');
+  assert.ok(stageClasses.has('is-leaving'));
+  assert.equal(view.activeRegionId, 'region-1');
+  timers.findLast(timer => timer.ms === 220).fn();
+  assert.equal(view.activeRegionId, 'region-2');
+  assert.equal(view.avatarNodeByRegion.get('region-1'), 'node-flying');
+  assert.equal(view.avatarNodeByRegion.get('region-2'), 'node-fighting');
+  assert.equal(view._travel, null);
+  assert.equal(actions.length, 0);
+  const saved = JSON.parse(mem.get('campaign_map_avatar_progress_v1'));
+  assert.equal(saved.activeRegionId, 'region-2');
+  assert.equal(saved.positions['region-1'], 'node-flying');
+  assert.equal(saved.positions['region-2'], 'node-fighting');
+
+  tabs[2].onclick();
+  assert.equal(view._travel.kind, 'REGION');
+  view._stepTravel(0);
+  view._stepTravel(view._travel.duration);
+  assert.equal(view._travel.kind, 'REGION_FADE', 'Chegada automática também inicia a transição');
+  timers.findLast(timer => timer.ms === 220).fn();
+  assert.equal(view.activeRegionId, 'region-3');
+  assert.equal(view.avatarNodeByRegion.get('region-2'), 'node-ice');
+  assert.equal(view.avatarNodeByRegion.get('region-3'), 'node-fairy');
+  view.destroy();
+});
+
+test('Avatar Phase 4 — modo Lista e movimento reduzido trocam direto; sair cancela travessia', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const tabs = ['region-1', 'region-2'].map(regionId => ({
+    dataset: { regionId, isLocked: 'false' }, onclick: null, focus() {}
+  }));
+  const container = {
+    innerHTML: '',
+    querySelector: () => null,
+    querySelectorAll: selector => selector === '.campaign-map-tab' ? tabs : []
+  };
+  const view = new CampaignMapView({ manager: mgr, container, initialViewMode: 'LIST' });
+  view._isReducedMotion = () => false;
+  view.render();
+  tabs[1].onclick();
+  assert.equal(view.activeRegionId, 'region-2');
+  assert.equal(view._travel, null);
+  view.viewMode = 'MAP';
+  view._isReducedMotion = () => true;
+  view.render();
+  tabs[0].onclick();
+  assert.equal(view.activeRegionId, 'region-1');
+  assert.equal(view._travel, null);
+  view._travel = { kind: 'REGION_FADE', renderVersion: view._renderVersion };
+  view.destroy();
+  assert.equal(view._travel, null);
+  assert.equal(view.activeRegionId, 'region-1', 'Desmontar a tela não completa transferência pendente');
+});

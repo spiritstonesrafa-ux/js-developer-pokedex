@@ -2,6 +2,14 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: avatar no mapa, Fase 4
+
+- A troca de região no modo Mapa agora percorre a trilha até uma saída, faz uma transição curta de cena e posiciona o avatar na entrada correspondente do novo mapa. As saídas estão sinalizadas; o deslocamento não inicia batalha.
+- A Região Final permanece bloqueada até 18 insígnias. Modo Lista, movimento reduzido e indisponibilidade de geometria SVG preservam a navegação direta. Detalhes em `docs/CAMPAIGN_MAP_AVATAR_PHASE_4.md`.
+- Validação automatizada: campanha **163/163** e suíte completa **801/801**. Conferência visual manual em desktop/celular ainda pendente.
+
+---
+
 ## Atualização — 26/09/2026: avatar no mapa, Fase 3
 
 - O avatar agora tem pares de poses para caminhar horizontalmente, subir e descer; o lado esquerdo espelha as poses horizontais. A troca das pernas acompanha a distância percorrida na trilha SVG, e a entrada em uma região recebeu transição visual curta.
