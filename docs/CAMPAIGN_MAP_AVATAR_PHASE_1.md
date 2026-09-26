@@ -18,7 +18,7 @@
 
 ## Limites desta fase
 
-- Nesta fase não havia persistência de posição após recarregar a página nem continuidade ao trocar de região; essas duas limitações foram tratadas na [Fase 2](CAMPAIGN_MAP_AVATAR_PHASE_2.md). Ainda não há navegação livre ou percurso físico entre mapas. A caminhada tem dois quadros; uma animação mais rica e direcional pode ficar para uma fase futura.
+- Nesta fase não havia persistência de posição após recarregar a página nem continuidade ao trocar de região; essas duas limitações foram tratadas na [Fase 2](CAMPAIGN_MAP_AVATAR_PHASE_2.md). A caminhada começou com dois quadros; as direções e a cadência por distância foram acrescentadas na [Fase 3](CAMPAIGN_MAP_AVATAR_PHASE_3.md). Ainda não há navegação livre ou percurso físico entre mapas.
 - A arte e a animação ainda pedem conferência visual manual em desktop e celular; os testes automatizados verificam fluxo e contratos, não substituem essa avaliação.
 
 ## Validação

@@ -432,46 +432,46 @@
 .campaign-map-player-avatar img {
   position: absolute;
   inset: 0;
-  display: block;
+  display: none;
   width: 100%;
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
+.campaign-map-player-avatar.is-direction-horizontal img[data-direction="horizontal"],
+.campaign-map-player-avatar.is-direction-down img[data-direction="down"],
+.campaign-map-player-avatar.is-direction-up img[data-direction="up"] {
+  display: block;
+}
+
 .campaign-map-player-avatar__stride-b {
   opacity: 0;
 }
 
-.campaign-map-player-avatar.is-walking .campaign-map-player-avatar__stride-a {
-  animation: mapAvatarStrideA 0.4s steps(1, end) infinite;
+.campaign-map-player-avatar.is-step-b .campaign-map-player-avatar__stride-a {
+  opacity: 0;
 }
 
-.campaign-map-player-avatar.is-walking .campaign-map-player-avatar__stride-b {
-  animation: mapAvatarStrideB 0.4s steps(1, end) infinite;
+.campaign-map-player-avatar.is-step-b .campaign-map-player-avatar__stride-b {
+  opacity: 1;
 }
 
-@keyframes mapAvatarStrideA {
-  0%, 49.99% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-
-@keyframes mapAvatarStrideB {
-  0%, 49.99% { opacity: 0; }
-  50%, 100% { opacity: 1; }
-}
-
-.campaign-map-player-avatar.is-facing-left img {
+.campaign-map-player-avatar.is-facing-left img[data-direction="horizontal"] {
   transform: scaleX(-1);
 }
 
-.campaign-map-player-avatar.is-walking {
-  animation: mapAvatarWalk 0.3s ease-in-out infinite alternate;
+.campaign-map-player-avatar.is-walking.is-step-b {
+  transform: translate(-50%, -96%);
 }
 
-@keyframes mapAvatarWalk {
-  from { transform: translate(-50%, -92%); }
-  to { transform: translate(-50%, -98%); }
+.campaign-map-stage.is-entering .campaign-map-player-avatar:not(.is-walking) {
+  animation: mapAvatarArrive 0.32s ease-out both;
+}
+
+@keyframes mapAvatarArrive {
+  from { opacity: 0; transform: translate(-50%, -108%) scale(0.82); }
+  to { opacity: 1; transform: translate(-50%, -92%) scale(1); }
 }
 
 .campaign-map-travel-skip {
@@ -1216,6 +1216,10 @@
     min-height: 380px;
     position: relative;
     scroll-snap-align: start;
+  }
+
+  .campaign-map-travel-skip {
+    bottom: 36px;
   }
 
   /* Mobile scroll cue */

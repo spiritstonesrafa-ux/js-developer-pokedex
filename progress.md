@@ -2,6 +2,14 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: avatar no mapa, Fase 3
+
+- O avatar agora tem pares de poses para caminhar horizontalmente, subir e descer; o lado esquerdo espelha as poses horizontais. A troca das pernas acompanha a distância percorrida na trilha SVG, e a entrada em uma região recebeu transição visual curta.
+- No celular, o botão **Pular caminhada** fica fora da área rolável do mapa. Movimento reduzido preserva o fluxo direto, sem animação. Detalhes em `docs/CAMPAIGN_MAP_AVATAR_PHASE_3.md`.
+- Validação automatizada local: campanha **160/160** e suíte completa **798/798**. A conexão com o navegador local falhou; conferência visual manual em desktop/celular permanece pendente.
+
+---
+
 ## Atualização — 26/09/2026: avatar no mapa, Fase 2
 
 - A região ativa e o último nó alcançado em cada mapa agora são restaurados após recarga, sem alterar o save principal da campanha. A continuidade fica isolada por campanha e é limpa no reset.

@@ -3740,23 +3740,78 @@ test('Avatar Phase 1 — rotas são reversíveis, contínuas e não atravessam n
   assert.equal(Model.findTravelPath(endgame, endgame.nodes[0].nodeId, 'node-shadow'), null);
 });
 
-test('Avatar Phase 1 — dois quadros transparentes alternam a passada somente durante a caminhada', () => {
+test('Avatar Phase 3 — seis quadros transparentes cobrem subida, descida e movimento horizontal', () => {
   const imageDir = path.resolve(__dirname, '../../assets/images/campaign');
-  const frames = ['player-traveler.png', 'player-traveler-step-b.png'].map(name => fs.readFileSync(path.join(imageDir, name)));
+  const frames = [
+    'player-traveler.png', 'player-traveler-step-b.png',
+    'player-traveler-down-a.png', 'player-traveler-down-b.png',
+    'player-traveler-up-a.png', 'player-traveler-up-b.png'
+  ].map(name => fs.readFileSync(path.join(imageDir, name)));
   const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   for (const frame of frames) {
     assert.ok(frame.subarray(0, 8).equals(pngSignature));
     assert.equal(frame[25], 6, 'Quadro deve preservar canal alfa RGBA');
+    assert.equal(frame.readUInt32BE(16), frames[0].readUInt32BE(16));
+    assert.equal(frame.readUInt32BE(20), frames[0].readUInt32BE(20));
   }
-  assert.equal(frames[0].readUInt32BE(16), frames[1].readUInt32BE(16));
-  assert.equal(frames[0].readUInt32BE(20), frames[1].readUInt32BE(20));
 
   const css = fs.readFileSync(path.resolve(__dirname, '../../assets/css/campaign-map.css'), 'utf8');
   assert.match(css, /\.campaign-map-player-avatar__stride-b\s*\{\s*opacity:\s*0/);
-  assert.match(css, /\.campaign-map-player-avatar\.is-walking \.campaign-map-player-avatar__stride-a/);
-  assert.match(css, /\.campaign-map-player-avatar\.is-walking \.campaign-map-player-avatar__stride-b/);
-  assert.match(css, /@keyframes mapAvatarStrideA/);
-  assert.match(css, /@keyframes mapAvatarStrideB/);
+  for (const direction of ['horizontal', 'down', 'up']) {
+    assert.match(css, new RegExp(`\\.campaign-map-player-avatar\\.is-direction-${direction} img\\[data-direction="${direction}"\\]`));
+  }
+  assert.match(css, /\.campaign-map-player-avatar\.is-step-b \.campaign-map-player-avatar__stride-b/);
+  assert.match(css, /@keyframes mapAvatarArrive/);
+});
+
+test('Avatar Phase 3 — direção e troca de pernas acompanham deslocamento real', () => {
+  const classes = new Set(['is-direction-down']);
+  const avatar = {
+    style: {},
+    classList: {
+      toggle(name, enabled) {
+        if (enabled) classes.add(name);
+        else classes.delete(name);
+      }
+    }
+  };
+  const view = new CampaignMapView({ container: { querySelector: () => null } });
+  const travel = { avatar, direction: 'down' };
+  view._orientAvatar(travel, 20, 0);
+  assert.ok(classes.has('is-direction-horizontal'));
+  assert.ok(!classes.has('is-facing-left'));
+  view._orientAvatar(travel, -20, 0);
+  assert.ok(classes.has('is-facing-left'));
+  view._orientAvatar(travel, 0, -20);
+  assert.ok(classes.has('is-direction-up'));
+  assert.ok(!classes.has('is-facing-left'));
+  view._orientAvatar(travel, 0, 20);
+  assert.ok(classes.has('is-direction-down'));
+
+  view._renderVersion = 1;
+  view._travel = {
+    avatar, renderVersion: 1, startedAt: null, duration: 1000, totalLength: 200,
+    lastPoint: null, segments: [{ length: 200, reversed: false, path: { getPointAtLength: distance => ({ x: distance, y: 0 }) } }]
+  };
+  view._safeRaf = () => 1;
+  view._clearRaf = () => {};
+  view._stepTravel(0);
+  assert.ok(!classes.has('is-step-b'));
+  view._stepTravel(250);
+  assert.ok(classes.has('is-step-b'), 'Passada troca depois de avançar 48 unidades SVG');
+  view._stepTravel(500);
+  assert.ok(!classes.has('is-step-b'), 'Próxima distância troca de volta');
+  view.destroy();
+});
+
+test('Avatar Phase 3 — pular caminhada permanece visível fora da rolagem do mapa no celular', () => {
+  const view = new CampaignMapView({ container: {} });
+  view._travel = { renderVersion: 0 };
+  const html = view._renderMapView(CAMPAIGN_MAP_CATALOG.regions[0], {});
+  assert.match(html, /<\/div>\s*<\/div>\s*<button id="skipMapTravel"/);
+  const css = fs.readFileSync(path.resolve(__dirname, '../../assets/css/campaign-map.css'), 'utf8');
+  assert.match(css, /\.campaign-map-panel\s*\{\s*position:\s*relative/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.campaign-map-travel-skip\s*\{\s*bottom:\s*36px/);
 });
 
 test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita duplo clique e lembra posição', () => {
@@ -3796,6 +3851,8 @@ test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita
   view.render();
   assert.match(container.innerHTML, /player-traveler\.png/);
   assert.match(container.innerHTML, /player-traveler-step-b\.png/);
+  assert.match(container.innerHTML, /player-traveler-up-a\.png/);
+  assert.match(container.innerHTML, /player-traveler-down-a\.png/);
   assert.doesNotMatch(container.innerHTML, /id="skipMapTravel"/);
 
   const frames = [];

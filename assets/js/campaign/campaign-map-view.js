@@ -650,15 +650,19 @@
             ${selectedMarkerHtml}
             ${nodesHtml}
             ${avatarNode ? `
-              <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''}"
+              <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''} is-direction-down"
                    style="left: ${avatarNode.position.x}%; top: ${avatarNode.position.y}%;" aria-hidden="true">
-                <img class="campaign-map-player-avatar__stride-a" src="${this.assetPrefix}assets/images/campaign/player-traveler.png" alt="" width="48" height="48" draggable="false">
-                <img class="campaign-map-player-avatar__stride-b" src="${this.assetPrefix}assets/images/campaign/player-traveler-step-b.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-a" data-direction="horizontal" data-step="a" src="${this.assetPrefix}assets/images/campaign/player-traveler.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-b" data-direction="horizontal" data-step="b" src="${this.assetPrefix}assets/images/campaign/player-traveler-step-b.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-a" data-direction="down" data-step="a" src="${this.assetPrefix}assets/images/campaign/player-traveler-down-a.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-b" data-direction="down" data-step="b" src="${this.assetPrefix}assets/images/campaign/player-traveler-down-b.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-a" data-direction="up" data-step="a" src="${this.assetPrefix}assets/images/campaign/player-traveler-up-a.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-b" data-direction="up" data-step="b" src="${this.assetPrefix}assets/images/campaign/player-traveler-up-b.png" alt="" width="48" height="48" draggable="false">
               </div>
             ` : ''}
-            ${this._travel ? '<button id="skipMapTravel" class="campaign-map-travel-skip" type="button">Pular caminhada</button>' : ''}
           </div>
         </div>
+        ${this._travel ? '<button id="skipMapTravel" class="campaign-map-travel-skip" type="button">Pular caminhada</button>' : ''}
         <span class="campaign-map-scroll-hint" aria-hidden="true">Arraste para explorar o mapa ↔</span>
       `;
     }
@@ -1444,15 +1448,23 @@
       this._travel = null;
     }
 
+    _orientAvatar(travel, dx, dy) {
+      const classes = travel.avatar?.classList;
+      if (!classes || typeof classes.toggle !== 'function' || Math.hypot(dx, dy) < 0.1) return;
+      const direction = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : (dy < 0 ? 'up' : 'down');
+      travel.direction = direction;
+      classes.toggle('is-direction-horizontal', direction === 'horizontal');
+      classes.toggle('is-direction-up', direction === 'up');
+      classes.toggle('is-direction-down', direction === 'down');
+      classes.toggle('is-facing-left', direction === 'horizontal' && dx < 0);
+    }
+
     _paintTravelPoint(travel, point) {
       const avatar = travel.avatar;
       if (!avatar || !point) return;
       avatar.style.left = `${point.x / 10}%`;
       avatar.style.top = `${point.y / 5.625}%`;
-      if (travel.lastPoint && avatar.classList && typeof avatar.classList.toggle === 'function') {
-        const deltaX = point.x - travel.lastPoint.x;
-        if (Math.abs(deltaX) > 0.1) avatar.classList.toggle('is-facing-left', deltaX < 0);
-      }
+      if (travel.lastPoint) this._orientAvatar(travel, point.x - travel.lastPoint.x, point.y - travel.lastPoint.y);
       travel.lastPoint = point;
     }
 
@@ -1475,6 +1487,10 @@
         point = last.path.getPointAtLength(last.reversed ? 0 : last.length);
       }
       this._paintTravelPoint(travel, point);
+      if (travel.avatar.classList && typeof travel.avatar.classList.toggle === 'function') {
+        // A pose changes per distance traveled, so feet keep pace even on longer routes.
+        travel.avatar.classList.toggle('is-step-b', Math.floor(progress * travel.totalLength / 48) % 2 === 1);
+      }
       if (progress >= 1) {
         this._finishTravel();
       } else {
@@ -1527,7 +1543,13 @@
         renderVersion: this._renderVersion,
         lastPoint: null
       });
-      this._paintTravelPoint(travel, segments[0].path.getPointAtLength(segments[0].reversed ? segments[0].length : 0));
+      const first = segments[0];
+      const startLength = first.reversed ? first.length : 0;
+      const leadLength = first.reversed ? Math.max(0, first.length - 8) : Math.min(first.length, 8);
+      const startPoint = first.path.getPointAtLength(startLength);
+      const leadPoint = first.path.getPointAtLength(leadLength);
+      this._paintTravelPoint(travel, startPoint);
+      this._orientAvatar(travel, leadPoint.x - startPoint.x, leadPoint.y - startPoint.y);
       skip.onclick = () => this._finishTravel();
       if (typeof skip.focus === 'function') skip.focus();
       this.announce('Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
