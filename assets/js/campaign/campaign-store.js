@@ -9,13 +9,16 @@
  const Store={STORAGE_KEY:C.STORAGE_KEY,getDefaultState:base,sanitize,load(){try{return sanitize(JSON.parse(localStorage.getItem(C.STORAGE_KEY)||'null'))}catch{return base()}},save(data){const clean=sanitize(data);clean.updatedAt=new Date().toISOString();try{localStorage.setItem(C.STORAGE_KEY,JSON.stringify(clean));return clean}catch{return clean}},reset(){try{localStorage.removeItem(C.STORAGE_KEY)}catch{}return base()}};
  const MoveOptions=typeof module!=='undefined'&&module.exports
   ? require('./campaign-move-options.js') : window.PBACampaign.CampaignMoveOptions;
+ const Wild=typeof module!=='undefined'&&module.exports
+  ? require('./campaign-wild-encounters.js') : window.PBACampaign.CampaignWildEncounters;
  const legacySanitize=Store.sanitize;
  const ownedIds=d=>[...d.startingRosterIds,
   ...Object.values(d.challenges).map(r=>r.rewardPokemonId).filter(Boolean),
   d.superTrainer.rewardPokemonId,
-  ...Object.values(d.endgameTrials).map(r=>r.rewardPokemonId).filter(Boolean)].filter(Boolean);
- Store.getDefaultState=()=>({...base(),movePreferences:{}});
- Store.sanitize=raw=>{const clean=legacySanitize(raw);clean.movePreferences=
+  ...Object.values(d.endgameTrials).map(r=>r.rewardPokemonId).filter(Boolean),
+  ...(d.wild?.capturedIds||[])].filter(Boolean);
+ Store.getDefaultState=()=>({...base(),movePreferences:{},wild:Wild.getDefaultState()});
+ Store.sanitize=raw=>{const clean=legacySanitize(raw);clean.wild=Wild.sanitize(raw?.wild,clean);clean.movePreferences=
   clean.startingRosterIds.length===C.START_SIZE
     ? MoveOptions?.sanitizePreferences?.(raw?.movePreferences,ownedIds(clean))||{} : {};return clean};
  Store.load=()=>{try{return Store.sanitize(JSON.parse(localStorage.getItem(C.STORAGE_KEY)||'null'))}

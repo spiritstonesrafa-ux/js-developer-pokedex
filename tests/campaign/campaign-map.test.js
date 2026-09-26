@@ -518,18 +518,21 @@ test('Caminho Real de Navegador (Script Tag via node:vm sem module/require) — 
     'assets/js/campaign/campaign-constants.js',
     'assets/js/campaign/campaign-pokemon-catalog.js',
     'assets/js/campaign/campaign-catalog.js',
+    'assets/js/campaign/campaign-wild-encounters.js',
     'assets/js/campaign/campaign-trainer-visuals.js',
     'assets/js/campaign/campaign-type-guide.js',
     'assets/js/campaign/campaign-store.js',
     'assets/js/campaign/campaign-manager.js',
+    'assets/js/campaign/campaign-wild-manager.js',
     'assets/js/campaign/campaign-map-catalog.js',
     'assets/js/campaign/campaign-map-model.js',
     'assets/js/campaign/campaign-map-view.js',
-    'assets/js/campaign/campaign-view.js'
+    'assets/js/campaign/campaign-view.js',
+    'assets/js/campaign/campaign-wild-view.js'
   ];
 
   const scripts = indexScripts.filter(src => requiredScripts.includes(src));
-  assert.equal(scripts.length, requiredScripts.length, 'Todos os 12 scripts requeridos devem estar presentes em index.html');
+  assert.equal(scripts.length, requiredScripts.length, 'Todos os scripts requeridos devem estar presentes em index.html');
   for (const req of requiredScripts) {
     assert.ok(scripts.includes(req), `Script obrigatório ausente em index.html: ${req}`);
   }

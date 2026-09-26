@@ -2,6 +2,15 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: encontros selvagens, Fase 1
+
+- Protótipo jogável na Região 1: ponto opcional de exploração, sorteio salvo de Pokémon não reservados, batalha 3 contra 1 e tentativa de captura com Poké Bola após vitória. Até duas capturas entram no elenco permanente sem alterar as recompensas dos Mestres.
+- Saves anteriores permanecem compatíveis, dados inválidos são descartados e reset limpa o progresso selvagem. Detalhes em `docs/CAMPAIGN_WILD_PHASE_1.md`.
+- Validação automatizada: campanha **171/171** e suíte completa **809/809**. A progressão com duas capturas foi testada até o Final Stand (39 Pokémon disponíveis).
+- Conferência visual manual do encontro e da animação de captura permanece pendente.
+
+---
+
 ## Atualização — 26/09/2026: avatar no mapa, Fase 4
 
 - A troca de região no modo Mapa agora percorre a trilha até uma saída, faz uma transição curta de cena e posiciona o avatar na entrada correspondente do novo mapa. As saídas estão sinalizadas; o deslocamento não inicia batalha.

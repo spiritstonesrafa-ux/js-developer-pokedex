@@ -1,0 +1,48 @@
+.wild-encounter-hero,
+.wild-capture-screen .campaign-hero {
+  text-align: center;
+}
+
+.wild-encounter-hero img,
+.wild-capture-screen img {
+  display: block;
+  margin: 12px auto;
+  image-rendering: pixelated;
+}
+
+.wild-pokeball {
+  width: 40px;
+  height: 40px;
+  margin: 18px auto;
+  border: 3px solid #151822;
+  border-radius: 50%;
+  background: linear-gradient(#e44747 0 46%, #151822 46% 54%, #fff 54% 100%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.wild-pokeball::after {
+  content: '';
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  left: 11px;
+  top: 11px;
+  border: 3px solid #151822;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.wild-pokeball.is-throwing {
+  animation: wildBallThrow 0.65s ease-in forwards;
+}
+
+@keyframes wildBallThrow {
+  0% { transform: translate(-70px, 35px) rotate(-50deg) scale(0.8); }
+  70% { transform: translate(0, -40px) rotate(300deg) scale(1); }
+  100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wild-pokeball.is-throwing { animation: none; }
+}

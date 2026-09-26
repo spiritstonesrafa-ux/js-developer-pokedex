@@ -68,10 +68,11 @@
   }
 
   class CampaignMapView {
-    constructor({ manager, container, onChallenge, onReset, initialRegionId, initialViewMode, assetPrefix } = {}) {
+    constructor({ manager, container, onChallenge, onWildEncounter, onReset, initialRegionId, initialViewMode, assetPrefix } = {}) {
       this.manager = manager;
       this.container = container || (typeof document !== 'undefined' ? document.getElementById('campaignView') : null);
       this.onChallenge = typeof onChallenge === 'function' ? onChallenge : () => {};
+      this.onWildEncounter = typeof onWildEncounter === 'function' ? onWildEncounter : () => {};
       this.onReset = typeof onReset === 'function' ? onReset : () => {};
       this.assetPrefix = typeof assetPrefix === 'string' ? assetPrefix : '';
 
@@ -607,6 +608,15 @@
         .filter(node => gatewayIds.has(node.nodeId) && !node.isHidden && node.state !== 'HIDDEN')
         .map(node => `<span class="campaign-map-gateway" style="left: ${node.position.x}%; top: ${node.position.y}%;" aria-hidden="true">↗ Saída</span>`)
         .join('');
+      const wildState = region.id === 'region-1' ? this.manager?.getState?.().wild : null;
+      const wildCaptured = wildState?.capturedIds?.length || 0;
+      const wildZoneHtml = region.id === 'region-1'
+        ? `<button type="button" id="wildEncounterZone" class="campaign-map-wild-zone"
+             style="left: 28%; top: 44%;" aria-label="${wildCaptured >= 2 ? 'Mata explorada: duas de duas capturas concluídas' : 'Explorar a mata e procurar um Pokémon selvagem'}"
+             ${wildCaptured >= 2 || this.manager?.getState?.().pendingReward ? 'disabled' : ''}>
+             <span aria-hidden="true">✦</span> ${wildCaptured >= 2 ? 'Mata explorada' : `Explorar mata · ${wildCaptured}/2`}
+           </button>`
+        : '';
 
       let selectedMarkerHtml = '';
       if (this.selectedNodeId) {
@@ -656,6 +666,7 @@
             ${selectedMarkerHtml}
             ${nodesHtml}
             ${gatewaysHtml}
+            ${wildZoneHtml}
             ${avatarNode ? `
               <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''} is-direction-down"
                    style="left: ${avatarNode.position.x}%; top: ${avatarNode.position.y}%;" aria-hidden="true">
@@ -1074,6 +1085,18 @@
           this.openNode(nodeId, nodeBtn, 'map-node');
         };
       });
+
+      const wildZone = this.container.querySelector('#wildEncounterZone');
+      if (wildZone) {
+        wildZone.onclick = () => {
+          if (this._travel || wildZone.disabled) return;
+          const target = activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+          if (!target) return;
+          if (!this._startTravel(target, null, { wildEncounter: true })) {
+            this._completeWildTravel({ node: target });
+          }
+        };
+      }
 
       this.container.querySelectorAll('[data-node-open]').forEach(btn => {
         btn.onclick = () => {
@@ -1503,6 +1526,19 @@
       }, 220);
     }
 
+    _completeWildTravel(travel) {
+      if (this._isDestroyed || this._activeRegion?.id !== 'region-1') return;
+      this.avatarNodeByRegion.set('region-1', travel.node.nodeId);
+      this._persistAvatarProgress();
+      this._cancelDrawerOpening();
+      this._cancelDrawerClosing();
+      this.isDrawerOpen = false;
+      this.selectedNodeId = null;
+      this.transitionCause = 'NONE';
+      this.render();
+      this.onWildEncounter('region-1');
+    }
+
     _orientAvatar(travel, dx, dy) {
       const classes = travel.avatar?.classList;
       if (!classes || typeof classes.toggle !== 'function' || Math.hypot(dx, dy) < 0.1) return;
@@ -1558,6 +1594,7 @@
       if (!travel || travel.kind === 'REGION_FADE') return;
       this._cancelTravel();
       if (travel.kind === 'REGION') this._completeRegionTravel(travel);
+      else if (travel.kind === 'WILD') this._completeWildTravel(travel);
       else this._completeChallenge(travel.payload, travel.node);
     }
 
@@ -1576,7 +1613,7 @@
       this.selectedNodeId = null;
       this.transitionCause = 'NONE';
       this._travel = {
-        kind: regionTransfer ? 'REGION' : 'CHALLENGE',
+        kind: regionTransfer?.wildEncounter ? 'WILD' : regionTransfer ? 'REGION' : 'CHALLENGE',
         payload, node, regionId: this._activeRegion.id, renderVersion: 0,
         ...regionTransfer
       };
@@ -1613,7 +1650,9 @@
       skip.onclick = () => this._finishTravel();
       if (typeof skip.focus === 'function') skip.focus();
       this.announce(regionTransfer
-        ? 'Caminhando até a saída da região. Use Pular caminhada para avançar imediatamente.'
+        ? (regionTransfer.wildEncounter
+          ? 'Caminhando até a mata. Use Pular caminhada para avançar imediatamente.'
+          : 'Caminhando até a saída da região. Use Pular caminhada para avançar imediatamente.')
         : 'Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
       this._travelRafId = this._safeRaf(timestamp => this._stepTravel(timestamp));
       return true;

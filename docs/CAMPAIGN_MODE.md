@@ -6,6 +6,10 @@ CampaignBattleCoordinator supplies the existing BattleSessionController with IDs
 
 Trainer history supports optional campaign mode/kind/challenge fields without breaking old Quick records.
 
+## Encontros selvagens (Fase 1)
+
+A Região 1 agora tem um ponto opcional **Explorar mata**. O encontro sorteia uma espécie segura do bioma, salva o sorteio antes da batalha, utiliza o formato 3 contra 1 da mesma Battle Engine e oferece uma tentativa de captura após a vitória. São permitidas até duas capturas bem-sucedidas na região. Lendários, míticos e candidatos das recompensas fixas não entram no sorteio. Detalhes e limites em `CAMPAIGN_WILD_PHASE_1.md`.
+
 ## Draft expansion: Seleção Inicial de 450 Pokémon
 
 A seleção inicial de novos treinadores na campanha foi expandida de 144 para **450 Pokémon canônicos**, distribuídos uniformemente em exatamente **50 Pokémon por geração oficial** (da Geração 1 à Geração 9).

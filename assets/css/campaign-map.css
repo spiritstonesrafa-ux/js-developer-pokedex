@@ -456,6 +456,35 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
 }
 
+.campaign-map-wild-zone {
+  position: absolute;
+  z-index: 3;
+  left: 28%;
+  top: 44%;
+  transform: translate(36px, 8px);
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 2px solid #b9f68a;
+  border-radius: 8px;
+  background: #183527;
+  color: #f0ffe4;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+}
+
+.campaign-map-wild-zone:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.campaign-map-wild-zone:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .campaign-map-player-avatar img {
   position: absolute;
   inset: 0;
