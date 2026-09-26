@@ -645,7 +645,8 @@
             ${avatarNode ? `
               <div id="campaignPlayerAvatar" class="campaign-map-player-avatar ${this._travel ? 'is-walking' : ''}"
                    style="left: ${avatarNode.position.x}%; top: ${avatarNode.position.y}%;" aria-hidden="true">
-                <img src="${this.assetPrefix}assets/images/campaign/player-traveler.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-a" src="${this.assetPrefix}assets/images/campaign/player-traveler.png" alt="" width="48" height="48" draggable="false">
+                <img class="campaign-map-player-avatar__stride-b" src="${this.assetPrefix}assets/images/campaign/player-traveler-step-b.png" alt="" width="48" height="48" draggable="false">
               </div>
             ` : ''}
             ${this._travel ? '<button id="skipMapTravel" class="campaign-map-travel-skip" type="button">Pular caminhada</button>' : ''}

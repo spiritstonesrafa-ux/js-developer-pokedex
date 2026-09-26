@@ -430,11 +430,35 @@
 }
 
 .campaign-map-player-avatar img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+.campaign-map-player-avatar__stride-b {
+  opacity: 0;
+}
+
+.campaign-map-player-avatar.is-walking .campaign-map-player-avatar__stride-a {
+  animation: mapAvatarStrideA 0.4s steps(1, end) infinite;
+}
+
+.campaign-map-player-avatar.is-walking .campaign-map-player-avatar__stride-b {
+  animation: mapAvatarStrideB 0.4s steps(1, end) infinite;
+}
+
+@keyframes mapAvatarStrideA {
+  0%, 49.99% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes mapAvatarStrideB {
+  0%, 49.99% { opacity: 0; }
+  50%, 100% { opacity: 1; }
 }
 
 .campaign-map-player-avatar.is-facing-left img {
@@ -1267,6 +1291,10 @@
   }
 
   .campaign-map-player-avatar {
+    animation: none !important;
+  }
+
+  .campaign-map-player-avatar img {
     animation: none !important;
   }
 

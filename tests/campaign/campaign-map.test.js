@@ -3740,6 +3740,25 @@ test('Avatar Phase 1 — rotas são reversíveis, contínuas e não atravessam n
   assert.equal(Model.findTravelPath(endgame, endgame.nodes[0].nodeId, 'node-shadow'), null);
 });
 
+test('Avatar Phase 1 — dois quadros transparentes alternam a passada somente durante a caminhada', () => {
+  const imageDir = path.resolve(__dirname, '../../assets/images/campaign');
+  const frames = ['player-traveler.png', 'player-traveler-step-b.png'].map(name => fs.readFileSync(path.join(imageDir, name)));
+  const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  for (const frame of frames) {
+    assert.ok(frame.subarray(0, 8).equals(pngSignature));
+    assert.equal(frame[25], 6, 'Quadro deve preservar canal alfa RGBA');
+  }
+  assert.equal(frames[0].readUInt32BE(16), frames[1].readUInt32BE(16));
+  assert.equal(frames[0].readUInt32BE(20), frames[1].readUInt32BE(20));
+
+  const css = fs.readFileSync(path.resolve(__dirname, '../../assets/css/campaign-map.css'), 'utf8');
+  assert.match(css, /\.campaign-map-player-avatar__stride-b\s*\{\s*opacity:\s*0/);
+  assert.match(css, /\.campaign-map-player-avatar\.is-walking \.campaign-map-player-avatar__stride-a/);
+  assert.match(css, /\.campaign-map-player-avatar\.is-walking \.campaign-map-player-avatar__stride-b/);
+  assert.match(css, /@keyframes mapAvatarStrideA/);
+  assert.match(css, /@keyframes mapAvatarStrideB/);
+});
+
 test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita duplo clique e lembra posição', () => {
   const mgr = freshManager();
   startCampaign(mgr);
@@ -3776,6 +3795,7 @@ test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita
   view._isReducedMotion = () => false;
   view.render();
   assert.match(container.innerHTML, /player-traveler\.png/);
+  assert.match(container.innerHTML, /player-traveler-step-b\.png/);
   assert.doesNotMatch(container.innerHTML, /id="skipMapTravel"/);
 
   const frames = [];
@@ -3786,6 +3806,7 @@ test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita
   assert.equal(view.triggerChallenge(grass), false);
   assert.equal(actions.length, 0, 'Picker não deve abrir antes de chegar ao nó');
   assert.match(container.innerHTML, /id="skipMapTravel"/);
+  assert.match(container.innerHTML, /campaign-map-player-avatar is-walking/);
   frames.shift()(0);
   frames.shift()(view._travel.duration / 2);
   assert.ok(parseFloat(avatar.style.left) > 15 && parseFloat(avatar.style.left) < 28);

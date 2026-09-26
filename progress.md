@@ -4,9 +4,9 @@ Arquivo de governança técnica para alinhamento e continuidade entre diferentes
 
 ## Atualização — 26/09/2026: avatar no mapa, Fase 1
 
-- Implementado sprite original do jogador no mapa e deslocamento pelas rotas SVG existentes antes de abrir o seletor de time. Inclui caminho reversível, botão para pular, proteção contra clique repetido e tratamento de movimento reduzido. O modo Lista permanece direto.
+- Implementado sprite original do jogador no mapa e deslocamento pelas rotas SVG existentes antes de abrir o seletor de time. A caminhada alterna duas poses com pernas e braços em passadas opostas. Inclui caminho reversível, botão para pular, proteção contra clique repetido e tratamento de movimento reduzido. O modo Lista permanece direto.
 - A posição é visual e temporária por região; persistência entre sessões e travessia de regiões não fazem parte desta fase. Detalhes em `docs/CAMPAIGN_MAP_AVATAR_PHASE_1.md`.
-- Validação automatizada local: campanha **154/154** e suíte completa **792/792**. Inspeção visual manual em desktop/celular ainda pendente.
+- Validação automatizada local: campanha **155/155** e suíte completa **793/793**. Inspeção visual manual em desktop/celular ainda pendente.
 
 ---
 

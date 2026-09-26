@@ -13,16 +13,16 @@
 
 - `campaign-map-model.js`: `findTravelPath` calcula o menor caminho bidirecional no grafo local da região, sem modificar catálogo nem estado da campanha.
 - `campaign-map-view.js`: mantém posição visual temporária por região, amostra pontos reais de cada caminho SVG com `getPointAtLength`, limita a duração a 650–2600 ms e só então dispara `onChallenge`.
-- `campaign-map.css`: camada visual do avatar, movimento simples e controle de pular.
-- `assets/images/campaign/player-traveler.png`: arte raster original com transparência.
+- `campaign-map.css`: camada visual do avatar, alternância de dois quadros de passada, movimento vertical discreto e controle de pular.
+- `assets/images/campaign/player-traveler.png` e `player-traveler-step-b.png`: arte raster original, transparente, com pernas e braços em poses opostas.
 
 ## Limites desta fase
 
-- Não há persistência de posição após recarregar a página, deslocamento entre regiões, navegação livre nem múltiplos quadros de animação de caminhada. Essas evoluções ficam para as próximas fases do roadmap.
+- Não há persistência de posição após recarregar a página, deslocamento entre regiões nem navegação livre. A caminhada tem dois quadros; uma animação mais rica e direcional pode ficar para as próximas fases do roadmap.
 - A arte e a animação ainda pedem conferência visual manual em desktop e celular; os testes automatizados verificam fluxo e contratos, não substituem essa avaliação.
 
 ## Validação
 
-- `npm run test:campaign`: 154 testes aprovados.
-- `npm test`: 792 testes aprovados.
+- `npm run test:campaign`: 155 testes aprovados.
+- `npm test`: 793 testes aprovados.
 - Cobertura nova: ida/volta e continuidade da rota, exclusão de nó oculto, abertura do seletor após chegar, pular, proteção contra clique repetido, memória temporária, movimento reduzido e cancelamento por destruição da tela.
