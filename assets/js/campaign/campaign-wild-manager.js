@@ -28,15 +28,21 @@
   };
 
   Manager.prototype.beginWildEncounter = function (regionId, roll) {
-    if (regionId !== 'region-1' || !this.isStarted()
+    if (!Wild.isRegionId(regionId) || !this.isStarted()
       || this.data.status === C.CAMPAIGN_STATUS.COMPLETED || this.data.pendingReward) {
       return { ok: false, reason: 'UNAVAILABLE' };
     }
     const wild = this.data.wild || (this.data.wild = Wild.getDefaultState());
     if (wild.pendingCapture || wild.result) return { ok: false, reason: 'RESOLVE_PREVIOUS' };
-    if (wild.active) return { ok: true, pokemonId: wild.active.pokemonId, resumed: true };
-    if (wild.capturedIds.length >= Wild.MAX_REGION_1_CAPTURES) return { ok: false, reason: 'REGION_LIMIT' };
-    const pokemonId = Wild.choose(this.getRosterIds(), roll === undefined ? Wild.randomUnit() : roll);
+    if (wild.active) {
+      return wild.active.regionId === regionId
+        ? { ok: true, pokemonId: wild.active.pokemonId, resumed: true }
+        : { ok: false, reason: 'RESOLVE_PREVIOUS' };
+    }
+    if (Wild.getRegionCaptureCount(wild, regionId) >= Wild.MAX_CAPTURES_PER_REGION) {
+      return { ok: false, reason: 'REGION_LIMIT' };
+    }
+    const pokemonId = Wild.choose(this.getRosterIds(), roll === undefined ? Wild.randomUnit() : roll, regionId);
     if (!pokemonId) return { ok: false, reason: 'POOL_EMPTY' };
     wild.active = { regionId, pokemonId, encounterId: encounterId() };
     this.save('WILD_ENCOUNTER_STARTED');
@@ -72,6 +78,7 @@
       enemyTeamIds: [pokemonId],
       metadata: {
         mode: 'CAMPAIGN', kind: 'WILD', id: pokemonId, opponentPokemonId: pokemonId,
+        regionId: this.data.wild.active.regionId,
         battleFormat: 'TRIAL_3X1', opponentName: 'Pokémon selvagem — ' + pokemon.name
       },
       modifiers: {}
@@ -96,7 +103,7 @@
     if (result.winner === 'player') {
       wild.pendingCapture = { ...wild.active, battleId };
     } else {
-      wild.result = { status: 'LOST', pokemonId };
+      wild.result = { status: 'LOST', pokemonId, regionId: wild.active.regionId };
     }
     wild.active = null;
     this.save('WILD_BATTLE_RECORDED');
@@ -111,12 +118,13 @@
       return { ok: false, reason: 'INVALID_ROLL' };
     }
     const captured = Number.isFinite(roll) ? roll < Wild.CAPTURE_CHANCE : Wild.randomUnit() < Wild.CAPTURE_CHANCE;
-    if (captured && wild.capturedIds.length < Wild.MAX_REGION_1_CAPTURES
+    if (captured && Wild.getRegionCaptureCount(wild, pending.regionId) < Wild.MAX_CAPTURES_PER_REGION
       && !this.getRosterIds().includes(pending.pokemonId)) {
       wild.capturedIds.push(pending.pokemonId);
-      wild.result = { status: 'CAUGHT', pokemonId: pending.pokemonId };
+      wild.captureRegions[pending.pokemonId] = pending.regionId;
+      wild.result = { status: 'CAUGHT', pokemonId: pending.pokemonId, regionId: pending.regionId };
     } else {
-      wild.result = { status: 'FLED', pokemonId: pending.pokemonId };
+      wild.result = { status: 'FLED', pokemonId: pending.pokemonId, regionId: pending.regionId };
     }
     wild.pendingCapture = null;
     this.save('WILD_CAPTURE_RESOLVED');

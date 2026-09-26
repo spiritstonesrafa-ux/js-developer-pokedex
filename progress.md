@@ -2,6 +2,15 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: encontros selvagens, Fase 2
+
+- As Regiões 2 e 3 ganharam pontos opcionais de exploração com caminhada do avatar; a Região Final não tem encontros.
+- Pools temáticos e frequências de raridade comum/incomum/rara (70%/25%/5%) preservam exclusões de lendários, míticos e recompensas fixas.
+- Duas capturas por região, seis no total. Saves da Fase 1 migram as capturas existentes para a Região 1. O Final Stand pode reunir 43 Pokémon com seis capturas e oito reforços temporários.
+- Regras e validação em `docs/CAMPAIGN_WILD_PHASE_2.md`. Verificação visual manual permanece pendente.
+
+---
+
 ## Atualização — 26/09/2026: suspense na captura selvagem
 
 - A Poké Bola agora atinge e absorve o Pokémon, fecha, cai e balança antes do resultado. Captura e fuga têm desfechos visuais distintos; movimento reduzido pula a espera.

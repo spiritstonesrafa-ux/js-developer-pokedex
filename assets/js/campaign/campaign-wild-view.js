@@ -59,13 +59,17 @@
     }
     const roster = this.manager.getRoster();
     const ready = this.pick.length === 3;
+    const region = Wild.REGIONS[wild.active.regionId];
+    const rarity = Wild.getRarity(wild.active.regionId, pokemon.id);
+    const rarityLabel = { COMMON: 'comum', UNCOMMON: 'incomum', RARE: 'raro' }[rarity] || 'desconhecida';
     this.container.innerHTML = `
       <section class="campaign-shell">
         <button id="pickerBack" class="campaign-secondary" type="button">← Voltar ao mapa</button>
         <div class="campaign-hero wild-encounter-hero">
-          <p class="eyebrow">ENCONTRO SELVAGEM · REGIÃO 1</p>
+          <p class="eyebrow">ENCONTRO SELVAGEM · ${region.name.toUpperCase()}</p>
           <h2>Um ${cap(pokemon.name)} apareceu!</h2>
           <img src="${pokemon.sprite}" alt="${cap(pokemon.name)}" width="96" height="96">
+          <p>Encontrado no ${region.biome}. Raridade: ${rarityLabel}.</p>
           <p>Vença a batalha 3 contra 1 para tentar capturá-lo. Se voltar, este encontro será encerrado.</p>
         </div>
         <div class="campaign-hero picker-choice">

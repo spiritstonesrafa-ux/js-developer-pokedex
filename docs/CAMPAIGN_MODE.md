@@ -10,6 +10,8 @@ Trainer history supports optional campaign mode/kind/challenge fields without br
 
 A Região 1 agora tem um ponto opcional **Explorar mata**. O encontro sorteia uma espécie segura do bioma, salva o sorteio antes da batalha, utiliza o formato 3 contra 1 da mesma Battle Engine e oferece uma tentativa de captura após a vitória. São permitidas até duas capturas bem-sucedidas na região. Lendários, míticos e candidatos das recompensas fixas não entram no sorteio. Detalhes e limites em `CAMPAIGN_WILD_PHASE_1.md`.
 
+Na Fase 2, as Regiões 2 e 3 também recebem pontos de exploração. Cada região tem pool temático, frequência comum/incomum/rara de 70%/25%/5% e limite próprio de duas capturas. A Região Final não tem encontros selvagens. Saves antigos atribuem as capturas existentes à Região 1. Regras completas em `CAMPAIGN_WILD_PHASE_2.md`.
+
 ## Draft expansion: Seleção Inicial de 450 Pokémon
 
 A seleção inicial de novos treinadores na campanha foi expandida de 144 para **450 Pokémon canônicos**, distribuídos uniformemente em exatamente **50 Pokémon por geração oficial** (da Geração 1 à Geração 9).

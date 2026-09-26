@@ -1,15 +1,17 @@
 (function () {
   'use strict';
 
-  let CatalogModule, ModelModule, VisualsModule;
+  let CatalogModule, ModelModule, VisualsModule, Wild;
   if (typeof module !== 'undefined' && module.exports) {
     CatalogModule = require('./campaign-map-catalog.js');
     ModelModule = require('./campaign-map-model.js');
     VisualsModule = require('./campaign-trainer-visuals.js');
+    Wild = require('./campaign-wild-encounters.js');
   } else {
     CatalogModule = window.PBACampaign || {};
     ModelModule = window.PBACampaign || {};
     VisualsModule = window.PBACampaign || {};
+    Wild = window.PBACampaign?.CampaignWildEncounters;
   }
 
   const Catalog = CatalogModule.CAMPAIGN_MAP_CATALOG || CatalogModule.CampaignMapCatalog || CatalogModule;
@@ -608,13 +610,18 @@
         .filter(node => gatewayIds.has(node.nodeId) && !node.isHidden && node.state !== 'HIDDEN')
         .map(node => `<span class="campaign-map-gateway" style="left: ${node.position.x}%; top: ${node.position.y}%;" aria-hidden="true">↗ Saída</span>`)
         .join('');
-      const wildState = region.id === 'region-1' ? this.manager?.getState?.().wild : null;
-      const wildCaptured = wildState?.capturedIds?.length || 0;
-      const wildZoneHtml = region.id === 'region-1'
-        ? `<button type="button" id="wildEncounterZone" class="campaign-map-wild-zone"
-             style="left: 28%; top: 44%;" aria-label="${wildCaptured >= 2 ? 'Mata explorada: duas de duas capturas concluídas' : 'Explorar a mata e procurar um Pokémon selvagem'}"
-             ${wildCaptured >= 2 || this.manager?.getState?.().pendingReward ? 'disabled' : ''}>
-             <span aria-hidden="true">✦</span> ${wildCaptured >= 2 ? 'Mata explorada' : `Explorar mata · ${wildCaptured}/2`}
+      const wildConfig = Wild?.REGIONS?.[region.id];
+      const campaignState = wildConfig ? this.manager?.getState?.() : null;
+      const wildCaptured = wildConfig ? Wild.getRegionCaptureCount(campaignState?.wild, region.id) : 0;
+      const wildLimit = Wild?.MAX_CAPTURES_PER_REGION || 2;
+      const wildZoneHtml = wildConfig
+        ? `<button type="button" id="wildEncounterZone" class="campaign-map-wild-zone" data-region="${region.id}"
+             style="left: ${wildConfig.zonePosition.x}%; top: ${wildConfig.zonePosition.y}%;"
+             aria-label="${wildCaptured >= wildLimit
+               ? `Exploração concluída no ${wildConfig.biome}: ${wildLimit} capturas`
+               : `${wildConfig.zoneLabel} e procurar um Pokémon selvagem. ${wildCaptured} de ${wildLimit} capturas`}"
+             ${wildCaptured >= wildLimit || campaignState?.pendingReward ? 'disabled' : ''}>
+             <span aria-hidden="true">✦</span> ${wildCaptured >= wildLimit ? 'Área explorada' : `${wildConfig.zoneLabel} · ${wildCaptured}/${wildLimit}`}
            </button>`
         : '';
 
@@ -1090,7 +1097,8 @@
       if (wildZone) {
         wildZone.onclick = () => {
           if (this._travel || wildZone.disabled) return;
-          const target = activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+          const targetId = Wild?.REGIONS?.[activeRegion.id]?.zoneNodeId;
+          const target = activeRegion.nodes.find(node => node.nodeId === targetId);
           if (!target) return;
           if (!this._startTravel(target, null, { wildEncounter: true })) {
             this._completeWildTravel({ node: target });
@@ -1527,8 +1535,9 @@
     }
 
     _completeWildTravel(travel) {
-      if (this._isDestroyed || this._activeRegion?.id !== 'region-1') return;
-      this.avatarNodeByRegion.set('region-1', travel.node.nodeId);
+      const regionId = this._activeRegion?.id;
+      if (this._isDestroyed || !Wild?.REGIONS?.[regionId]) return;
+      this.avatarNodeByRegion.set(regionId, travel.node.nodeId);
       this._persistAvatarProgress();
       this._cancelDrawerOpening();
       this._cancelDrawerClosing();
@@ -1536,7 +1545,7 @@
       this.selectedNodeId = null;
       this.transitionCause = 'NONE';
       this.render();
-      this.onWildEncounter('region-1');
+      this.onWildEncounter(regionId);
     }
 
     _orientAvatar(travel, dx, dy) {
@@ -1651,7 +1660,7 @@
       if (typeof skip.focus === 'function') skip.focus();
       this.announce(regionTransfer
         ? (regionTransfer.wildEncounter
-          ? 'Caminhando até a mata. Use Pular caminhada para avançar imediatamente.'
+          ? 'Caminhando até a área de exploração. Use Pular caminhada para avançar imediatamente.'
           : 'Caminhando até a saída da região. Use Pular caminhada para avançar imediatamente.')
         : 'Caminhando até o desafio. Use Pular caminhada para avançar imediatamente.');
       this._travelRafId = this._safeRaf(timestamp => this._stepTravel(timestamp));

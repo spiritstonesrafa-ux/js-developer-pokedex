@@ -94,7 +94,7 @@ O modo Campaign é uma jornada persistente: draft inicial, elenco que cresce por
 
 Depois do circuito, o endgame inclui as provas **Legendary**, **Mythical**, **Titans** e **Celestial**, o **Super Trainer**, uma falsa conclusão e o verdadeiro desafio contra o **Shadow Super Trainer**. O confronto final aplica Shadow Aura e culmina no **Shadow Final Stand**, seguido pelo True Ending.
 
-O Shadow Final Stand reutiliza a mesma arquitetura de sessão e Battle Engine — não existe um segundo motor de batalha. Ele combina elenco permanente e reforços temporários das provas, com até 39 Pokémon disponíveis quando as duas capturas selvagens da Região 1 são obtidas, contra um trio Shadow fixo. A batalha também inclui uma tema de boss procedural criado em runtime com Web Audio API; não há asset musical externo para esse tema.
+O Shadow Final Stand reutiliza a mesma arquitetura de sessão e Battle Engine — não existe um segundo motor de batalha. Ele combina elenco permanente e reforços temporários das provas, com até 43 Pokémon disponíveis quando as seis capturas selvagens das três regiões são obtidas, contra um trio Shadow fixo. A batalha também inclui uma tema de boss procedural criado em runtime com Web Audio API; não há asset musical externo para esse tema.
 
 ### 24 Arenas Temáticas de Batalha (v1.1.0)
 

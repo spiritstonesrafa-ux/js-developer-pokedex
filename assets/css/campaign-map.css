@@ -480,6 +480,18 @@
   outline-offset: 3px;
 }
 
+.campaign-map-wild-zone[data-region="region-2"] {
+  border-color: #ffc27a;
+  background: #55351f;
+  color: #fff4df;
+}
+
+.campaign-map-wild-zone[data-region="region-3"] {
+  border-color: #d4b5ff;
+  background: #33244b;
+  color: #f7edff;
+}
+
 .campaign-map-wild-zone:disabled {
   opacity: 0.55;
   cursor: not-allowed;

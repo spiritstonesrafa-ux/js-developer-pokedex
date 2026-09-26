@@ -525,7 +525,8 @@
       const masterRewards = Object.values(campaignState.challenges || {}).map(c => c.rewardPokemonId).filter(Boolean);
       const superReward = campaignState.superTrainer?.rewardPokemonId;
       const trialRewards = Object.values(campaignState.endgameTrials || {}).map(t => t.rewardPokemonId).filter(Boolean);
-      rosterCount = new Set([...base, ...masterRewards, superReward, ...trialRewards].filter(Boolean)).size;
+      const wildCaptures = campaignState.wild?.capturedIds || [];
+      rosterCount = new Set([...base, ...masterRewards, superReward, ...trialRewards, ...wildCaptures].filter(Boolean)).size;
       if (rosterCount === 0 && Array.isArray(campaignState.startingRosterIds)) {
         rosterCount = campaignState.startingRosterIds.length;
       }
