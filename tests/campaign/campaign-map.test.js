@@ -3805,6 +3805,7 @@ test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita
   assert.equal(view.triggerChallenge(grass), true);
   assert.equal(view.triggerChallenge(grass), false);
   assert.equal(actions.length, 0, 'Picker não deve abrir antes de chegar ao nó');
+  assert.equal(mem.has('campaign_map_avatar_progress_v1'), false, 'Caminhada em curso não grava posição intermediária');
   assert.match(container.innerHTML, /id="skipMapTravel"/);
   assert.match(container.innerHTML, /campaign-map-player-avatar is-walking/);
   frames.shift()(0);
@@ -3813,6 +3814,7 @@ test('Avatar Phase 1 — Enfrentar caminha antes do picker, permite pular, evita
   skip.onclick();
   assert.deepEqual(actions, [{ kind: 'MASTER', id: 'master-grass' }]);
   assert.equal(view.avatarNodeByRegion.get('region-1'), 'node-grass');
+  assert.equal(JSON.parse(mem.get('campaign_map_avatar_progress_v1')).positions['region-1'], 'node-grass');
   assert.equal(view._travel, null);
 
   view.render();
@@ -3843,4 +3845,123 @@ test('Avatar Phase 1 — movimento reduzido inicia direto e destroy cancela viag
   view.destroy();
   assert.equal(view._travel, null);
   assert.equal(actions.length, 1, 'Destruir mapa não inicia batalha pendente');
+});
+
+// -----------------------------------------------------------------------------
+// AVATAR NO MAPA — FASE 2: CONTINUIDADE ENTRE REGIÕES E RECARGAS
+// -----------------------------------------------------------------------------
+
+test('Avatar Phase 2 — mantém nó por região e aba ativa após recriar a tela', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const storageKey = 'campaign_map_avatar_progress_v1';
+  const tabs = ['region-1', 'region-2'].map(regionId => ({
+    dataset: { regionId, isLocked: 'false' }, focus: () => {}, onclick: null, onkeydown: null
+  }));
+  const container = {
+    innerHTML: '', querySelector: () => null,
+    querySelectorAll: selector => selector === '.campaign-map-tab' ? tabs : []
+  };
+  const view = new CampaignMapView({ manager: mgr, container, initialViewMode: 'MAP' });
+  view._isReducedMotion = () => true;
+  view.render();
+  const grass = view._activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+  view.triggerChallenge(grass);
+  view.render();
+  tabs[1].onclick();
+  assert.equal(view.activeRegionId, 'region-2');
+  const rock = view._activeRegion.nodes.find(node => node.nodeId === 'node-rock');
+  view.triggerChallenge(rock);
+
+  const saved = JSON.parse(mem.get(storageKey));
+  assert.equal(saved.version, 1);
+  assert.equal(saved.campaignId, mgr.getState().startedAt);
+  assert.equal(saved.activeRegionId, 'region-2');
+  assert.equal(saved.positions['region-1'], 'node-grass');
+  assert.equal(saved.positions['region-2'], 'node-rock');
+  assert.equal(mgr.getState().version, 1, 'Save principal não muda de versão');
+
+  const reloadedManager = new CampaignManager(S);
+  const reloaded = new CampaignMapView({ manager: reloadedManager, container, initialViewMode: 'MAP' });
+  assert.equal(reloaded.activeRegionId, 'region-2');
+  assert.equal(reloaded.avatarNodeByRegion.get('region-1'), 'node-grass');
+  assert.equal(reloaded.avatarNodeByRegion.get('region-2'), 'node-rock');
+  reloaded._isReducedMotion = () => true;
+  reloaded.render();
+  assert.equal(reloaded._getAvatarNode(reloaded._activeRegion).nodeId, 'node-rock');
+  tabs[0].onclick();
+  assert.equal(reloaded._getAvatarNode(reloaded._activeRegion).nodeId, 'node-grass');
+
+  const explicit = new CampaignMapView({ manager: reloadedManager, container, initialRegionId: 'region-1' });
+  assert.equal(explicit.activeRegionId, 'region-1', 'Região inicial explícita tem prioridade');
+  assert.equal(explicit.avatarNodeByRegion.get('region-2'), 'node-rock');
+  explicit.destroy();
+
+  reloadedManager.reset();
+  reloaded.destroy();
+  assert.equal(mem.has(storageKey), false, 'Reset limpa somente a posição visual antiga');
+  assert.equal(reloaded.activeRegionId, 'region-1');
+  startCampaign(reloadedManager);
+  const newCampaign = new CampaignMapView({ manager: reloadedManager, container });
+  assert.equal(newCampaign.avatarNodeByRegion.size, 0);
+  assert.equal(newCampaign.activeRegionId, 'region-1');
+  newCampaign.destroy();
+});
+
+test('Avatar Phase 2 — ignora dados inválidos, campanha antiga e região final bloqueada', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const storageKey = 'campaign_map_avatar_progress_v1';
+  const container = { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] };
+  mem.set(storageKey, '{broken json');
+  const corrupt = new CampaignMapView({ manager: mgr, container });
+  assert.equal(corrupt.activeRegionId, 'region-1');
+  assert.equal(corrupt.avatarNodeByRegion.size, 0);
+  assert.equal(mem.has(storageKey), false);
+
+  mem.set(storageKey, JSON.stringify({
+    version: 1, campaignId: mgr.getState().startedAt, activeRegionId: 'region-endgame',
+    positions: { 'region-1': 'missing', 'region-2': 'node-rock', unknown: 'node-normal' }
+  }));
+  const sanitized = new CampaignMapView({ manager: mgr, container });
+  assert.equal(sanitized.avatarNodeByRegion.size, 1);
+  assert.equal(sanitized.avatarNodeByRegion.get('region-2'), 'node-rock');
+  sanitized.render();
+  assert.equal(sanitized.activeRegionId, 'region-1', 'Região final ainda respeita as 18 insígnias');
+  const lockedEndgame = Model.buildMapViewModel({
+    catalog: CAMPAIGN_MAP_CATALOG, campaignState: mgr.getState(), masters: K.MASTERS, manager: mgr,
+    activeRegionId: 'region-endgame'
+  }).regions.find(region => region.id === 'region-endgame');
+  sanitized.avatarNodeByRegion.set('region-endgame', 'node-shadow');
+  assert.notEqual(sanitized._getAvatarNode(lockedEndgame).nodeId, 'node-shadow', 'Avatar nunca reaparece em nó oculto');
+  sanitized.destroy();
+
+  mem.set(storageKey, JSON.stringify({ version: 1, campaignId: 'another-campaign', activeRegionId: 'region-2', positions: { 'region-2': 'node-rock' } }));
+  const stale = new CampaignMapView({ manager: mgr, container });
+  assert.equal(stale.activeRegionId, 'region-1');
+  assert.equal(stale.avatarNodeByRegion.size, 0);
+  assert.equal(mem.has(storageKey), false);
+  stale.destroy();
+});
+
+test('Avatar Phase 2 — armazenamento indisponível não impede navegação ou desafio', () => {
+  const mgr = freshManager();
+  startCampaign(mgr);
+  const originalStorage = global.localStorage;
+  global.localStorage = {
+    getItem: () => { throw new Error('blocked'); },
+    setItem: () => { throw new Error('blocked'); },
+    removeItem: () => { throw new Error('blocked'); }
+  };
+  try {
+    const container = { innerHTML: '', querySelector: () => null, querySelectorAll: () => [] };
+    const actions = [];
+    const view = new CampaignMapView({ manager: mgr, container, onChallenge: action => actions.push(action) });
+    view.render();
+    const grass = view._activeRegion.nodes.find(node => node.nodeId === 'node-grass');
+    assert.equal(view.triggerChallenge(grass), true);
+    assert.deepEqual(actions, [{ kind: 'MASTER', id: 'master-grass' }]);
+  } finally {
+    global.localStorage = originalStorage;
+  }
 });

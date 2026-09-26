@@ -36,6 +36,8 @@
     SHADOW: '👁️'
   });
 
+  const AVATAR_PROGRESS_KEY = 'campaign_map_avatar_progress_v1';
+
   function isTrialKind(kind) {
     if (kind === 'SUPER' || kind === 'SHADOW') return false;
     if (Model && typeof Model.isTrial === 'function') {
@@ -103,6 +105,8 @@
       this.avatarNodeByRegion = new Map();
       this._travel = null;
       this._travelRafId = null;
+      this._avatarCampaignId = this._getAvatarCampaignId();
+      this._restoreAvatarProgress(Boolean(initialRegionId));
 
       this._handleKeyDown = this._handleKeyDown.bind(this);
     }
@@ -253,6 +257,9 @@
 
     destroy() {
       this._cancelTravel();
+      if (this.manager && typeof this.manager.isStarted === 'function' && !this.manager.isStarted()) {
+        this._clearAvatarProgress();
+      }
       this._isDestroyed = true;
       this._clearAllPendingWork();
       this.pendingAriaAnnouncement = '';
@@ -1018,6 +1025,7 @@
             const targetRegion = viewModel.regions.find(r => r.id === regionId);
             this.announce(`Região selecionada: ${targetRegion?.name || regionId}`);
             this.render();
+            this._persistAvatarProgress();
             if (this._isReducedMotion()) {
               const newTab = this.container.querySelector(`#tab-${regionId}`);
               if (newTab && typeof newTab.focus === 'function') newTab.focus();
@@ -1366,7 +1374,68 @@
       const node = region.nodes.find(item => item.nodeId === remembered && visible(item))
         || region.nodes.find(visible);
       if (node) this.avatarNodeByRegion.set(region.id, node.nodeId);
+      if (remembered && remembered !== node?.nodeId) this._persistAvatarProgress();
       return node || null;
+    }
+
+    _getAvatarCampaignId() {
+      if (!this.manager || typeof this.manager.getState !== 'function') return null;
+      if (typeof this.manager.isStarted === 'function' && !this.manager.isStarted()) return null;
+      const startedAt = this.manager.getState()?.startedAt;
+      return typeof startedAt === 'string' && startedAt.length > 0 ? startedAt : null;
+    }
+
+    _restoreAvatarProgress(hasExplicitRegion) {
+      if (!this._avatarCampaignId || typeof localStorage === 'undefined') return;
+      try {
+        const raw = localStorage.getItem(AVATAR_PROGRESS_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved?.version !== 1 || saved.campaignId !== this._avatarCampaignId) {
+          localStorage.removeItem(AVATAR_PROGRESS_KEY);
+          return;
+        }
+        const regions = new Map((Catalog.regions || []).map(region => [region.id, region]));
+        if (!hasExplicitRegion && regions.has(saved.activeRegionId)) this.activeRegionId = saved.activeRegionId;
+        if (saved.positions && typeof saved.positions === 'object' && !Array.isArray(saved.positions)) {
+          for (const [regionId, nodeId] of Object.entries(saved.positions)) {
+            if (regions.get(regionId)?.nodes.some(node => node.nodeId === nodeId)) {
+              this.avatarNodeByRegion.set(regionId, nodeId);
+            }
+          }
+        }
+      } catch (e) {
+        // A malformed snapshot is disposable; storage access errors remain non-fatal.
+        try { localStorage.removeItem(AVATAR_PROGRESS_KEY); } catch (ignore) { /* ignore */ }
+      }
+    }
+
+    _persistAvatarProgress() {
+      const campaignId = this._getAvatarCampaignId();
+      if (!campaignId || typeof localStorage === 'undefined') return;
+      if (campaignId !== this._avatarCampaignId) {
+        if (this._avatarCampaignId) this.avatarNodeByRegion.clear();
+        this._avatarCampaignId = campaignId;
+      }
+      const positions = {};
+      for (const region of Catalog.regions || []) {
+        const nodeId = this.avatarNodeByRegion.get(region.id);
+        if (region.nodes.some(node => node.nodeId === nodeId)) positions[region.id] = nodeId;
+      }
+      try {
+        localStorage.setItem(AVATAR_PROGRESS_KEY, JSON.stringify({
+          version: 1, campaignId, activeRegionId: this.activeRegionId, positions
+        }));
+      } catch (e) { /* Storage can be disabled without affecting gameplay. */ }
+    }
+
+    _clearAvatarProgress() {
+      this.avatarNodeByRegion.clear();
+      this._avatarCampaignId = null;
+      this.activeRegionId = 'region-1';
+      if (typeof localStorage !== 'undefined') {
+        try { localStorage.removeItem(AVATAR_PROGRESS_KEY); } catch (e) { /* ignore */ }
+      }
     }
 
     _cancelTravel() {
@@ -1469,6 +1538,7 @@
     _completeChallenge(payload, node) {
       if (this._activeRegion && node?.nodeId) {
         this.avatarNodeByRegion.set(this._activeRegion.id, node.nodeId);
+        this._persistAvatarProgress();
       }
       this.isDrawerOpen = false;
       this.selectedNodeId = null;

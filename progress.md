@@ -2,6 +2,14 @@
 
 Arquivo de governança técnica para alinhamento e continuidade entre diferentes sessões e agentes de IA.
 
+## Atualização — 26/09/2026: avatar no mapa, Fase 2
+
+- A região ativa e o último nó alcançado em cada mapa agora são restaurados após recarga, sem alterar o save principal da campanha. A continuidade fica isolada por campanha e é limpa no reset.
+- A troca entre regiões usa a transição visual existente, pois não há trilhas que conectem fisicamente os quatro mapas. Dados inválidos ou armazenamento indisponível não impedem jogar. Detalhes em `docs/CAMPAIGN_MAP_AVATAR_PHASE_2.md`.
+- Validação automatizada local: campanha **158/158** e suíte completa **796/796**. Conferência visual manual em desktop/celular ainda pendente.
+
+---
+
 ## Atualização — 26/09/2026: avatar no mapa, Fase 1
 
 - Implementado sprite original do jogador no mapa e deslocamento pelas rotas SVG existentes antes de abrir o seletor de time. A caminhada alterna duas poses com pernas e braços em passadas opostas. Inclui caminho reversível, botão para pular, proteção contra clique repetido e tratamento de movimento reduzido. O modo Lista permanece direto.
